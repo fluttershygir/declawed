@@ -1,7 +1,13 @@
+import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle } from 'lucide-react';
 
 export default function SuccessToast({ message, onClose }) {
+  useEffect(() => {
+    const t = setTimeout(onClose, 5000);
+    return () => clearTimeout(t);
+  }, [onClose]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}

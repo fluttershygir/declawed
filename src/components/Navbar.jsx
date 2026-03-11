@@ -42,7 +42,7 @@ export default function Navbar() {
     >
       <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
         {/* Wordmark */}
-        <a href="#" className="flex items-center gap-2.5">
+        <a href="/" className="flex items-center gap-2.5">
           <LogoMark />
           <span className="text-[15px] font-bold tracking-tight text-white">Declawed</span>
           <span className="hidden sm:inline text-[9px] font-bold uppercase tracking-[0.15em] text-teal-300 border border-teal-500/40 bg-teal-500/10 px-1.5 py-0.5 rounded-full leading-none">

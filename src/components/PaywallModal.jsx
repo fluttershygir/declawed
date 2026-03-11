@@ -110,9 +110,9 @@ export default function PaywallModal({ open, onClose }) {
 
             <div className="mb-6">
               <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-teal-400 mb-2">Upgrade</p>
-              <h3 className="text-xl font-bold text-white">You've used your free analysis</h3>
+              <h3 className="text-xl font-bold text-white">Choose a plan</h3>
               <p className="mt-1.5 text-sm text-zinc-400">
-                Choose a plan below. Secure payment via Stripe — no hidden fees, no surprises.
+                Secure payment via Stripe. No hidden fees, cancel anytime.
               </p>
             </div>
 

@@ -108,12 +108,21 @@ export default function PricingSection({ onSelectTier }) {
                 <p className="text-[11px] text-zinc-600 mt-1.5">{note}</p>
               )}
 
-              <button
-                onClick={onSelectTier}
-                className={`mt-6 w-full rounded-xl py-2.5 text-sm transition-all active:scale-95 ${ctaClass}`}
-              >
-                {cta}
-              </button>
+              {key === 'starter' ? (
+                <a
+                  href="/#upload"
+                  className={`mt-6 w-full rounded-xl py-2.5 text-sm transition-all active:scale-95 text-center block ${ctaClass}`}
+                >
+                  {cta}
+                </a>
+              ) : (
+                <button
+                  onClick={onSelectTier}
+                  className={`mt-6 w-full rounded-xl py-2.5 text-sm transition-all active:scale-95 ${ctaClass}`}
+                >
+                  {cta}
+                </button>
+              )}
             </motion.div>
           ))}
         </div>

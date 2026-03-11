@@ -94,13 +94,15 @@ export default function Landing({ usage }) {
         No account required · First summary free · Your file is never stored
       </motion.p>
 
-      {usage && (usage.paidCredits > 0 || usage.unlimited) && (
+      {usage && usage.plan !== 'free' && (
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="mt-3 text-sm text-slate-500"
+          className="mt-3 text-sm text-teal-600"
         >
-          {usage.unlimited ? 'Unlimited access active' : `${usage.paidCredits} summaries remaining`}
+          {usage.plan === 'unlimited'
+            ? 'Unlimited access active'
+            : `${Math.max(0, (usage.limit ?? 1) - (usage.used ?? 0))} ${usage.plan === 'one' ? 'analysis' : 'analyses'} remaining`}
         </motion.p>
       )}
     </section>

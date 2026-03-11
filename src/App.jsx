@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { supabase } from './lib/supabase';
 import Landing from './components/Landing';
 import UploadPanel from './components/UploadPanel';
@@ -23,10 +23,11 @@ import './index.css';
 
 function DashboardPage() {
   const navigate = useNavigate();
-  return <Dashboard onClose={() => navigate('/')} onUpgrade={() => navigate('/')} />;
+  return <Dashboard onClose={() => navigate('/')} onUpgrade={() => navigate('/?upgrade=1')} />;
 }
 
 function MainApp() {
+  const { user } = useAuth();
   const [summary, setSummary] = useState('');
   const [loading, setLoading] = useState(false);
   const [paywallOpen, setPaywallOpen] = useState(false);
@@ -46,13 +47,23 @@ function MainApp() {
     }
   };
 
+  // Re-fetch usage whenever auth state changes (sign-in / sign-out)
   useEffect(() => {
     fetchUsage();
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
-  // Handle Stripe success redirect
+  // Handle Stripe success redirect and upgrade intent from dashboard
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+
+    // Dashboard "Upgrade" button navigates here with ?upgrade=1
+    if (params.get('upgrade') === '1') {
+      setPaywallOpen(true);
+      window.history.replaceState({}, '', window.location.pathname);
+      return;
+    }
+
     const checkout = params.get('checkout');
     const sessionId = params.get('session_id');
     const tier = params.get('tier');

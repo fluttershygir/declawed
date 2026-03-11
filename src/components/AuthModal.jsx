@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mail, Lock, Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -11,6 +11,18 @@ export default function AuthModal({ open, onClose, defaultTab = 'signin' }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Reset form and tab whenever the modal opens or defaultTab changes
+  useEffect(() => {
+    if (open) {
+      setTab(defaultTab);
+      setEmail('');
+      setPassword('');
+      setShowPass(false);
+      setError('');
+      setSuccess('');
+    }
+  }, [open, defaultTab]);
 
   const reset = () => { setError(''); setSuccess(''); };
 
