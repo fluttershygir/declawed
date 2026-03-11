@@ -1,50 +1,85 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Menu, X } from 'lucide-react';
+
+const NAV_LINKS = [
+  { label: 'How it Works', href: '#how-it-works' },
+  { label: 'Pricing', href: '#pricing' },
+  { label: 'FAQ', href: '#faq' },
+];
+
+const LogoMark = () => (
+  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-teal-500/25 shrink-0">
+    <svg viewBox="0 0 20 20" fill="none" className="w-[14px] h-[14px]">
+      <path d="M6 10V7a4 4 0 0 1 8 0v3" stroke="white" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+      <rect x="3.5" y="10" width="13" height="9" rx="2.5" fill="white" fillOpacity="0.95" />
+      <circle cx="10" cy="14.5" r="1.4" fill="#0d9488" />
+    </svg>
+  </div>
+);
 
 export default function Navbar() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   return (
-    <motion.nav
-      initial={{ opacity: 0, y: -10 }}
+    <motion.header
+      initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="w-full px-6 py-4 flex items-center justify-between border-b border-slate-800/60 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50"
+      transition={{ duration: 0.35 }}
+      className="sticky top-0 z-50 w-full border-b border-white/[0.06] bg-black/85 backdrop-blur-xl"
     >
-      {/* Logo */}
-      <div className="flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-emerald-500 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="white"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="w-4 h-4"
+      <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
+        {/* Wordmark */}
+        <a href="#" className="flex items-center gap-2.5">
+          <LogoMark />
+          <span className="text-[15px] font-bold tracking-tight text-white">Declawed</span>
+          <span className="hidden sm:inline text-[9px] font-bold uppercase tracking-[0.15em] text-teal-300 border border-teal-500/40 bg-teal-500/10 px-1.5 py-0.5 rounded-full leading-none">
+            Beta
+          </span>
+        </a>
+
+        {/* Desktop nav */}
+        <nav className="hidden md:flex items-center gap-7">
+          {NAV_LINKS.map(({ label, href }) => (
+            <a key={label} href={href} className="text-[13px] font-medium text-zinc-400 hover:text-white transition-colors">
+              {label}
+            </a>
+          ))}
+        </nav>
+
+        {/* Right CTA + mobile toggle */}
+        <div className="flex items-center gap-3">
+          <a
+            href="#upload"
+            className="px-4 py-2 rounded-lg bg-teal-500 text-[13px] font-semibold text-black hover:bg-teal-400 active:scale-95 transition-all shadow-lg shadow-teal-500/20"
           >
-            {/* Shield with check — the "protection from legal claws" icon */}
-            <path d="M12 2L3 6v6c0 5.25 3.75 10.15 9 11.35C17.25 22.15 21 17.25 21 12V6l-9-4z" />
-            <polyline points="9 12 11 14 15 10" />
-          </svg>
+            Try free →
+          </a>
+          <button
+            className="md:hidden p-1.5 text-zinc-400 hover:text-white transition-colors"
+            onClick={() => setMobileOpen(o => !o)}
+            aria-label="Toggle menu"
+          >
+            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
         </div>
-        <span className="text-xl font-extrabold tracking-tight text-slate-100">
-          Declawed
-        </span>
-        <span className="hidden sm:inline-block text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-500 border border-slate-700 px-2 py-0.5 rounded-full">
-          Beta
-        </span>
       </div>
 
-      {/* Right side */}
-      <div className="flex items-center gap-3">
-        <span className="hidden sm:block text-xs text-slate-500 font-medium">
-          AI-powered lease analysis
-        </span>
-        <a
-          href="#pricing"
-          className="px-4 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-semibold hover:bg-cyan-500/20 transition-colors"
-        >
-          Pricing
-        </a>
-      </div>
-    </motion.nav>
+      {/* Mobile dropdown */}
+      {mobileOpen && (
+        <div className="md:hidden border-t border-white/[0.06] bg-black/95 px-5 py-5 flex flex-col gap-4">
+          {NAV_LINKS.map(({ label, href }) => (
+            <a
+              key={label}
+              href={href}
+              onClick={() => setMobileOpen(false)}
+              className="text-sm text-zinc-300 hover:text-white transition-colors"
+            >
+              {label}
+            </a>
+          ))}
+        </div>
+      )}
+    </motion.header>
   );
 }

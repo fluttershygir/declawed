@@ -7,6 +7,11 @@ import PaywallModal from './components/PaywallModal';
 import PricingSection from './components/PricingSection';
 import SuccessToast from './components/SuccessToast';
 import Navbar from './components/Navbar';
+import HowItWorks from './components/HowItWorks';
+import TrustBar from './components/TrustBar';
+import Testimonials from './components/Testimonials';
+import FAQ from './components/FAQ';
+import Footer from './components/Footer';
 import './index.css';
 
 const API_BASE = '/api';
@@ -95,16 +100,25 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-slate-100 flex flex-col">
+    <div className="min-h-screen bg-black text-slate-100 flex flex-col">
       <Navbar />
       <Landing usage={usage} />
-      <main className="flex-1 flex flex-col items-center px-4 pb-24">
-        <div className="w-full max-w-5xl mt-8 grid md:grid-cols-[1fr_1.2fr] gap-6">
+      <HowItWorks />
+      <TrustBar />
+
+      {/* Tool: upload + summary */}
+      <section id="upload" className="w-full flex flex-col items-center px-4 py-16 border-t border-white/[0.05]">
+        <div className="w-full max-w-5xl grid md:grid-cols-[1fr_1.2fr] gap-6">
           <UploadPanel onUpload={handleUpload} loading={loading} usage={usage} />
           <SummaryPanel summary={summary} loading={loading} error={error} />
         </div>
-        <PricingSection onSelectTier={() => setPaywallOpen(true)} />
-      </main>
+      </section>
+
+      <Testimonials />
+      <PricingSection onSelectTier={() => setPaywallOpen(true)} />
+      <FAQ />
+      <Footer />
+
       <PaywallModal open={paywallOpen} onClose={() => setPaywallOpen(false)} />
       <AnimatePresence>
         {successToast && (

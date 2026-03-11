@@ -3,15 +3,18 @@ import { Gift, Zap, Infinity } from 'lucide-react';
 
 export default function PricingSection({ onSelectTier }) {
   return (
-    <section className="mt-16 w-full max-w-4xl">
-      <motion.h3
+    <section id="pricing" className="py-24 md:py-32 px-5 border-t border-white/[0.05] w-full">
+      <div className="max-w-4xl mx-auto">
+      <motion.div
         initial={{ opacity: 0, y: 10 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="text-center text-xs font-semibold text-slate-500 uppercase tracking-[0.2em] mb-6"
+        className="text-center mb-14"
       >
-        Simple pricing
-      </motion.h3>
+        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-teal-400 mb-4">Pricing</p>
+        <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight">Simple, honest pricing</h2>
+        <p className="mt-4 text-zinc-400 max-w-sm mx-auto">Pay once or go unlimited. No tricks, no auto-upgrades.</p>
+      </motion.div>
       <div className="grid md:grid-cols-3 gap-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -72,9 +75,10 @@ export default function PricingSection({ onSelectTier }) {
           <p className="text-2xl font-bold text-slate-100">
             $29<span className="text-sm font-normal text-emerald-200">/mo</span>
           </p>
-          <p className="text-sm text-slate-300 mt-1 mb-4">
-            Unlimited summaries. Built for landlords, property managers & realtors.
+          <p className="text-sm text-slate-300 mt-1 mb-2">
+            Unlimited summaries. Cancel anytime.
           </p>
+          <p className="text-xs text-emerald-400/70 mb-4">Most used by landlords and property managers</p>
           <button
             onClick={onSelectTier}
             className="w-full rounded-xl border border-emerald-400/60 py-2.5 text-sm font-semibold text-emerald-50 hover:bg-emerald-500/20 transition"
@@ -82,6 +86,7 @@ export default function PricingSection({ onSelectTier }) {
             Go unlimited
           </button>
         </motion.div>
+      </div>
       </div>
     </section>
   );
