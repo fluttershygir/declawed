@@ -128,8 +128,8 @@ function MainApp() {
       const contentType = res.headers.get('content-type') || '';
       if (!contentType.includes('application/json')) {
         const raw = await res.text();
-        console.error('[summarize] Non-JSON response:', raw.slice(0, 300));
-        throw new Error('Server returned an unexpected response. Check that ANTHROPIC_API_KEY, SUPABASE_URL, and SUPABASE_SERVICE_ROLE_KEY are set in Cloudflare Pages environment variables.');
+        console.error('[summarize] Non-JSON response:', raw.slice(0, 500));
+        throw new Error(`CF error (HTTP ${res.status}): ${raw.replace(/<[^>]+>/g, '').trim().slice(0, 200)}`);
       }
 
       const data = await res.json();
