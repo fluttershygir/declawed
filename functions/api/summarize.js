@@ -107,7 +107,7 @@ async function handleRequest(request, env) {
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: 'claude-3-5-haiku-20241022',
+      model: 'claude-3-haiku-20240307',
       max_tokens: 1500,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: `Analyze this lease:\n\n${text.slice(0, 20000)}` }],
