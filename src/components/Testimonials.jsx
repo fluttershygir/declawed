@@ -15,7 +15,7 @@ const TESTIMONIALS = [
     location: 'First-time renter · Austin, TX',
     avatarClass: 'bg-teal-500/20 text-teal-300',
     quote:
-      "I had no idea I had the right to sublet with written approval — my landlord was acting like it was entirely his call. Seeing it sourced directly from my own lease changed the whole negotiation.",
+      "I had no idea I had the right to sublet with written approval - my landlord was acting like it was entirely his call. Seeing it sourced directly from my own lease changed the whole negotiation.",
   },
   {
     initials: 'JP',
@@ -23,7 +23,7 @@ const TESTIMONIALS = [
     location: 'Relocating · New York, NY',
     avatarClass: 'bg-cyan-500/20 text-cyan-300',
     quote:
-      'The red flag about the security deposit being 2× monthly rent saved me from a clause that may have been illegal in New York. Five dollars well spent — would have cost me $3,200 to find out the hard way.',
+      'The red flag about the security deposit being 2x monthly rent saved me from a clause that may have been illegal in New York. Five dollars well spent - would have cost me $3,200 to find out the hard way.',
   },
 ];
 
