@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Upload, FileText, Loader2, AlertCircle } from 'lucide-react';
+import { Upload, FileText, Loader2, AlertCircle, Lock, Zap } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -106,6 +106,30 @@ export default function UploadPanel({ onUpload, loading, usage }) {
           <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
           {parseError}
         </div>
+      )}
+
+      {/* Free tier exhausted banner */}
+      {freeExhausted && (
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/[0.07] p-4"
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <Lock className="w-4 h-4 text-amber-400 shrink-0" />
+            <p className="text-sm font-semibold text-amber-300">You've used your free analysis</p>
+          </div>
+          <p className="text-xs text-zinc-400 leading-relaxed mb-3">
+            Upgrade to analyze more leases — and unlock Advanced Declawed AI for deeper, more thorough results.
+          </p>
+          <button
+            onClick={onUpgrade}
+            className="w-full flex items-center justify-center gap-2 rounded-lg bg-teal-500 hover:bg-teal-400 active:scale-95 transition-all text-black text-sm font-semibold py-2"
+          >
+            <Zap className="w-4 h-4" />
+            Upgrade to continue
+          </button>
+        </motion.div>
       )}
 
       <p className="mt-4 text-[11px] text-slate-500">
