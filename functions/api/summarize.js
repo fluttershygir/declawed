@@ -98,7 +98,12 @@ async function handleRequest(request, env) {
     }
   }
 
-  // --- Claude call ---
+  // --- Pick model based on plan ---
+  const isPaid = userId && ['one', 'pro', 'unlimited'].includes(userPlan);
+  const model = isPaid ? 'claude-sonnet-4-5' : 'claude-haiku-4-5';
+  const modelTier = isPaid ? 'advanced' : 'standard';
+
+  // --- AI call ---
   const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -107,10 +112,10 @@ async function handleRequest(request, env) {
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: 'claude-3-haiku-20240307',
-      max_tokens: 1500,
+      model,
+      max_tokens: isPaid ? 2048 : 1500,
       system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: `Analyze this lease:\n\n${text.slice(0, 20000)}` }],
+      messages: [{ role: 'user', content: `Analyze this lease:\n\n${text.slice(0, isPaid ? 40000 : 20000)}` }],
     }),
   });
 
@@ -166,7 +171,7 @@ async function handleRequest(request, env) {
     responseHeaders.append('Set-Cookie', 'dcl_free_used=1; Path=/; HttpOnly; SameSite=Strict; Max-Age=31536000; Secure');
   }
 
-  return new Response(JSON.stringify({ summary: analysis }), { status: 200, headers: responseHeaders });
+  return new Response(JSON.stringify({ summary: analysis, modelTier }), { status: 200, headers: responseHeaders });
 }
 
 export async function onRequestOptions() {

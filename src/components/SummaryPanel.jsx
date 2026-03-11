@@ -82,7 +82,7 @@ function StructuredSummary({ data }) {
   );
 }
 
-export default function SummaryPanel({ summary, loading, error }) {
+export default function SummaryPanel({ summary, loading, error, modelTier }) {
   return (
     <motion.section
       initial={{ opacity: 0, x: 20 }}
@@ -93,12 +93,24 @@ export default function SummaryPanel({ summary, loading, error }) {
       <div className="flex items-center gap-2 p-4 border-b border-slate-800/80">
         <FileCheck className="w-5 h-5 text-emerald-400" />
         <h2 className="text-lg font-semibold text-slate-100">Plain English summary</h2>
+        {modelTier && (
+          <span className={`ml-auto flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+            modelTier === 'advanced'
+              ? 'bg-teal-500/15 text-teal-400 border border-teal-500/30'
+              : 'bg-zinc-800 text-zinc-500 border border-zinc-700'
+          }`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${
+              modelTier === 'advanced' ? 'bg-teal-400' : 'bg-zinc-600'
+            }`} />
+            {modelTier === 'advanced' ? 'Advanced AI' : 'Standard AI'}
+          </span>
+        )}
       </div>
       <div className="flex-1 min-h-[320px] p-4 overflow-y-auto">
         {loading && (
           <div className="flex flex-col items-center justify-center h-full text-slate-400">
             <div className="w-10 h-10 border-2 border-cyan-500/50 border-t-cyan-400 rounded-full animate-spin mb-3" />
-            <p className="text-sm">Claude is reading your lease…</p>
+            <p className="text-sm">Declawed AI is reading your lease…</p>
             <p className="text-xs mt-1">Usually takes 10–30 seconds</p>
           </div>
         )}
@@ -142,7 +154,22 @@ export default function SummaryPanel({ summary, loading, error }) {
           </div>
         )}
         {!loading && !error && summary && (
-          <StructuredSummary data={summary} />
+          <>
+            <StructuredSummary data={summary} />
+            <p className="mt-4 pt-3 border-t border-slate-800/60 text-[11px] text-zinc-600 flex items-center gap-1.5">
+              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                modelTier === 'advanced' ? 'bg-teal-500' : 'bg-zinc-600'
+              }`} />
+              Analyzed by Declawed AI
+              {modelTier && (
+                <span className={`ml-auto font-medium ${
+                  modelTier === 'advanced' ? 'text-teal-500' : 'text-zinc-500'
+                }`}>
+                  {modelTier === 'advanced' ? 'Advanced' : 'Standard'}
+                </span>
+              )}
+            </p>
+          </>
         )}
       </div>
     </motion.section>

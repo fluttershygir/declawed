@@ -50,6 +50,7 @@ function MainApp() {
   const [error, setError] = useState('');
   const [usage, setUsage] = useState(null);
   const [successToast, setSuccessToast] = useState(null);
+  const [modelTier, setModelTier] = useState(null);
 
   const fetchUsage = async () => {
     try {
@@ -112,6 +113,7 @@ function MainApp() {
   const handleUpload = async (text, filename) => {
     setError('');
     setSummary('');
+    setModelTier(null);
     setLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -141,6 +143,7 @@ function MainApp() {
 
       if (!res.ok || data.error) throw new Error(data.error || 'Something went wrong.');
       setSummary(data.summary);
+      setModelTier(data.modelTier || null);
       fetchUsage();
     } catch (e) {
       setError(e.message || 'Something went wrong.');
@@ -160,7 +163,7 @@ function MainApp() {
       <section id="upload" className="w-full flex flex-col items-center px-4 py-16 border-t border-white/[0.05]">
         <div className="w-full max-w-5xl grid md:grid-cols-[1fr_1.2fr] gap-6">
           <UploadPanel onUpload={handleUpload} loading={loading} usage={usage} />
-          <SummaryPanel summary={summary} loading={loading} error={error} />
+          <SummaryPanel summary={summary} loading={loading} error={error} modelTier={modelTier} />
         </div>
       </section>
 

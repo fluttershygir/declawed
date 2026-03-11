@@ -10,6 +10,7 @@ const TIERS = [
     price: '$0',
     period: null,
     desc: '1 free lease analysis to try it out.',
+    aiTier: 'standard',
     note: null,
     cta: 'Try free',
     popular: false,
@@ -24,6 +25,7 @@ const TIERS = [
     price: '$4.99',
     period: 'one-time',
     desc: 'Single lease analysis. Pay once, no subscription.',
+    aiTier: 'advanced',
     note: 'No subscription ever.',
     cta: 'Analyze my lease',
     popular: false,
@@ -38,6 +40,7 @@ const TIERS = [
     price: '$12',
     period: '/mo',
     desc: '10 lease analyses per month. Perfect for small landlords.',
+    aiTier: 'advanced',
     note: null,
     cta: 'Get Pro',
     popular: true,
@@ -52,6 +55,7 @@ const TIERS = [
     price: '$29',
     period: '/mo',
     desc: 'Unlimited analyses. Built for property managers and realtors.',
+    aiTier: 'advanced',
     note: null,
     cta: 'Go unlimited',
     popular: false,
@@ -76,7 +80,7 @@ export default function PricingSection({ onSelectTier }) {
         </motion.div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {TIERS.map(({ key, label, icon: Icon, iconColor, price, period, desc, note, cta, popular, cardClass, ctaClass }, i) => (
+          {TIERS.map(({ key, label, icon: Icon, iconColor, price, period, desc, aiTier, note, cta, popular, cardClass, ctaClass }, i) => (
             <motion.div
               key={key}
               initial={{ opacity: 0, y: 20 }}
@@ -103,9 +107,27 @@ export default function PricingSection({ onSelectTier }) {
                 )}
               </div>
 
-              <p className="text-sm text-zinc-400 leading-relaxed mt-2 flex-1">{desc}</p>
+              <p className="text-sm text-zinc-400 leading-relaxed mt-2">{desc}</p>
+
+              {/* AI tier label */}
+              <div className={`mt-3 flex items-center gap-1.5 ${
+                aiTier === 'advanced' ? 'text-teal-400' : 'text-zinc-500'
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${
+                  aiTier === 'advanced' ? 'bg-teal-400' : 'bg-zinc-600'
+                }`} />
+                <span className="text-[11px] font-medium">
+                  {aiTier === 'advanced' ? 'Advanced Declawed AI' : 'Standard Declawed AI'}
+                </span>
+              </div>
+
+              {aiTier === 'advanced' && (
+                <p className="text-[10px] text-teal-500/70 mt-1 flex-1">Deeper analysis · longer documents</p>
+              )}
+              {aiTier !== 'advanced' && <div className="flex-1" />}
+
               {note && (
-                <p className="text-[11px] text-zinc-600 mt-1.5">{note}</p>
+                <p className="text-[11px] text-zinc-600 mt-2">{note}</p>
               )}
 
               {key === 'starter' ? (
