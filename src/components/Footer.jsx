@@ -32,7 +32,7 @@ export default function Footer() {
             </div>
             <div className="flex flex-col gap-3">
               <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-600 mb-1">Legal</p>
-              {[['Privacy Policy', '#'], ['Terms of Service', '#'], ['Contact', '#']].map(([label, href]) => (
+              {[['Privacy Policy', '/privacy'], ['Terms of Service', '/terms'], ['Cookie Policy', '/cookies']].map(([label, href]) => (
                 <a key={label} href={href} className="text-zinc-400 hover:text-white transition-colors">{label}</a>
               ))}
             </div>

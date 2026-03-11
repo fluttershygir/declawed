@@ -1,16 +1,50 @@
 import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Upload, FileText, Loader2 } from 'lucide-react';
+import { Upload, FileText, Loader2, AlertCircle } from 'lucide-react';
+import * as pdfjsLib from 'pdfjs-dist';
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.mjs',
+  import.meta.url
+).toString();
+
+async function extractTextFromPdf(file) {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  const pages = [];
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    pages.push(content.items.map(item => item.str).join(' '));
+  }
+  return pages.join('\n');
+}
 
 export default function UploadPanel({ onUpload, loading, usage }) {
   const inputRef = useRef(null);
   const [fileName, setFileName] = useState('');
   const [dragActive, setDragActive] = useState(false);
+  const [parseError, setParseError] = useState('');
 
-  const handleFile = (file) => {
-    if (!file || file.type !== 'application/pdf') return;
+  const handleFile = async (file) => {
+    if (!file) return;
+    setParseError('');
+    const isText = file.type === 'text/plain' || file.name.endsWith('.txt');
+    const isPdf = file.type === 'application/pdf' || file.name.endsWith('.pdf');
+    if (!isPdf && !isText) { setParseError('Only PDF and .txt files are supported.'); return; }
     setFileName(file.name);
-    onUpload(file);
+    let text = '';
+    if (isText) {
+      text = await file.text();
+    } else {
+      try { text = await extractTextFromPdf(file); }
+      catch { setParseError('Could not read this PDF. Try a text-based (not scanned) PDF.'); return; }
+    }
+    if (!text.trim() || text.trim().length < 50) {
+      setParseError('Could not extract text. Ensure the file is not a scanned image.');
+      return;
+    }
+    onUpload(text, file.name);
   };
 
   const handleDrop = (e) => {
@@ -19,14 +53,7 @@ export default function UploadPanel({ onUpload, loading, usage }) {
     handleFile(e.dataTransfer.files[0]);
   };
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    setDragActive(true);
-  };
-
-  const handleDragLeave = () => setDragActive(false);
-
-  const canUpload = !usage || usage.canSummarize;
+  const canUpload = !usage || usage.plan !== 'free' || (usage.used < (usage.limit ?? 1));
 
   return (
     <motion.section
@@ -40,13 +67,13 @@ export default function UploadPanel({ onUpload, loading, usage }) {
         <h2 className="text-lg font-semibold text-slate-100">Upload your lease</h2>
       </div>
       <p className="text-sm text-slate-400 mb-4">
-        PDF only, max 10MB. We extract text on our server and send it to Claude—your file is not stored.
+        PDF or .txt · Text is extracted in your browser — your file is never uploaded.
       </p>
 
       <div
         onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
+        onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
+        onDragLeave={() => setDragActive(false)}
         onClick={() => canUpload && !loading && inputRef.current?.click()}
         className={`
           flex flex-col items-center justify-center rounded-xl border-2 border-dashed py-10 px-6 cursor-pointer transition-all
@@ -57,7 +84,7 @@ export default function UploadPanel({ onUpload, loading, usage }) {
         <input
           ref={inputRef}
           type="file"
-          accept="application/pdf"
+          accept="application/pdf,.pdf,text/plain,.txt"
           className="hidden"
           onChange={(e) => handleFile(e.target.files?.[0])}
         />
@@ -67,14 +94,19 @@ export default function UploadPanel({ onUpload, loading, usage }) {
           <FileText className="w-12 h-12 text-slate-500 mb-3" />
         )}
         <p className="text-sm font-medium text-slate-300">
-          {loading ? 'Analyzing lease…' : 'Drop PDF here or click to browse'}
+          {loading ? 'Analyzing lease...' : 'Drop PDF or .txt here, or click to browse'}
         </p>
-        {fileName && (
-          <p className="mt-2 text-xs text-slate-500 truncate max-w-full">
-            {fileName}
-          </p>
+        {fileName && !loading && (
+          <p className="mt-2 text-xs text-slate-500 truncate max-w-full">{fileName}</p>
         )}
       </div>
+
+      {parseError && (
+        <div className="mt-3 flex items-start gap-2 text-rose-400 text-xs">
+          <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+          {parseError}
+        </div>
+      )}
 
       <p className="mt-4 text-[11px] text-slate-500">
         Not legal advice. For binding decisions, consult a licensed attorney.

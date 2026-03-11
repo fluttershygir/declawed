@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, LogOut, LayoutDashboard } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import AuthModal from './AuthModal';
 
 const NAV_LINKS = [
-  { label: 'How it Works', href: '#how-it-works' },
-  { label: 'Pricing', href: '#pricing' },
-  { label: 'FAQ', href: '#faq' },
+  { label: 'How it Works', href: '/#how-it-works' },
+  { label: 'Pricing', href: '/#pricing' },
+  { label: 'FAQ', href: '/#faq' },
 ];
 
 const LogoMark = () => (
@@ -20,8 +22,18 @@ const LogoMark = () => (
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authTab, setAuthTab] = useState('signin');
+  const { user, signOut } = useAuth();
+
+  const openAuth = (tab = 'signin') => {
+    setAuthTab(tab);
+    setAuthOpen(true);
+    setMobileOpen(false);
+  };
 
   return (
+    <>
     <motion.header
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
@@ -47,17 +59,47 @@ export default function Navbar() {
           ))}
         </nav>
 
-        {/* Right CTA + mobile toggle */}
-        <div className="flex items-center gap-3">
-          <a
-            href="#upload"
-            className="px-4 py-2 rounded-lg bg-teal-500 text-[13px] font-semibold text-black hover:bg-teal-400 active:scale-95 transition-all shadow-lg shadow-teal-500/20"
-          >
-            Try free →
-          </a>
-          <button
-            className="md:hidden p-1.5 text-zinc-400 hover:text-white transition-colors"
-            onClick={() => setMobileOpen(o => !o)}
+          {/* Right side */}
+          <div className="flex items-center gap-3">
+            {user ? (
+              <>
+                <a
+                  href="/dashboard"
+                  className="hidden sm:flex items-center gap-1.5 text-[13px] text-zinc-400 hover:text-white transition-colors"
+                >
+                  <LayoutDashboard className="w-3.5 h-3.5" />
+                  Dashboard
+                </a>
+                <button
+                  onClick={() => signOut()}
+                  title={user.email}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-white/[0.08] text-[13px] text-zinc-400 hover:text-white hover:border-white/20 transition"
+                >
+                  <div className="w-5 h-5 rounded-full bg-teal-500/20 border border-teal-500/40 flex items-center justify-center text-[10px] font-bold text-teal-400">
+                    {user.email?.[0]?.toUpperCase() ?? 'U'}
+                  </div>
+                  <LogOut className="w-3 h-3" />
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => openAuth('signin')}
+                  className="text-[13px] font-medium text-zinc-400 hover:text-white transition-colors"
+                >
+                  Sign in
+                </button>
+                <a
+                  href="/#upload"
+                  className="px-4 py-2 rounded-lg bg-teal-500 text-[13px] font-semibold text-black hover:bg-teal-400 active:scale-95 transition-all shadow-lg shadow-teal-500/20"
+                >
+                  Try free →
+                </a>
+              </>
+            )}
+            <button
+              className="md:hidden p-1.5 text-zinc-400 hover:text-white transition-colors"
+              onClick={() => setMobileOpen(o => !o)}
             aria-label="Toggle menu"
           >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -78,8 +120,25 @@ export default function Navbar() {
               {label}
             </a>
           ))}
+          {user ? (
+            <>
+              <a href="/dashboard" onClick={() => setMobileOpen(false)} className="text-sm text-zinc-300 hover:text-white transition-colors">
+                Dashboard
+              </a>
+              <button onClick={() => { signOut(); setMobileOpen(false); }} className="text-left text-sm text-zinc-500 hover:text-white transition-colors">
+                Sign out
+              </button>
+            </>
+          ) : (
+            <button onClick={() => openAuth('signin')} className="text-left text-sm text-zinc-300 hover:text-white transition-colors">
+              Sign in
+            </button>
+          )}
         </div>
       )}
     </motion.header>
+
+    <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} defaultTab={authTab} />
+  </>
   );
 }

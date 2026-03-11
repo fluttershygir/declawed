@@ -11,12 +11,13 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
-    "formidable": "^3.5.2",
+    "@supabase/supabase-js": "^2.99.1",
     "framer-motion": "^11.0.0",
     "lucide-react": "^0.460.0",
-    "pdf-parse": "^1.1.1",
+    "pdfjs-dist": "^5.5.207",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-router-dom": "^7.13.1",
     "stripe": "^20.4.1"
   },
   "devDependencies": {
