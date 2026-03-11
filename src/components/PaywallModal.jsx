@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, FileText, Zap, Infinity, CreditCard, CheckCircle } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import AuthModal from './AuthModal';
 
 const API_BASE = '/api';
 
@@ -49,24 +51,39 @@ const TIERS = [
 
 export default function PaywallModal({ open, onClose }) {
   const [loading, setLoading] = useState(null);
+  const [authOpen, setAuthOpen] = useState(false);
 
   const startCheckout = async (tier) => {
+    // Require sign-in before purchasing
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      setAuthOpen(true);
+      return;
+    }
+
     setLoading(tier);
     try {
       const res = await fetch(`${API_BASE}/checkout`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
         body: JSON.stringify({ tier }),
       });
       const data = await res.json();
-      if (data.url) window.location.href = data.url;
-      else setLoading(null);
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setLoading(null);
+      }
     } catch {
       setLoading(null);
     }
   };
 
   return (
+    <>
     <AnimatePresence>
       {open && (
         <motion.div
@@ -154,5 +171,7 @@ export default function PaywallModal({ open, onClose }) {
         </motion.div>
       )}
     </AnimatePresence>
+    <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} defaultTab="signin" />
+  </>
   );
 }
