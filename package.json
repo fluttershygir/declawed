@@ -16,11 +16,12 @@
     "lucide-react": "^0.460.0",
     "pdf-parse": "^1.1.1",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "stripe": "^20.4.1"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.0.0",
     "@eslint/js": "^9.36.0",
+    "@tailwindcss/vite": "^4.0.0",
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.4",

@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from 'crypto';
 
 const COOKIE_NAME = 'dcl_free_used';
+const TIER_COOKIE  = 'dcl_tier';
 const COOKIE_SECRET = process.env.COOKIE_SECRET || 'dev-secret-change-in-production';
 
 function sign(value) {
@@ -25,6 +26,14 @@ export default function handler(req, res) {
   const cookies = Object.fromEntries(
     header.split(';').map(s => s.trim().split('=').map(decodeURIComponent))
   );
+
+  // Check for a valid paid-tier cookie first
+  const rawTier = cookies[TIER_COOKIE] || '';
+  if (verifySignedCookie(rawTier)) {
+    const tier = rawTier.slice(0, rawTier.lastIndexOf('.'));
+    return res.status(200).json({ used: 0, limit: Infinity, plan: tier });
+  }
+
   const used = verifySignedCookie(cookies[COOKIE_NAME]) ? 1 : 0;
   res.status(200).json({ used, limit: 1, plan: 'free' });
 }

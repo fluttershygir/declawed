@@ -54,11 +54,8 @@ function App() {
           });
           if (res.ok) {
             const data = await res.json();
-            setSuccessToast(
-              tier === 'five'
-                ? '5 summaries unlocked!'
-                : 'Unlimited access activated!'
-            );
+            const labels = { one: 'One Lease unlocked!', pro: 'Pro access activated!', unlimited: 'Unlimited access activated!' };
+            setSuccessToast(labels[tier] || 'Access unlocked!');
             fetchUsage();
           }
         } catch {

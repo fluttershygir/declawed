@@ -14,6 +14,7 @@ export const config = { api: { bodyParser: false } };
 // HttpOnly prevents JS from reading or deleting it.
 
 const COOKIE_NAME = 'dcl_free_used';
+const TIER_COOKIE = 'dcl_tier';
 const COOKIE_SECRET = process.env.COOKIE_SECRET || 'dev-secret-change-in-production';
 
 function sign(value) {
@@ -42,6 +43,11 @@ function parseCookies(req) {
   return Object.fromEntries(
     header.split(';').map(s => s.trim().split('=').map(decodeURIComponent))
   );
+}
+
+function hasPaidTier(req) {
+  const cookies = parseCookies(req);
+  return verifySignedCookie(cookies[TIER_COOKIE]);
 }
 
 function hasUsedFreeTier(req) {
@@ -90,11 +96,14 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Check whether the visitor has already used their free analysis.
-  // The signed HttpOnly cookie can't be forged or deleted by JS.
-  const alreadyUsedFree = hasUsedFreeTier(req);
-  if (alreadyUsedFree) {
-    return res.status(402).json({ error: 'Free analysis already used. Please upgrade to continue.' });
+  // Paid tier bypasses the free-use gate entirely.
+  // The cookie is HMAC-signed server-side and can't be forged.
+  const isPaid = hasPaidTier(req);
+  if (!isPaid) {
+    const alreadyUsedFree = hasUsedFreeTier(req);
+    if (alreadyUsedFree) {
+      return res.status(402).json({ error: 'Free analysis already used. Please upgrade to continue.' });
+    }
   }
 
   try {
@@ -144,8 +153,8 @@ export default async function handler(req, res) {
       analysis = { verdict: raw, redFlags: [], keyDates: [], tenantRights: [], unusualClauses: [] };
     }
 
-    // Mark free tier as used — HttpOnly signed cookie, can't be cleared by JS
-    setFreeTierUsedCookie(res);
+    // Mark free tier as used only if not on a paid plan
+    if (!isPaid) setFreeTierUsedCookie(res);
     res.status(200).json({ summary: analysis });
   } catch (err) {
     console.error('Summarize error:', err);
