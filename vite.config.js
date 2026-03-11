@@ -1,13 +1,21 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { copyFileSync } from 'fs'
+
+// Copies dist/index.html → dist/404.html so CF Pages serves the React app
+// for any unmatched path (e.g. /dashboard, /privacy), enabling client-side routing.
+const spaFallback = {
+  name: 'spa-fallback',
+  closeBundle() {
+    try { copyFileSync('dist/index.html', 'dist/404.html'); } catch {}
+  },
+}
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), spaFallback],
   server: {
     proxy: {
-      // In local dev, forward /api calls to Vercel CLI dev server on 3000
-      // Run: `vercel dev` instead of `npm run dev` for full local API testing
       '/api': 'http://localhost:3000',
     },
   },
