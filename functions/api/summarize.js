@@ -43,9 +43,17 @@ async function getUserFromJwt(jwt, supabaseUrl, serviceRoleKey) {
 
 export async function onRequestPost(context) {
   const { request, env } = context;
+  try {
+    return await handleRequest(request, env);
+  } catch (e) {
+    console.error('[summarize] Unhandled error:', e?.message ?? e);
+    return json({ error: `Server error: ${e?.message ?? 'Unknown error'}` }, 500);
+  }
+}
 
-  if (!env.ANTHROPIC_API_KEY) return json({ error: 'API not configured.' }, 500);
-  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) return json({ error: 'DB not configured.' }, 500);
+async function handleRequest(request, env) {
+  if (!env.ANTHROPIC_API_KEY) return json({ error: 'API not configured. Add ANTHROPIC_API_KEY to Cloudflare Pages environment variables.' }, 500);
+  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) return json({ error: 'DB not configured. Add SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY to Cloudflare Pages environment variables.' }, 500);
 
   let body;
   try { body = await request.json(); } catch { return json({ error: 'Invalid JSON body.' }, 400); }
