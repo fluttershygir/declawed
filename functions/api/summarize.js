@@ -117,7 +117,9 @@ async function handleRequest(request, env) {
   if (!claudeRes.ok) {
     const err = await claudeRes.text();
     console.error('Claude error:', err);
-    return json({ error: 'AI analysis failed. Please try again.' }, 502);
+    let detail = err;
+    try { detail = JSON.parse(err)?.error?.message || err; } catch {}
+    return json({ error: `AI analysis failed: ${detail}` }, 500);
   }
 
   const claudeData = await claudeRes.json();
