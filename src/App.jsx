@@ -1,6 +1,7 @@
 import { useState, useEffect, Component } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Building2, CheckCircle2 } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { supabase } from './lib/supabase';
 
@@ -30,6 +31,7 @@ import HowItWorks from './components/HowItWorks';
 import TrustBar from './components/TrustBar';
 import Testimonials from './components/Testimonials';
 import FAQ from './components/FAQ';
+import { trackEvent } from './lib/analytics';
 import Footer from './components/Footer';
 import Dashboard from './components/Dashboard';
 import AuthModal from './components/AuthModal';
@@ -43,6 +45,8 @@ import AccountSettings from './pages/AccountSettings';
 import Billing from './pages/Billing';
 import ResetPassword from './pages/ResetPassword';
 import AnalysisHistory from './pages/AnalysisHistory';
+import LeaseReview from './pages/LeaseReview';
+import TenantRights from './pages/TenantRights';
 import './index.css';
 
 const PAID_PLANS = new Set(['one', 'pro', 'unlimited']);
@@ -86,6 +90,7 @@ function MainApp() {
   const [analysisLandlordMode, setAnalysisLandlordMode] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [authTab, setAuthTab] = useState('signin');
+  const [retryPayload, setRetryPayload] = useState(null);
 
   const fetchUsage = async () => {
     try {
@@ -150,7 +155,7 @@ function MainApp() {
             body: JSON.stringify({ session_id: sessionId }),
           });
           if (res.ok) {
-            const labels = { one: 'One Lease unlocked!', pro: 'Pro access activated!', unlimited: 'Unlimited access activated!' };
+            const labels = { one: 'Plan activated!', pro: 'Pro access activated!', unlimited: 'Unlimited access activated!' };
             setSuccessToast(labels[tier] || 'Access unlocked!');
             fetchUsage();
             refreshProfile();
@@ -171,7 +176,9 @@ function MainApp() {
     setModelTier(null);
     setAnalysisLandlordMode(false);
     setUploadedFilename(filename || '');
+    setRetryPayload(payload || null);
     setLoading(true);
+    trackEvent('analysis_started', { filename_type: imageBase64 ? 'image' : 'text' });
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const headers = { 'Content-Type': 'application/json' };
@@ -199,6 +206,7 @@ function MainApp() {
 
       if (res.status === 402) {
         setPaywallOpen(true);
+        trackEvent('upgrade_clicked', { trigger: 'paywall_402' });
         return;
       }
 
@@ -213,6 +221,7 @@ function MainApp() {
       setSummary(parsedSummary);
       setModelTier(data.modelTier || null);
       setAnalysisLandlordMode(!!data.landlordMode);
+      trackEvent('analysis_completed', { model_tier: data.modelTier || 'standard' });
       fetchUsage();
       // Fire-and-forget: reward referrer if this is the referred user's first analysis
       supabase.auth.getSession().then(({ data: sd }) => {
@@ -224,6 +233,7 @@ function MainApp() {
       });
     } catch (e) {
       setError(e.message || 'Something went wrong.');
+      trackEvent('analysis_failed', { error: e.message?.slice(0, 100) || 'unknown' });
     } finally {
       setLoading(false);
     }
@@ -246,12 +256,63 @@ function MainApp() {
           </div>
           <div className="grid md:grid-cols-2 gap-6 items-stretch">
             <UploadPanel onUpload={handleUpload} loading={loading} usage={usage} onUpgrade={() => setPaywallOpen(true)} landlordMode={landlordMode} onLandlordModeChange={setLandlordMode} />
-            <SummaryPanel summary={summary} loading={loading} error={error} modelTier={modelTier} usage={usage} filename={uploadedFilename} onUpgrade={() => setPaywallOpen(true)} landlordMode={analysisLandlordMode} user={user} onSignUp={(tab) => { setAuthTab(tab); setAuthOpen(true); }} />
+            <SummaryPanel summary={summary} loading={loading} error={error} modelTier={modelTier} usage={usage} filename={uploadedFilename} onUpgrade={() => setPaywallOpen(true)} landlordMode={analysisLandlordMode} user={user} onSignUp={(tab) => { setAuthTab(tab); setAuthOpen(true); }} onRetry={retryPayload ? () => handleUpload(retryPayload) : null} />
           </div>
         </div>
       </section>
 
       <Testimonials />
+
+      {/* Landlord Mode callout */}
+      <section className="py-24 md:py-32 px-5 border-t border-white/[0.05] w-full">
+        <div className="max-w-5xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="grid md:grid-cols-2 gap-12 items-center"
+          >
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-amber-400 mb-4">Landlord Mode</p>
+              <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight leading-tight">
+                Not just for tenants.
+              </h2>
+              <p className="mt-4 text-zinc-400 leading-relaxed">
+                Property managers and realtors use Declawed to review leases from the{' '}
+                <span className="text-amber-300 font-medium">landlord&rsquo;s perspective</span> &mdash; surfacing
+                tenant obligations, liability gaps, and clauses that won&rsquo;t hold up in court.
+              </p>
+              <p className="mt-3 text-zinc-500 text-sm leading-relaxed">
+                On the Unlimited plan, toggle Landlord Mode before uploading and the AI shifts its
+                entire analysis to protect you as the property owner instead of the tenant.
+              </p>
+              <button
+                onClick={() => setPaywallOpen(true)}
+                className="mt-8 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-sm font-semibold hover:bg-amber-500/20 hover:border-amber-500/50 transition-all active:scale-95"
+              >
+                <Building2 className="w-4 h-4" />
+                See Unlimited plan
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { title: 'Spot unenforceable clauses', desc: "Know which of your terms won't hold up before a tenant challenges them." },
+                { title: 'Surface tenant obligations', desc: 'Get a clear map of what your tenant is required to do and when.' },
+                { title: 'Find liability gaps', desc: 'Identify places where your lease leaves you exposed in a dispute.' },
+                { title: 'Flag missing protections', desc: 'Catch absent clauses — no-pet policy, subletting restrictions, late fees.' },
+              ].map(({ title, desc }) => (
+                <div key={title} className="rounded-xl border border-amber-500/15 bg-amber-500/[0.04] p-4">
+                  <CheckCircle2 className="w-4 h-4 text-amber-400 mb-2" />
+                  <p className="text-sm font-semibold text-white mb-1.5">{title}</p>
+                  <p className="text-[12px] text-zinc-500 leading-relaxed">{desc}</p>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       <PricingSection onSelectTier={() => setPaywallOpen(true)} />
       <FAQ />
       <Footer />
@@ -292,6 +353,7 @@ function AppPage() {
   const [uploadedFilename, setUploadedFilename] = useState('');
   const [landlordMode, setLandlordMode] = useState(false);
   const [analysisLandlordMode, setAnalysisLandlordMode] = useState(false);
+  const [retryPayload, setRetryPayload] = useState(null);
 
   const fetchUsage = async () => {
     try {
@@ -322,7 +384,7 @@ function AppPage() {
             body: JSON.stringify({ session_id: sessionId }),
           });
           if (res.ok) {
-            const labels = { one: 'One Lease unlocked!', pro: 'Pro access activated!', unlimited: 'Unlimited access activated!' };
+            const labels = { one: 'Plan activated!', pro: 'Pro access activated!', unlimited: 'Unlimited access activated!' };
             setSuccessToast(labels[tier] || 'Access unlocked!');
             fetchUsage();
             refreshProfile();
@@ -341,6 +403,7 @@ function AppPage() {
     setModelTier(null);
     setAnalysisLandlordMode(false);
     setUploadedFilename(filename || '');
+    setRetryPayload(payload || null);
     setUploading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -394,11 +457,11 @@ function AppPage() {
       <header className="sticky top-0 z-50 w-full border-b border-white/[0.06] bg-[#07070d]/95 backdrop-blur-xl">
         <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
           <a href="/app" className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/30 shrink-0">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-teal-500/25 shrink-0">
               <svg viewBox="0 0 20 20" fill="none" className="w-[14px] h-[14px]">
                 <path d="M6 10V7a4 4 0 0 1 8 0v3" stroke="white" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
                 <rect x="3.5" y="10" width="13" height="9" rx="2.5" fill="white" fillOpacity="0.95" />
-                <circle cx="10" cy="14.5" r="1.4" fill="#1e40af" />
+                <circle cx="10" cy="14.5" r="1.4" fill="#0d9488" />
               </svg>
             </div>
             <span className="text-[15px] font-bold tracking-tight text-white">Declawed</span>
@@ -437,6 +500,7 @@ function AppPage() {
             onUpgrade={() => setPaywallOpen(true)}
             landlordMode={analysisLandlordMode}
             user={user}
+            onRetry={retryPayload ? () => handleUpload(retryPayload) : null}
           />
         </div>
       </main>
@@ -469,6 +533,8 @@ export default function App() {
             <Route path="/account" element={<AccountSettings />} />
             <Route path="/billing" element={<Billing />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/lease-review" element={<LeaseReview />} />
+            <Route path="/tenant-rights" element={<TenantRights />} />
           </Routes>
         </AuthProvider>
       </BrowserRouter>

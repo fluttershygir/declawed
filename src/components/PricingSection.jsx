@@ -1,10 +1,11 @@
 import { motion } from 'framer-motion';
-import { Check, Gift, FileText, Zap, Infinity } from 'lucide-react';
+import { Check, Gift, Zap, Infinity } from 'lucide-react';
+import { trackEvent } from '../lib/analytics';
 
 const TIERS = [
   {
     key: 'starter',
-    label: 'Starter',
+    label: 'Free',
     icon: Gift,
     iconColor: 'text-zinc-400',
     price: '$0',
@@ -23,24 +24,6 @@ const TIERS = [
     cardClass: 'border-white/[0.08] bg-white/[0.02]',
     ctaClass: 'border border-white/20 text-zinc-300 hover:border-white/30 hover:text-white',
     checkColor: 'text-zinc-500',
-  },
-  {
-    key: 'one',
-    label: 'One Lease',
-    icon: FileText,
-    iconColor: 'text-cyan-400',
-    price: '$4.99',
-    period: 'one-time',
-    desc: 'Single lease analysis. Pay once, no subscription.',
-    features: null,
-    note: 'No subscription ever.',
-    cta: 'Analyze my lease',
-    guarantee: '7-day money-back guarantee',
-    popular: false,
-    landlordMode: false,
-    cardClass: 'border-cyan-500/20 bg-cyan-500/[0.04]',
-    ctaClass: 'border border-cyan-500/50 text-cyan-300 hover:bg-cyan-500/10 hover:border-cyan-400',
-    checkColor: 'text-cyan-500',
   },
   {
     key: 'pro',
@@ -73,12 +56,13 @@ const TIERS = [
     iconColor: 'text-emerald-400',
     price: '$29',
     period: '/mo',
-    desc: 'Unlimited analyses. Built for property managers and realtors.',
+    desc: 'For property managers, realtors, and anyone reviewing leases regularly. Unlimited analyses, both sides of the table.',
     features: [
-      'Unlimited analyses',
+      'Unlimited analyses — no monthly cap',
       'Advanced Declawed AI',
       'Everything in Pro',
       'Landlord Mode',
+      'Spot unenforceable clauses & liability gaps',
       'Priority support',
     ],
     cta: 'Go unlimited',
@@ -106,7 +90,7 @@ export default function PricingSection({ onSelectTier }) {
           <p className="mt-4 text-zinc-400 max-w-sm mx-auto">Pay once or go unlimited. No tricks, no auto-upgrades.</p>
         </motion.div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid sm:grid-cols-3 gap-4">
           {TIERS.map(({ key, label, icon: Icon, iconColor, price, period, desc, features, note, cta, guarantee, popular, landlordMode, cardClass, ctaClass, checkColor }, i) => (
             <motion.div
               key={key}
@@ -139,42 +123,26 @@ export default function PricingSection({ onSelectTier }) {
                   <span className="text-sm font-normal text-zinc-500 ml-1">{period}</span>
                 )}
               </div>
-              {key === 'one' && (
-                <p className="text-[11px] text-zinc-600 mt-0.5">A lawyer charges $200+/hr for this</p>
-              )}
-
               <p className="text-sm text-zinc-400 leading-relaxed mt-2 mb-4">{desc}</p>
 
               {/* Feature checklist */}
-              {features ? (
-                <ul className="space-y-2 grow mb-4">
-                  {features.map((feat) => (
-                    <li key={feat} className="flex items-center gap-2 text-[12.5px]">
-                      <Check className={`w-3.5 h-3.5 shrink-0 ${checkColor}`} />
-                      {feat === 'Landlord Mode' ? (
-                        <span className="text-zinc-200 font-medium">
-                          Landlord Mode{' '}
-                          <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded-full align-middle">
-                            New
-                          </span>
+              <ul className="space-y-2 grow mb-4">
+                {(features || []).map((feat) => (
+                  <li key={feat} className="flex items-center gap-2 text-[12.5px]">
+                    <Check className={`w-3.5 h-3.5 shrink-0 ${checkColor}`} />
+                    {feat === 'Landlord Mode' ? (
+                      <span className="text-zinc-200 font-medium">
+                        Landlord Mode{' '}
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded-full align-middle">
+                          New
                         </span>
-                      ) : (
-                        <span className="text-zinc-400">{feat}</span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                /* One Lease: legacy AI tier + note display */
-                <div className="grow">
-                  <div className="flex items-center gap-1.5 text-teal-400 mb-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-teal-400" />
-                    <span className="text-[11px] font-medium">Advanced Declawed AI</span>
-                  </div>
-                  <p className="text-[10px] text-teal-500/70 mb-2">Deeper analysis · longer documents</p>
-                  {note && <p className="text-[11px] text-zinc-600">{note}</p>}
-                </div>
-              )}
+                      </span>
+                    ) : (
+                      <span className="text-zinc-400">{feat}</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
 
               {key === 'starter' ? (
                 <a
@@ -186,7 +154,7 @@ export default function PricingSection({ onSelectTier }) {
               ) : (
                 <>
                   <button
-                    onClick={onSelectTier}
+                    onClick={() => { trackEvent('upgrade_clicked', { tier: key, source: 'pricing_section' }); onSelectTier(); }}
                     className={`mt-auto w-full rounded-xl py-2.5 text-sm transition-all active:scale-95 ${ctaClass}`}
                   >
                     {cta}

@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Upload, FileText, Loader2, AlertCircle, Lock, Zap, Image as ImageIcon, Building2, Gift } from 'lucide-react';
+import { Upload, FileText, Loader2, AlertCircle, Lock, Zap, Image as ImageIcon, Building2, Gift, ShieldCheck, EyeOff } from 'lucide-react';
 import ShareToUnlockModal from './ShareToUnlockModal';
 
 const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
@@ -237,6 +237,22 @@ export default function UploadPanel({ onUpload, loading, usage, onUpgrade, landl
         {fileName && !loading && (
           <p className="mt-2 text-xs text-slate-500 truncate max-w-full">{fileName}</p>
         )}
+      </div>
+
+      {/* Trust badges */}
+      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+        <span className="flex items-center gap-1.5 text-[11px] text-zinc-600">
+          <Lock className="w-3 h-3 shrink-0" />
+          Files stay in your browser
+        </span>
+        <span className="flex items-center gap-1.5 text-[11px] text-zinc-600">
+          <ShieldCheck className="w-3 h-3 shrink-0" />
+          Never stored on our servers
+        </span>
+        <span className="flex items-center gap-1.5 text-[11px] text-zinc-600">
+          <EyeOff className="w-3 h-3 shrink-0" />
+          Not used to train AI
+        </span>
       </div>
 
       {parseError && (

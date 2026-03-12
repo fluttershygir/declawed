@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, X, AlertCircle, Calendar, ShieldCheck, AlertTriangle, FileCheck, ListChecks, FileImage, Loader2, Download, Pencil, Share2, RotateCcw, Copy, Check } from 'lucide-react';
+import { FileText, X, AlertCircle, Calendar, ShieldCheck, AlertTriangle, FileCheck, ListChecks, FileImage, Loader2, Download, Pencil, Share2, RotateCcw, Copy, Check, Info } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 const SEVERITY_STYLES = {
@@ -30,7 +30,20 @@ export default function AnalysisModal({ analysis, onClose, onNoteUpdate, onReana
   const [shareCopied, setShareCopied] = useState(false);
   const [reanalyzeLoading, setReanalyzeLoading] = useState(false);
   const [reanalyzeError, setReanalyzeError] = useState(null);
+  const [showReanalyzeConfirm, setShowReanalyzeConfirm] = useState(false);
+  const [currentUsage, setCurrentUsage] = useState(null);
   const score = data.score ?? null;
+
+  // Fetch current usage so we can show credit count in confirmation dialog
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: sd }) => {
+      if (!sd?.session?.access_token) return;
+      fetch('/api/usage', { headers: { Authorization: `Bearer ${sd.session.access_token}` } })
+        .then(r => r.ok ? r.json() : null)
+        .then(d => { if (d) setCurrentUsage(d); })
+        .catch(() => {});
+    });
+  }, []);
 
   async function handleDownload(type) {
     if (downloading) return;
@@ -345,7 +358,7 @@ export default function AnalysisModal({ analysis, onClose, onNoteUpdate, onReana
                 {shareCopied ? 'Link copied!' : 'Share report'}
               </button>
               <button
-                onClick={handleReanalyze}
+                onClick={() => setShowReanalyzeConfirm(true)}
                 disabled={reanalyzeLoading}
                 className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-white/[0.05] hover:bg-white/[0.09] border border-white/[0.07] text-xs font-semibold text-zinc-400 hover:text-white transition disabled:opacity-50"
               >
@@ -354,6 +367,48 @@ export default function AnalysisModal({ analysis, onClose, onNoteUpdate, onReana
               </button>
             </div>
             {reanalyzeError && <p className="text-xs text-rose-400">{reanalyzeError}</p>}
+
+            {/* Re-analyze confirmation */}
+            <AnimatePresence>
+              {showReanalyzeConfirm && (
+                <motion.div
+                  initial={{ opacity: 0, y: 6, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 4, scale: 0.98 }}
+                  transition={{ duration: 0.15 }}
+                  className="rounded-xl border border-amber-500/30 bg-amber-500/[0.07] p-4"
+                >
+                  <div className="flex items-start gap-2 mb-3">
+                    <Info className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-semibold text-white">Use 1 analysis credit?</p>
+                      <p className="text-xs text-zinc-400 mt-0.5 leading-relaxed">
+                        {currentUsage && currentUsage.limit < 9999
+                          ? `You have ${Math.max(0, currentUsage.limit - currentUsage.used)} credit${Math.max(0, currentUsage.limit - currentUsage.used) !== 1 ? 's' : ''} remaining.`
+                          : currentUsage?.limit >= 9999
+                            ? 'You have unlimited credits.'
+                            : 'This will use 1 analysis credit.'
+                        }
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setShowReanalyzeConfirm(false)}
+                      className="flex-1 py-1.5 rounded-lg border border-white/[0.10] text-xs font-semibold text-zinc-400 hover:text-white hover:bg-white/[0.06] transition"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => { setShowReanalyzeConfirm(false); handleReanalyze(); }}
+                      className="flex-1 py-1.5 rounded-lg bg-amber-500/20 border border-amber-500/40 text-xs font-semibold text-amber-300 hover:bg-amber-500/30 transition"
+                    >
+                      Confirm
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Export bar */}

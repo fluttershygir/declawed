@@ -1,7 +1,74 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { FileCheck, AlertCircle, Calendar, ShieldCheck, AlertTriangle, ListChecks, Download, Lock, Mail, Building2 } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FileCheck, AlertCircle, Calendar, ShieldCheck, AlertTriangle, ListChecks, Download, Lock, Mail, Building2, RotateCcw, ExternalLink, CheckCircle2 } from 'lucide-react';
 import EmailReportModal from './EmailReportModal';
+
+const ANALYSIS_STEPS = [
+  { label: 'Uploading document…',     icon: '📄' },
+  { label: 'Extracting text…',        icon: '🔍' },
+  { label: 'Analyzing clauses…',      icon: '⚖️' },
+  { label: 'Identifying red flags…',  icon: '🚩' },
+  { label: 'Generating your report…', icon: '✨' },
+];
+
+function AnalysisProgress() {
+  const [stepIdx, setStepIdx] = useState(0);
+
+  useEffect(() => {
+    // Advance through steps: faster early, slow at end (don't finish until real result arrives)
+    const delays = [1200, 2200, 3500, 5000];
+    let timeout;
+    const advance = (i) => {
+      if (i >= delays.length) return;
+      timeout = setTimeout(() => {
+        setStepIdx(i + 1);
+        advance(i + 1);
+      }, delays[i]);
+    };
+    advance(0);
+    return () => clearTimeout(timeout);
+  }, []);
+
+  return (
+    <div className="flex flex-col justify-center h-full px-4 py-8">
+      <p className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-600 mb-5 text-center">Declawed AI is reading your lease</p>
+      <div className="space-y-2.5">
+        {ANALYSIS_STEPS.map((step, i) => {
+          const done    = i < stepIdx;
+          const active  = i === stepIdx;
+          const pending = i > stepIdx;
+          return (
+            <motion.div
+              key={step.label}
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: pending ? 0.3 : 1, x: 0 }}
+              transition={{ duration: 0.35, delay: i * 0.06 }}
+              className={`flex items-center gap-3 rounded-xl px-4 py-2.5 border transition-all duration-500 ${
+                active  ? 'border-cyan-500/40 bg-cyan-500/[0.07]' :
+                done    ? 'border-teal-500/25 bg-teal-500/[0.04]' :
+                          'border-white/[0.05] bg-transparent'
+              }`}
+            >
+              <span className="text-base w-5 text-center shrink-0">{step.icon}</span>
+              <span className={`text-sm flex-1 transition-colors duration-300 ${
+                active ? 'text-cyan-300 font-semibold' : done ? 'text-teal-400' : 'text-zinc-600'
+              }`}>
+                {step.label}
+              </span>
+              {active && (
+                <div className="w-3.5 h-3.5 border-2 border-cyan-500/50 border-t-cyan-400 rounded-full animate-spin shrink-0" />
+              )}
+              {done && (
+                <CheckCircle2 className="w-3.5 h-3.5 text-teal-500 shrink-0" />
+              )}
+            </motion.div>
+          );
+        })}
+      </div>
+      <p className="text-xs text-zinc-600 text-center mt-5">Usually takes 10–30 seconds</p>
+    </div>
+  );
+}
 
 const SEVERITY_STYLES = {
   HIGH:   { bg: 'bg-rose-500/15',   text: 'text-rose-400',   border: 'border-rose-500/30'   },
@@ -256,7 +323,7 @@ function AnonTeaser({ data, onSignUp }) {
   );
 }
 
-export default function SummaryPanel({ summary, loading, error, modelTier, usage, filename, onUpgrade, landlordMode, user, onSignUp }) {
+export default function SummaryPanel({ summary, loading, error, modelTier, usage, filename, onUpgrade, landlordMode, user, onSignUp, onRetry }) {
   const [pdfLoading, setPdfLoading] = useState(false);
   const [emailModalOpen, setEmailModalOpen] = useState(false);
 
@@ -323,17 +390,22 @@ export default function SummaryPanel({ summary, loading, error, modelTier, usage
       </div>
       <div className="relative flex-1">
         <div className="h-full max-h-[600px] min-h-[320px] overflow-y-auto p-4" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.08) transparent' }}>
-        {loading && (
-          <div className="flex flex-col items-center justify-center h-full text-slate-400">
-            <div className="w-10 h-10 border-2 border-cyan-500/50 border-t-cyan-400 rounded-full animate-spin mb-3" />
-            <p className="text-sm">Declawed AI is reading your lease…</p>
-            <p className="text-xs mt-1">Usually takes 10–30 seconds</p>
-          </div>
-        )}
+        {loading && <AnalysisProgress />}
         {!loading && error && (
-          <div className="flex items-center gap-2 text-rose-400">
-            <AlertCircle className="w-5 h-5 shrink-0" />
-            <p>{error}</p>
+          <div className="flex flex-col items-center justify-center h-full text-center px-4 py-10 gap-4">
+            <div className="flex items-center gap-2 text-rose-400">
+              <AlertCircle className="w-5 h-5 shrink-0" />
+              <p className="text-sm">{error}</p>
+            </div>
+            {onRetry && (
+              <button
+                onClick={onRetry}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.06] border border-white/[0.12] text-sm font-semibold text-zinc-300 hover:text-white hover:bg-white/[0.10] transition active:scale-95"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                Retry analysis
+              </button>
+            )}
           </div>
         )}
         {!loading && !error && !parsedSummary && (
@@ -384,53 +456,49 @@ export default function SummaryPanel({ summary, loading, error, modelTier, usage
             <>
             <StructuredSummary data={parsedSummary} landlordMode={landlordMode} />
 
-            {/* Download PDF Report button */}
-            <div className="mt-4 pt-3 border-t border-slate-800/60 flex flex-col gap-2">
-              <button
-                onClick={handleDownloadPDF}
-                disabled={pdfLoading}
-                className="group w-full flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-200 bg-teal-500/10 border border-teal-500/25 text-teal-300 hover:bg-teal-500/20 hover:border-teal-400/40 hover:text-teal-200 disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                {pdfLoading ? (
-                  <>
-                    <div className="w-3.5 h-3.5 border-2 border-teal-400/40 border-t-teal-400 rounded-full animate-spin" />
-                    Generating PDF…
-                  </>
-                ) : PAID_PLANS.has(usage?.plan) ? (
-                  <>
-                    <Download className="w-3.5 h-3.5" />
-                    Download PDF Report
-                  </>
-                ) : (
-                  <>
-                    <Lock className="w-3.5 h-3.5 text-zinc-500 group-hover:text-zinc-400 transition-colors" />
-                    <span className="text-zinc-400 group-hover:text-zinc-300 transition-colors">Download PDF Report</span>
-                    <span className="ml-auto text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded bg-teal-500/15 text-teal-400 border border-teal-500/25">Paid</span>
-                  </>
-                )}
-              </button>
-
-              {/* Email report button */}
-              <button
-                onClick={() => {
-                  if (!EMAIL_PLANS.has(usage?.plan)) { onUpgrade?.(); return; }
-                  setEmailModalOpen(true);
-                }}
-                className="group w-full flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-200 bg-cyan-500/[0.08] border border-cyan-500/20 text-cyan-300 hover:bg-cyan-500/15 hover:border-cyan-400/35 hover:text-cyan-200"
-              >
-                {EMAIL_PLANS.has(usage?.plan) ? (
-                  <>
-                    <Mail className="w-3.5 h-3.5" />
-                    Email this report
-                  </>
-                ) : (
-                  <>
-                    <Lock className="w-3.5 h-3.5 text-zinc-500 group-hover:text-zinc-400 transition-colors" />
-                    <span className="text-zinc-400 group-hover:text-zinc-300 transition-colors">Email this report</span>
-                    <span className="ml-auto text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded bg-cyan-500/15 text-cyan-400 border border-cyan-500/25">Pro</span>
-                  </>
-                )}
-              </button>
+            {/* ── What to do next ─────────────────────────────── */}
+            <div className="mt-5 pt-4 border-t border-slate-800/60">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-600 mb-3">What to do next</p>
+              <div className="grid grid-cols-3 gap-2">
+                {/* Download PDF */}
+                <button
+                  onClick={handleDownloadPDF}
+                  disabled={pdfLoading}
+                  className="group flex flex-col items-center gap-1.5 rounded-xl px-2 py-3 border border-white/[0.08] bg-white/[0.03] hover:border-teal-500/30 hover:bg-teal-500/[0.06] transition disabled:opacity-60"
+                >
+                  {pdfLoading ? (
+                    <div className="w-4 h-4 border-2 border-teal-400/40 border-t-teal-400 rounded-full animate-spin" />
+                  ) : (
+                    <Download className={`w-4 h-4 ${PAID_PLANS.has(usage?.plan) ? 'text-teal-400' : 'text-zinc-500'}`} />
+                  )}
+                  <span className="text-[10px] font-semibold text-zinc-400 group-hover:text-zinc-200 text-center leading-tight transition">
+                    {PAID_PLANS.has(usage?.plan) ? 'Download PDF' : 'PDF (Paid)'}
+                  </span>
+                </button>
+                {/* Email results */}
+                <button
+                  onClick={() => {
+                    if (!EMAIL_PLANS.has(usage?.plan)) { onUpgrade?.(); return; }
+                    setEmailModalOpen(true);
+                  }}
+                  className="group flex flex-col items-center gap-1.5 rounded-xl px-2 py-3 border border-white/[0.08] bg-white/[0.03] hover:border-cyan-500/30 hover:bg-cyan-500/[0.06] transition"
+                >
+                  <Mail className={`w-4 h-4 ${EMAIL_PLANS.has(usage?.plan) ? 'text-cyan-400' : 'text-zinc-500'}`} />
+                  <span className="text-[10px] font-semibold text-zinc-400 group-hover:text-zinc-200 text-center leading-tight transition">
+                    {EMAIL_PLANS.has(usage?.plan) ? 'Email report' : 'Email (Pro)'}
+                  </span>
+                </button>
+                {/* Consult a lawyer */}
+                <a
+                  href="/tenant-rights"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex flex-col items-center gap-1.5 rounded-xl px-2 py-3 border border-white/[0.08] bg-white/[0.03] hover:border-emerald-500/30 hover:bg-emerald-500/[0.06] transition"
+                >
+                  <ExternalLink className="w-4 h-4 text-emerald-400" />
+                  <span className="text-[10px] font-semibold text-zinc-400 group-hover:text-zinc-200 text-center leading-tight transition">Consult a lawyer</span>
+                </a>
+              </div>
             </div>
 
             <p className="mt-3 text-[11px] text-zinc-600 flex items-center gap-1.5 pb-1">

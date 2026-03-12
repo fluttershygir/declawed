@@ -1,32 +1,20 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, FileText, Zap, Infinity, CreditCard, CheckCircle } from 'lucide-react';
+import { X, Zap, Infinity, CreditCard, CheckCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import AuthModal from './AuthModal';
+import { trackEvent } from '../lib/analytics';
 
 const API_BASE = '/api';
 
 const TIERS = [
   {
-    key: 'one',
-    label: 'One Lease',
-    price: '$4.99',
-    period: 'one-time',
-    note: 'No subscription. Ever.',
-    perks: ['1 full lease analysis', 'All red flags & key dates', 'Image scanning', 'PDF, .docx, or image', '7-day money-back guarantee'],
-    icon: FileText,
-    iconColor: 'text-cyan-400',
-    borderClass: 'border-cyan-500/30',
-    bgClass: 'bg-cyan-500/[0.06]',
-    ctaClass: 'border border-cyan-500/60 text-cyan-300 hover:bg-cyan-500/15',
-  },
-  {
     key: 'pro',
     label: 'Pro',
     price: '$12',
     period: '/mo',
-    note: 'Perfect for small landlords',
-    perks: ['10 analyses per month', 'All red flags & key dates', 'Image scanning', 'Advanced Declawed AI', '7-day money-back guarantee'],
+    note: 'Perfect for tenants & small landlords',
+    perks: ['10 analyses per month', 'All red flags & key dates', 'Image scanning', 'Advanced Declawed AI', 'PDF report & email export', '7-day money-back guarantee'],
     icon: Zap,
     iconColor: 'text-teal-300',
     borderClass: 'border-teal-400/50',
@@ -40,7 +28,7 @@ const TIERS = [
     price: '$29',
     period: '/mo',
     note: 'For property managers & realtors',
-    perks: ['Unlimited analyses', 'All red flags & key dates', 'Image scanning', 'Advanced Declawed AI'],
+    perks: ['Unlimited analyses', 'All red flags & key dates', 'Image scanning', 'Advanced Declawed AI', 'Landlord Mode', 'Priority support'],
     icon: Infinity,
     iconColor: 'text-emerald-400',
     borderClass: 'border-emerald-500/30',
@@ -62,6 +50,7 @@ export default function PaywallModal({ open, onClose }) {
     }
 
     setLoading(tier);
+    trackEvent('plan_selected', { tier });
     try {
       const res = await fetch(`${API_BASE}/checkout`, {
         method: 'POST',
@@ -116,7 +105,7 @@ export default function PaywallModal({ open, onClose }) {
               </p>
             </div>
 
-            <div className="grid sm:grid-cols-3 gap-3">
+            <div className="grid sm:grid-cols-2 gap-3">
               {TIERS.map(({ key, label, price, period, note, perks, icon: Icon, iconColor, borderClass, bgClass, ctaClass, popular }) => (
                 <div
                   key={key}
@@ -168,9 +157,18 @@ export default function PaywallModal({ open, onClose }) {
               ))}
             </div>
 
-            <p className="mt-4 text-[10px] text-zinc-600 text-center">
-              Payments processed by Stripe · Cancel anytime · No hidden charges
-            </p>
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => startCheckout('one')}
+                disabled={!!loading}
+                className="text-[11px] text-zinc-500 hover:text-zinc-300 underline underline-offset-2 decoration-zinc-600 hover:decoration-zinc-400 transition-colors disabled:opacity-40"
+              >
+                {loading === 'one' ? 'Redirecting…' : 'Just need one more? Pay $3.99 for a single use — no subscription.'}
+              </button>
+              <p className="mt-2.5 text-[10px] text-zinc-700">
+                Payments processed by Stripe · Cancel anytime · No hidden charges
+              </p>
+            </div>
           </motion.div>
         </motion.div>
       )}

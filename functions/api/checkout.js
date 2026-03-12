@@ -5,7 +5,7 @@
 const TIERS = {
   one: {
     name: 'Declawed — One Lease',
-    amount: 499,
+    amount: 399,
     mode: 'payment',
     plan: 'one',
     limit: 1,

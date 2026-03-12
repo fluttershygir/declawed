@@ -19,7 +19,7 @@ const StripeBadge = () => (
 
 const PLAN_INFO = {
   free: {
-    label: 'Starter',
+    label: 'Free',
     color: 'text-zinc-400',
     barColor: 'bg-zinc-400',
     border: 'border-zinc-700/60',
@@ -33,8 +33,9 @@ const PLAN_INFO = {
     isPaid: false,
     isSubscription: false,
   },
+  // Legacy 'one' plan — keep for existing users
   one: {
-    label: 'One Lease',
+    label: 'One Lease (Legacy)',
     color: 'text-cyan-400',
     barColor: 'bg-cyan-400',
     border: 'border-cyan-700/60',
@@ -209,7 +210,7 @@ export default function Billing() {
           </motion.div>
         )}
 
-        {/* ─── One-time purchase notice ─────────────────── */}
+        {/* ─── One-time legacy notice ───────────────────── */}
         {planInfo.isPaid && !planInfo.isSubscription && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -219,13 +220,12 @@ export default function Billing() {
           >
             <div className="flex items-center gap-2 mb-2">
               <Gift className="w-4 h-4 text-cyan-400" />
-              <p className="text-sm font-semibold text-white">One-time purchase</p>
+              <p className="text-sm font-semibold text-white">Legacy one-time purchase</p>
             </div>
             <p className="text-sm text-zinc-500 leading-relaxed">
-              Your One Lease plan was a one-time payment — no recurring billing, no subscription to manage.
-              When you're ready for more analyses,{' '}
-              <a href="/#pricing" className="text-blue-400 hover:text-blue-300 underline underline-offset-2 transition">
-                view our plans
+              Your One Lease plan was a one-time payment. When you're ready for more analyses,{' '}
+              <a href="/#pricing" className="text-teal-400 hover:text-teal-300 underline underline-offset-2 transition">
+                upgrade to Pro or Unlimited
               </a>
               .
             </p>

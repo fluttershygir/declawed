@@ -1,5 +1,72 @@
 import { motion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowRight, Mail } from 'lucide-react';
+
+function EmailCapture() {
+  const [email, setEmail] = useState('');
+  const [status, setStatus] = useState('idle'); // idle | loading | success | error
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!email) return;
+    setStatus('loading');
+    try {
+      const res = await fetch('/api/email-lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, source: 'landing_hero' }),
+      });
+      if (res.ok) {
+        setStatus('success');
+      } else {
+        setStatus('error');
+      }
+    } catch {
+      setStatus('error');
+    }
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.6 }}
+      className="mt-8 w-full max-w-md"
+    >
+      <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-6 py-5 text-left">
+        <div className="flex items-center gap-2 mb-1">
+          <Mail className="w-4 h-4 text-teal-400" />
+          <p className="text-sm font-semibold text-white">Get your free lease review checklist</p>
+        </div>
+        <p className="text-xs text-zinc-500 mb-4">A plain-English checklist of 15 things to look for before signing any lease.</p>
+        {status === 'success' ? (
+          <p className="text-sm text-teal-400 font-medium">Checklist sent! Check your inbox.</p>
+        ) : (
+          <form onSubmit={handleSubmit} className="flex gap-2">
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="you@email.com"
+              className="flex-1 min-w-0 rounded-lg bg-white/[0.06] border border-white/10 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-teal-500/50 transition-colors"
+            />
+            <button
+              type="submit"
+              disabled={status === 'loading'}
+              className="shrink-0 px-4 py-2 rounded-lg bg-teal-500 text-black text-sm font-semibold hover:bg-teal-400 transition-colors disabled:opacity-60"
+            >
+              {status === 'loading' ? '…' : 'Send it'}
+            </button>
+          </form>
+        )}
+        {status === 'error' && (
+          <p className="mt-2 text-xs text-rose-400">Something went wrong. Please try again.</p>
+        )}
+      </div>
+    </motion.div>
+  );
+}
 
 export default function Landing({ usage }) {
   return (
@@ -94,6 +161,9 @@ export default function Landing({ usage }) {
         No account required · First summary free · Your file is never stored
       </motion.p>
 
+      {/* Email capture */}
+      <EmailCapture />
+
       {usage && usage.plan !== 'free' && (
         <motion.p
           initial={{ opacity: 0 }}
@@ -102,7 +172,7 @@ export default function Landing({ usage }) {
         >
           {usage.plan === 'unlimited'
             ? 'Unlimited access active'
-            : `${Math.max(0, (usage.limit ?? 1) - (usage.used ?? 0))} ${usage.plan === 'one' ? 'analysis' : 'analyses'} remaining`}
+            : `${Math.max(0, (usage.limit ?? 1) - (usage.used ?? 0))} analyses remaining`}
         </motion.p>
       )}
     </section>
