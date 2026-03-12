@@ -13,16 +13,17 @@ export function AuthProvider({ children }) {
       .from('profiles')
       .select('id, plan, analyses_used, analyses_limit, full_name')
       .eq('id', userId)
-      .single();
+      .maybeSingle();          // maybeSingle: returns null (no error) when row is absent
     if (error) console.error('[Declawed] profile fetch error:', error.message, error.code);
     setProfile(data ?? null);
   };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data }) => {
+      const session = data?.session ?? null;
       setUser(session?.user ?? null);
-      if (session?.user) fetchProfile(session.user.id);
-      setLoading(false);
+      if (session?.user) await fetchProfile(session.user.id);
+      setLoading(false);   // only clears after profile is fetched
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {

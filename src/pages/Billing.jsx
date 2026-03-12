@@ -101,9 +101,6 @@ export default function Billing() {
   const plan     = (profile?.plan || 'free').toLowerCase();
   const planInfo = PLAN_INFO[plan] || PLAN_INFO.free;
 
-  // Show skeleton while auth loads
-  const isLoading = authLoading || (!profile && !!user);
-
   useEffect(() => {
     if (!authLoading && !user) window.location.href = '/';
   }, [authLoading, user]);
@@ -130,13 +127,16 @@ export default function Billing() {
   const limitIsUnlimited = limit >= 9999;
   const usagePct = limitIsUnlimited ? 0 : Math.min(100, (used / limit) * 100);
 
-  if (authLoading || (!profile && !!user && isLoading)) {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-[#07070d] flex items-center justify-center">
         <Loader2 className="w-6 h-6 animate-spin text-zinc-600" />
       </div>
     );
   }
+
+  // Not logged in — redirect guard (useEffect handles navigation)
+  if (!user) return null;
 
   return (
     <div className="min-h-screen bg-[#07070d] text-slate-100">
