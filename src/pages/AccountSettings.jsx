@@ -89,7 +89,7 @@ export default function AccountSettings() {
     if (!profile) return;
     setFullName(profile.full_name || '');
     const prefs = profile.user_preferences || {};
-    setNotifAnalysis(prefs.email_on_complete ?? false);
+    setNotifAnalysis(prefs.email_on_complete ?? true);
     setNotifSummary(prefs.monthly_summary     ?? false);
   }, [profile]);
 

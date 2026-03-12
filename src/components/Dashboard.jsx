@@ -571,15 +571,28 @@ export default function Dashboard({ onClose, onUpgrade }) {
               <span className={`text-2xl font-bold ${planInfo.color}`}>{planInfo.label}</span>
             </div>
             {plan === 'free' ? (
-              <button
-                onClick={onUpgrade}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-teal-500 text-black text-sm font-bold hover:bg-teal-400 active:scale-95 transition-all shadow-lg shadow-teal-500/20"
-              >
-                <Zap className="w-3.5 h-3.5" />
-                Upgrade
-              </button>
+              <div className="flex items-center gap-2">
+                <a
+                  href="/billing"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-teal-500 text-black text-sm font-bold hover:bg-teal-400 active:scale-95 transition-all shadow-lg shadow-teal-500/20"
+                >
+                  <Zap className="w-3.5 h-3.5" />
+                  Upgrade
+                </a>
+                <a
+                  href="/billing"
+                  className="text-xs text-zinc-400 border border-zinc-700 rounded-full px-3 py-1.5 hover:text-white hover:border-zinc-500 transition"
+                >
+                  Billing
+                </a>
+              </div>
             ) : (
-              <span className="text-xs text-zinc-500 border border-zinc-800 rounded-full px-3 py-1">Active</span>
+              <a
+                href="/billing"
+                className="text-xs text-zinc-400 border border-zinc-700 rounded-full px-3 py-1.5 hover:text-white hover:border-zinc-500 transition"
+              >
+                Billing &amp; Plan →
+              </a>
             )}
           </div>
 
@@ -653,9 +666,15 @@ export default function Dashboard({ onClose, onUpgrade }) {
               { label: 'Red Flags Found', value: totalRedFlags, color: 'text-rose-400' },
               {
                 label: 'Highest Risk',
-                value: riskiest?.result?.score != null ? `${riskiest.result.score}/10` : '—',
-                sub: riskiest?.filename,
-                color: (riskiest?.result?.score ?? 11) <= 4 ? 'text-rose-400' : 'text-amber-400',
+                value: riskiest == null || riskiest.result?.score == null ? '—'
+                  : riskiest.result.score <= 4 ? 'High'
+                  : riskiest.result.score <= 7 ? 'Medium'
+                  : 'Low',
+                sub: riskiest?.result?.score != null ? `Score: ${riskiest.result.score}/10` : undefined,
+                color: riskiest?.result?.score == null ? 'text-zinc-500'
+                  : riskiest.result.score <= 4 ? 'text-rose-400'
+                  : riskiest.result.score <= 7 ? 'text-amber-400'
+                  : 'text-emerald-400',
               },
             ].map(({ label, value, sub, color }) => (
               <div key={label} className="rounded-xl bg-white/[0.03] border border-white/[0.06] px-4 py-4 text-center">
