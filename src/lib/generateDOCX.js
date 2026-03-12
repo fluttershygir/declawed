@@ -1,0 +1,141 @@
+/**
+ * Generates and saves a Word-compatible (.doc) lease analysis report.
+ * Uses HTML-in-Word format (application/msword) — opens in Word,
+ * Google Docs, and LibreOffice without any extra dependencies.
+ *
+ * @param {{ data: object, filename: string, analysisDate?: Date|string }} opts
+ */
+export function generateDOCX({ data, filename, analysisDate }) {
+  const score = data.score ?? null;
+  const scoreLabel =
+    score !== null
+      ? score <= 4 ? 'Problematic' : score <= 7 ? 'Fair' : 'Favorable'
+      : '';
+
+  const dateStr = new Date(analysisDate || Date.now()).toLocaleDateString('en-US', {
+    month: 'long', day: 'numeric', year: 'numeric',
+  });
+
+  const baseFilename = (filename || 'lease-analysis').replace(/\.[^.]+$/, '');
+
+  const esc = (s) =>
+    String(s ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+  // ── Sections ────────────────────────────────────────────────────────
+
+  const scoreHtml = score !== null
+    ? `<div class="score-box">
+         <span class="score">${Math.max(1, Math.min(10, score))}/10</span>
+         <span class="score-label">${scoreLabel}</span>
+         ${data.verdict ? `<p class="verdict">${esc(data.verdict)}</p>` : ''}
+       </div>`
+    : data.verdict
+      ? `<p class="verdict-plain">${esc(data.verdict)}</p>`
+      : '';
+
+  const flagsHtml = data.redFlags?.length
+    ? `<h2 class="section-red">🚩 Red Flags</h2>
+       <ul>
+         ${data.redFlags.map((f) => {
+           const text = typeof f === 'string' ? f : (f.text ?? '');
+           const sev = typeof f === 'string' ? '' : (f.severity ?? '');
+           return `<li>${esc(text)}${sev ? ` <span class="badge-${sev.toLowerCase()}">[${sev}]</span>` : ''}</li>`;
+         }).join('\n')}
+       </ul>`
+    : '';
+
+  const datesHtml = data.keyDates?.length
+    ? `<h2 class="section-blue">📅 Key Dates</h2>
+       <table>
+         ${data.keyDates.map((d) =>
+           `<tr>
+              <td class="cell-label">${esc(d.label)}</td>
+              <td class="cell-val">${esc(d.value)}</td>
+            </tr>`
+         ).join('\n')}
+       </table>`
+    : '';
+
+  const rightsHtml = data.tenantRights?.length
+    ? `<h2 class="section-green">✅ Your Rights</h2>
+       <ul>${data.tenantRights.map((r) => `<li>${esc(r)}</li>`).join('\n')}</ul>`
+    : '';
+
+  const clausesHtml = data.unusualClauses?.length
+    ? `<h2 class="section-amber">⚠️ Unusual Clauses</h2>
+       <ul>${data.unusualClauses.map((c) => `<li>${esc(c)}</li>`).join('\n')}</ul>`
+    : '';
+
+  const stepsHtml = data.actionSteps?.length
+    ? `<h2 class="section-teal">✔ What to Do Before Signing</h2>
+       <ol>${data.actionSteps.map((s) => `<li>${esc(s)}</li>`).join('\n')}</ol>`
+    : '';
+
+  // ── Document ────────────────────────────────────────────────────────
+
+  const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office'
+        xmlns:w='urn:schemas-microsoft-com:office:word'
+        xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+  <meta charset="utf-8">
+  <title>Lease Analysis — ${esc(baseFilename)}</title>
+  <style>
+    body          { font-family: Calibri, Arial, sans-serif; font-size: 11pt; color: #222; margin: 2cm; }
+    h1            { font-size: 20pt; color: #0d9488; border-bottom: 2pt solid #0d9488; padding-bottom: 6pt; margin-top: 0; }
+    h2            { font-size: 13pt; margin-top: 20pt; margin-bottom: 8pt; }
+    p, li         { line-height: 1.6; margin-bottom: 5pt; }
+    ul, ol        { padding-left: 1.3cm; }
+
+    .meta         { font-size: 9pt; color: #888; margin-bottom: 14pt; }
+
+    .score-box    { border: 2pt solid #0d9488; border-radius: 4pt; padding: 10pt 14pt; background: #f0fdf4; margin: 12pt 0 16pt; }
+    .score        { font-size: 30pt; font-weight: bold; color: #0d9488; }
+    .score-label  { font-size: 12pt; color: #555; margin-left: 10pt; }
+    .verdict      { font-size: 11pt; color: #333; margin-top: 8pt; }
+    .verdict-plain{ font-style: italic; color: #444; margin-bottom: 12pt; }
+
+    .section-red  { color: #c0392b; }
+    .section-blue { color: #2980b9; }
+    .section-green{ color: #27ae60; }
+    .section-amber{ color: #e67e22; }
+    .section-teal { color: #0d9488; }
+
+    table         { border-collapse: collapse; margin-bottom: 10pt; }
+    .cell-label   { font-weight: bold; color: #2980b9; width: 170px; padding: 4pt 12pt 4pt 0; vertical-align: top; }
+    .cell-val     { padding: 4pt 0; vertical-align: top; }
+
+    .badge-high   { color: #c0392b; font-size: 9pt; }
+    .badge-medium { color: #e67e22; font-size: 9pt; }
+    .badge-low    { color: #888;    font-size: 9pt; }
+
+    .footer       { font-size: 9pt; color: #aaa; margin-top: 28pt; border-top: 1px solid #ddd; padding-top: 8pt; }
+  </style>
+</head>
+<body>
+  <h1>Lease Analysis Report</h1>
+  <p class="meta">Analyzed: ${dateStr} &nbsp;&bull;&nbsp; File: ${esc(filename || 'Unknown')}</p>
+
+  ${scoreHtml}
+  ${flagsHtml}
+  ${datesHtml}
+  ${rightsHtml}
+  ${clausesHtml}
+  ${stepsHtml}
+
+  <p class="footer">Generated by Declawed AI &mdash; Not legal advice. Consult a licensed attorney before signing any lease.</p>
+</body>
+</html>`;
+
+  const blob = new Blob(['\ufeff' + html], { type: 'application/msword' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = baseFilename + '.doc';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 500);
+}

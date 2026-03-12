@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, LogOut, Zap, ChevronRight, X, AlertCircle, Calendar, ShieldCheck, AlertTriangle, FileCheck, Upload, ArrowLeft, ListChecks, RefreshCw } from 'lucide-react';
+import { FileText, LogOut, Zap, ChevronRight, X, AlertCircle, Calendar, ShieldCheck, AlertTriangle, FileCheck, Upload, ArrowLeft, ListChecks, RefreshCw, FileImage, Loader2, Download } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 
@@ -45,7 +45,42 @@ const LogoMark = () => (
 
 function AnalysisModal({ analysis, onClose }) {
   const data = analysis?.result || {};
+  const cardRef = useRef(null);
+  const [downloading, setDownloading] = useState('');
   const score = data.score ?? null;
+
+  async function handleDownload(type) {
+    if (downloading) return;
+    setDownloading(type);
+    try {
+      const filename = analysis.filename || 'lease-analysis';
+      const baseFilename = filename.replace(/\.[^.]+$/, '');
+      if (type === 'pdf') {
+        const { generatePDF } = await import('../lib/generatePDF');
+        generatePDF({ data, filename, analysisDate: new Date(analysis.created_at) });
+      } else if (type === 'doc') {
+        const { generateDOCX } = await import('../lib/generateDOCX');
+        generateDOCX({ data, filename, analysisDate: new Date(analysis.created_at) });
+      } else if (type === 'img') {
+        const { default: html2canvas } = await import('html2canvas');
+        const canvas = await html2canvas(cardRef.current, {
+          backgroundColor: '#0d0d14',
+          scale: 2,
+          useCORS: true,
+          logging: false,
+        });
+        const dataUrl = canvas.toDataURL('image/png');
+        const a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = baseFilename + '.png';
+        a.click();
+      }
+    } catch (e) {
+      console.error('Download failed:', e);
+    } finally {
+      setDownloading('');
+    }
+  }
   const isRed = score !== null && score <= 4;
   const isYellow = score !== null && score >= 5 && score <= 7;
   const isGreen = score !== null && score >= 8;
@@ -68,6 +103,7 @@ function AnalysisModal({ analysis, onClose }) {
           exit={{ opacity: 0, y: 8, scale: 0.97 }}
           transition={{ duration: 0.25 }}
           className="w-full max-w-2xl rounded-2xl bg-[#0d0d14] border border-white/[0.08] shadow-2xl overflow-hidden"
+          ref={cardRef}
         >
           {/* Modal header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
@@ -191,6 +227,30 @@ function AnalysisModal({ analysis, onClose }) {
                 </ul>
               </section>
             )}
+          </div>
+
+          {/* Export bar */}
+          <div className="px-5 py-3 border-t border-white/[0.06] bg-white/[0.015] flex items-center gap-2">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 shrink-0">Export</span>
+            <div className="flex gap-1.5 ml-auto">
+              {[
+                { type: 'pdf', label: 'PDF',  Icon: FileText  },
+                { type: 'doc', label: 'Word', Icon: Download  },
+                { type: 'img', label: 'PNG',  Icon: FileImage },
+              ].map(({ type, label, Icon }) => (
+                <button
+                  key={type}
+                  onClick={() => handleDownload(type)}
+                  disabled={!!downloading}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/[0.05] hover:bg-white/[0.09] border border-white/[0.07] text-zinc-400 hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {downloading === type
+                    ? <Loader2 className="w-3 h-3 animate-spin" />
+                    : <Icon className="w-3 h-3" />}
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
         </motion.div>
       </motion.div>
