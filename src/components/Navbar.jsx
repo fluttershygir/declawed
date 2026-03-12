@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Menu, X, LogOut, LayoutDashboard } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
+import UserDropdown from './UserDropdown';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from './AuthModal';
 
@@ -24,7 +25,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [authTab, setAuthTab] = useState('signin');
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
 
   const openAuth = (tab = 'signin') => {
     setAuthTab(tab);
@@ -62,25 +63,7 @@ export default function Navbar() {
           {/* Right side */}
           <div className="flex items-center gap-3">
             {user ? (
-              <>
-                <a
-                  href="/dashboard"
-                  className="hidden sm:flex items-center gap-1.5 text-[13px] text-zinc-400 hover:text-white transition-colors"
-                >
-                  <LayoutDashboard className="w-3.5 h-3.5" />
-                  Dashboard
-                </a>
-                <button
-                  onClick={() => signOut()}
-                  title={user.email}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-white/[0.08] text-[13px] text-zinc-400 hover:text-white hover:border-white/20 transition"
-                >
-                  <div className="w-5 h-5 rounded-full bg-teal-500/20 border border-teal-500/40 flex items-center justify-center text-[10px] font-bold text-teal-400">
-                    {(user.user_metadata?.full_name?.[0] || user.email?.[0] || 'U').toUpperCase()}
-                  </div>
-                  <LogOut className="w-3 h-3" />
-                </button>
-              </>
+              <UserDropdown size="sm" />
             ) : (
               <>
                 <button
@@ -122,12 +105,9 @@ export default function Navbar() {
           ))}
           {user ? (
             <>
-              <a href="/dashboard" onClick={() => setMobileOpen(false)} className="text-sm text-zinc-300 hover:text-white transition-colors">
-                Dashboard
-              </a>
-              <button onClick={() => { signOut(); setMobileOpen(false); }} className="text-left text-sm text-zinc-500 hover:text-white transition-colors">
-                Sign out
-              </button>
+              <a href="/dashboard" onClick={() => setMobileOpen(false)} className="text-sm text-zinc-300 hover:text-white transition-colors">Dashboard</a>
+              <a href="/account" onClick={() => setMobileOpen(false)} className="text-sm text-zinc-300 hover:text-white transition-colors">Account Settings</a>
+              <a href="/billing" onClick={() => setMobileOpen(false)} className="text-sm text-zinc-300 hover:text-white transition-colors">Billing &amp; Plan</a>
             </>
           ) : (
             <button onClick={() => openAuth('signin')} className="text-left text-sm text-zinc-300 hover:text-white transition-colors">

@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, LogOut, Zap, ChevronRight, X, AlertCircle, Calendar, ShieldCheck, AlertTriangle, FileCheck, Upload, ArrowLeft, ListChecks, RefreshCw, FileImage, Loader2, Download, Pencil, Share2, RotateCcw, Copy, Check, Users } from 'lucide-react';
+import { FileText, Zap, ChevronRight, X, AlertCircle, Calendar, ShieldCheck, AlertTriangle, FileCheck, Upload, ArrowLeft, ListChecks, RefreshCw, FileImage, Loader2, Download, Pencil, Share2, RotateCcw, Copy, Check, Users } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import UserDropdown from './UserDropdown';
 
 const PLAN_LABELS = {
   free: { label: 'Free', color: 'text-zinc-400', border: 'border-zinc-700/60' },
@@ -417,22 +418,9 @@ export default function Dashboard({ onClose, onUpgrade }) {
   const [selectedAnalysis, setSelectedAnalysis] = useState(null);
   const [refundLoading, setRefundLoading] = useState(false);
   const [refundResult, setRefundResult] = useState(null);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [refCopied, setRefCopied] = useState(false);
   const [toast, setToast] = useState(null);
   const [shareLoadingIds, setShareLoadingIds] = useState(new Set());
-  const menuRef = useRef(null);
-
-  useEffect(() => {
-    if (!userMenuOpen) return;
-    function handleClickOutside(e) {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setUserMenuOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [userMenuOpen]);
 
   useEffect(() => {
     if (!user) return;
@@ -558,31 +546,7 @@ export default function Dashboard({ onClose, onUpgrade }) {
             <LogoMark />
             <span className="text-[15px] font-bold tracking-tight text-white">Declawed</span>
           </a>
-          <div className="relative" ref={menuRef}>
-            <button
-              onClick={() => setUserMenuOpen((v) => !v)}
-              className="w-8 h-8 rounded-full bg-teal-500/15 border border-teal-500/25 text-teal-300 text-xs font-bold flex items-center justify-center hover:bg-teal-500/25 hover:border-teal-500/40 transition"
-            >
-              {avatarInitials}
-            </button>
-            {userMenuOpen && (
-              <div className="absolute right-0 top-10 w-52 rounded-xl bg-zinc-950 border border-white/[0.08] shadow-2xl py-1 z-50">
-                <div className="px-3.5 py-2.5 border-b border-white/[0.06]">
-                  {fullDisplayName !== user?.email?.split('@')[0] && (
-                    <p className="text-xs font-medium text-zinc-300 truncate">{fullDisplayName}</p>
-                  )}
-                  <p className="text-xs text-zinc-500 truncate">{user?.email}</p>
-                </div>
-                <button
-                  onClick={handleSignOut}
-                  className="flex items-center gap-2 w-full px-3.5 py-2.5 text-sm text-zinc-400 hover:text-white hover:bg-white/[0.05] transition-colors text-left"
-                >
-                  <LogOut className="w-4 h-4" />
-                  Sign out
-                </button>
-              </div>
-            )}
-          </div>
+          <UserDropdown size="md" />
         </div>
       </div>
 
