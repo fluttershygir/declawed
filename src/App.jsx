@@ -42,9 +42,22 @@ import SharedReport from './pages/SharedReport';
 import AccountSettings from './pages/AccountSettings';
 import Billing from './pages/Billing';
 import ResetPassword from './pages/ResetPassword';
+import AnalysisHistory from './pages/AnalysisHistory';
 import './index.css';
 
 const PAID_PLANS = new Set(['one', 'pro', 'unlimited']);
+
+function AnalysisHistoryPage() {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && !user) navigate('/');
+  }, [user, loading, navigate]);
+
+  if (loading || !user) return null;
+  return <AnalysisHistory />;
+}
 
 function DashboardPage() {
   const { user, loading } = useAuth();
@@ -447,6 +460,7 @@ export default function App() {
             <Route path="/" element={<MainApp />} />
             <Route path="/app" element={<AppPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/analysis-history" element={<AnalysisHistoryPage />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/cookies" element={<CookiePolicy />} />

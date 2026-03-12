@@ -7,7 +7,7 @@ const NAV_GROUPS = [
     label: 'Workspace',
     items: [
       { icon: LayoutGrid, label: 'Dashboard',        href: '/dashboard' },
-      { icon: History,    label: 'Analysis History', href: '/dashboard#history' },
+      { icon: History,    label: 'Analysis History', href: '/analysis-history' },
     ],
   },
   {
@@ -29,7 +29,7 @@ export default function AppShell({ children }) {
     ? fullName.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()
     : email[0]?.toUpperCase() ?? 'U';
 
-  const isActive = (href) => pathname === href.split('#')[0];
+  const isActive = (href) => pathname === href;
 
   async function handleSignOut() {
     await signOut();
