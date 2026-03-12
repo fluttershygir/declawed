@@ -123,7 +123,7 @@ export default function AnalysisHistory() {
   return (
     <>
       <AppShell>
-        <div className="max-w-5xl mx-auto px-6 py-8">
+<div className="max-w-5xl mx-auto px-4 py-5 sm:px-6 sm:py-8">
 
           {/* Page header */}
           <div className="mb-7">
@@ -134,7 +134,7 @@ export default function AnalysisHistory() {
           </div>
 
           {/* Search + Sort bar */}
-          <div className="flex items-center gap-3 mb-5">
+          <div className="flex flex-col sm:flex-row gap-3 mb-5">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-600 pointer-events-none" />
               <input
@@ -216,7 +216,7 @@ export default function AnalysisHistory() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: Math.min(i * 0.03, 0.3) }}
                       onClick={() => setSelectedAnalysis(a)}
-                      className="relative px-6 py-4 flex items-start gap-3 cursor-pointer transition-all group border-l-2 border-transparent hover:border-blue-500/40 hover:bg-white/[0.03] active:bg-white/[0.04]"
+                      className="relative px-4 py-4 sm:px-6 flex items-start gap-3 cursor-pointer transition-all group border-l-2 border-transparent hover:border-blue-500/40 hover:bg-white/[0.03] active:bg-white/[0.04]"
                     >
                       <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.07] flex items-center justify-center shrink-0 mt-0.5 group-hover:border-blue-500/30 transition">
                         <FileText className="w-3.5 h-3.5 text-zinc-500 group-hover:text-blue-400 transition" />

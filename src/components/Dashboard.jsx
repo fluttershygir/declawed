@@ -155,13 +155,13 @@ export default function Dashboard({ onClose, onUpgrade }) {
   return (
     <>
     <AppShell>
-      <div className="max-w-5xl mx-auto px-6 py-8">
+      <div className="max-w-5xl mx-auto px-4 py-5 sm:px-6 sm:py-8">
 
         {/* Page header */}
         <div className="mb-7 flex items-center justify-between">
           <div>
             <h1 className="text-xl font-semibold text-white tracking-tight">Welcome back, {displayName}</h1>
-            <p className="text-sm text-zinc-500 mt-0.5">{user?.email}</p>
+            <p className="text-sm text-zinc-500 mt-0.5 truncate max-w-[180px] sm:max-w-none">{user?.email}</p>
           </div>
           <a
             href="/"
@@ -178,7 +178,7 @@ export default function Dashboard({ onClose, onUpgrade }) {
           animate={{ opacity: 1, y: 0 }}
           className={`rounded-xl border ${planInfo.border} bg-[#0b0b12] p-5 mb-5`}
         >
-          <div className="flex items-start justify-between gap-4 mb-4">
+          <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
             <div>
               <span className={`inline-block text-[9px] font-bold uppercase tracking-[0.2em] px-2 py-0.5 rounded border ${planInfo.border} ${planInfo.color} mb-2 opacity-70`}>
                 {planInfo.badge}
@@ -267,7 +267,7 @@ export default function Dashboard({ onClose, onUpgrade }) {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.04 }}
-            className="grid grid-cols-3 gap-4 mb-6"
+            className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 mb-5 sm:mb-6"
           >
             {[
               {
@@ -310,7 +310,7 @@ export default function Dashboard({ onClose, onUpgrade }) {
                   : 'text-emerald-400',
               },
             ].map(({ icon: Icon, label, value, sub, valueColor, iconBg, iconColor }) => (
-              <div key={label} className="rounded-xl bg-[#0b0b12] border border-white/[0.06] px-5 py-5">
+              <div key={label} className="rounded-xl bg-[#0b0b12] border border-white/[0.06] px-3 py-4 sm:px-5 sm:py-5">
                 <div className={`w-8 h-8 rounded-lg border ${iconBg} flex items-center justify-center mb-3`}>
                   <Icon className={`w-4 h-4 ${iconColor}`} />
                 </div>
@@ -384,7 +384,7 @@ export default function Dashboard({ onClose, onUpgrade }) {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.04 }}
                     onClick={() => setSelectedAnalysis(a)}
-                    className="relative px-6 py-4 flex items-start gap-3 cursor-pointer transition-all group border-l-2 border-transparent hover:border-blue-500/40 hover:bg-white/[0.03] active:bg-white/[0.04]"
+                    className="relative px-4 py-4 sm:px-6 flex items-start gap-3 cursor-pointer transition-all group border-l-2 border-transparent hover:border-blue-500/40 hover:bg-white/[0.03] active:bg-white/[0.04]"
                   >
                     <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.07] flex items-center justify-center shrink-0 mt-0.5 group-hover:border-blue-500/30 transition">
                       <FileText className="w-3.5 h-3.5 text-zinc-500 group-hover:text-blue-400 transition" />

@@ -136,7 +136,7 @@ export default function Billing() {
 
   return (
     <AppShell>
-      <div className="max-w-3xl mx-auto px-6 py-8">
+      <div className="max-w-3xl mx-auto px-4 py-5 sm:px-6 sm:py-8">
 
         {/* Page header */}
         <div className="mb-7">

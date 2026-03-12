@@ -196,7 +196,7 @@ export default function AccountSettings() {
   return (
     <>
     <AppShell>
-      <div className="max-w-3xl mx-auto px-6 py-8">
+      <div className="max-w-3xl mx-auto px-4 py-5 sm:px-6 sm:py-8">
 
         {/* Page header */}
         <div className="mb-7">
@@ -305,7 +305,7 @@ export default function AccountSettings() {
 
           {/* Change password */}
           <div className="mt-6 pt-6 border-t border-white/[0.06]">
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-medium text-zinc-300">Password</p>
                 <p className="text-xs text-zinc-600 mt-0.5">We'll email a reset link to {user?.email}.</p>

@@ -150,7 +150,7 @@ export default function AnalysisModal({ analysis, onClose, onNoteUpdate, onReana
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-start justify-center bg-black/80 backdrop-blur-sm p-4 pt-16 overflow-y-auto"
+        className="fixed inset-0 z-50 flex items-start justify-center bg-black/80 backdrop-blur-sm p-3 pt-20 sm:p-4 sm:pt-16 overflow-y-auto"
         onClick={(e) => e.target === e.currentTarget && onClose()}
       >
         <motion.div
@@ -158,7 +158,7 @@ export default function AnalysisModal({ analysis, onClose, onNoteUpdate, onReana
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 8, scale: 0.97 }}
           transition={{ duration: 0.25 }}
-          className="w-full max-w-2xl rounded-2xl bg-[#0d0d14] border border-white/[0.08] shadow-2xl overflow-hidden"
+          className="w-full max-w-2xl rounded-2xl bg-[#0d0d14] border border-white/[0.08] shadow-2xl overflow-hidden mb-4"
           ref={cardRef}
         >
           {/* Modal header */}
@@ -357,7 +357,7 @@ export default function AnalysisModal({ analysis, onClose, onNoteUpdate, onReana
           </div>
 
           {/* Export bar */}
-          <div className="px-5 py-3 border-t border-white/[0.06] bg-white/[0.015] flex items-center gap-2">
+          <div className="px-4 py-3 sm:px-5 border-t border-white/[0.06] bg-white/[0.015] flex flex-wrap items-center gap-2">
             <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 shrink-0">Export</span>
             <div className="flex gap-1.5 ml-auto">
               {[
