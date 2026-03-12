@@ -1,19 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Check, Loader2, ExternalLink, Zap, Gift, Infinity } from 'lucide-react';
+import { Check, Loader2, ExternalLink, Zap, Gift, Infinity } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
-import UserDropdown from '../components/UserDropdown';
-
-const LogoMark = () => (
-  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-teal-500/25 shrink-0">
-    <svg viewBox="0 0 20 20" fill="none" className="w-[14px] h-[14px]">
-      <path d="M6 10V7a4 4 0 0 1 8 0v3" stroke="white" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-      <rect x="3.5" y="10" width="13" height="9" rx="2.5" fill="white" fillOpacity="0.95" />
-      <circle cx="10" cy="14.5" r="1.4" fill="#0d9488" />
-    </svg>
-  </div>
-);
+import AppShell from '../components/AppShell';
 
 // Stripe wordmark via inline SVG (no external assets needed)
 const StripeBadge = () => (
@@ -139,31 +129,13 @@ export default function Billing() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-[#07070d] text-slate-100">
-      {/* ─── Top nav ────────────────────────────────────── */}
-      <div className="sticky top-0 z-40 border-b border-white/[0.06] bg-[#07070d]/90 backdrop-blur-xl">
-        <div className="max-w-3xl mx-auto px-5 h-14 flex items-center justify-between">
-          <a href="/" className="flex items-center gap-2.5">
-            <LogoMark />
-            <span className="text-[15px] font-bold tracking-tight text-white">Declawed</span>
-          </a>
-          <UserDropdown size="md" />
-        </div>
-      </div>
+    <AppShell>
+      <div className="max-w-3xl mx-auto px-6 py-8">
 
-      <div className="max-w-2xl mx-auto px-5 py-10">
-        {/* Back */}
-        <a
-          href="/dashboard"
-          className="inline-flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-300 transition mb-8"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Dashboard
-        </a>
-
-        <div className="mb-8">
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-600 mb-2">Billing</p>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Billing &amp; Plan</h1>
+        {/* Page header */}
+        <div className="mb-7">
+          <h1 className="text-xl font-semibold text-white tracking-tight">Billing &amp; Plan</h1>
+          <p className="text-sm text-zinc-500 mt-0.5">Manage your subscription, usage, and payment details</p>
         </div>
 
         {/* ─── Current plan card ───────────────────────── */}
@@ -213,10 +185,10 @@ export default function Billing() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="rounded-2xl border border-teal-500/20 bg-teal-500/[0.04] p-6 mb-5"
+            className="rounded-2xl border border-blue-600/20 bg-blue-600/[0.04] p-6 mb-5"
           >
             <div className="flex items-center gap-2 mb-1">
-              <Zap className="w-4 h-4 text-teal-400" />
+              <Zap className="w-4 h-4 text-blue-400" />
               <h2 className="text-sm font-semibold text-white">Upgrade for unlimited analyses</h2>
             </div>
             <p className="text-sm text-zinc-500 mb-5 leading-relaxed">
@@ -224,7 +196,7 @@ export default function Billing() {
             </p>
             <a
               href="/#pricing"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-teal-500 text-black text-sm font-semibold hover:bg-teal-400 active:scale-95 transition shadow-lg shadow-teal-500/20"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-500 active:scale-95 transition shadow-lg shadow-blue-600/20"
             >
               View plans →
             </a>
@@ -246,7 +218,7 @@ export default function Billing() {
             <p className="text-sm text-zinc-500 leading-relaxed">
               Your One Lease plan was a one-time payment — no recurring billing, no subscription to manage.
               When you're ready for more analyses,{' '}
-              <a href="/#pricing" className="text-teal-400 hover:text-teal-300 underline underline-offset-2 transition">
+              <a href="/#pricing" className="text-blue-400 hover:text-blue-300 underline underline-offset-2 transition">
                 view our plans
               </a>
               .
@@ -316,6 +288,6 @@ export default function Billing() {
           </motion.div>
         )}
       </div>
-    </div>
+    </AppShell>
   );
 }

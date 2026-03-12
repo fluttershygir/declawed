@@ -1,17 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LayoutGrid, Settings, CreditCard, LogOut } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-const MENU_ITEMS = [
-  { icon: LayoutGrid, label: 'Dashboard',        href: '/dashboard' },
-  { icon: Settings,    label: 'Account Settings', href: '/account'   },
-  { icon: CreditCard,  label: 'Billing & Plan',   href: '/billing'   },
-];
-
 /**
- * A self-contained avatar button + premium dropdown.
- * Pass `size="sm"` for the navbar (w-8) or `size="md"` for the dashboard (w-9).
+ * Minimal avatar dropdown for the public Navbar — just user info + sign out.
+ * Navigation lives in AppShell's sidebar for authenticated app pages.
  */
 export default function UserDropdown({ size = 'md', align = 'right' }) {
   const { user, profile, signOut } = useAuth();
@@ -42,7 +36,7 @@ export default function UserDropdown({ size = 'md', align = 'right' }) {
       {/* Avatar trigger */}
       <button
         onClick={() => setOpen(v => !v)}
-        className={`${avatarSizes} rounded-full bg-teal-500/15 border border-teal-500/25 text-teal-300 font-bold flex items-center justify-center hover:bg-teal-500/25 hover:border-teal-500/40 transition ring-2 ring-transparent ${open ? 'ring-teal-500/30' : ''}`}
+        className={`${avatarSizes} rounded-full bg-blue-600/15 border border-blue-500/25 text-blue-300 font-bold flex items-center justify-center hover:bg-blue-600/25 hover:border-blue-500/40 transition ring-2 ring-transparent ${open ? 'ring-blue-500/30' : ''}`}
         aria-label="Account menu"
         aria-expanded={open}
       >
@@ -58,11 +52,11 @@ export default function UserDropdown({ size = 'md', align = 'right' }) {
             exit={{ opacity: 0, scale: 0.95, y: -6 }}
             transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
             style={{ transformOrigin: align === 'right' ? 'top right' : 'top left' }}
-            className={`absolute ${align === 'right' ? 'right-0' : 'left-0'} top-[calc(100%+8px)] w-[228px] rounded-2xl border border-white/[0.09] bg-[#0f0f17] shadow-[0_20px_60px_rgba(0,0,0,0.65),0_0_0_1px_rgba(255,255,255,0.04)] z-[60] overflow-hidden`}
+            className={`absolute ${align === 'right' ? 'right-0' : 'left-0'} top-[calc(100%+8px)] w-[220px] rounded-xl border border-white/[0.09] bg-[#0f0f17] shadow-[0_20px_60px_rgba(0,0,0,0.65),0_0_0_1px_rgba(255,255,255,0.04)] z-[60] overflow-hidden`}
           >
-            {/* Header */}
+            {/* User info */}
             <div className="px-4 py-3.5 flex items-center gap-3 border-b border-white/[0.07]">
-              <div className="w-9 h-9 rounded-full bg-teal-500/15 border border-teal-500/25 text-teal-300 text-[12px] font-bold flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 rounded-full bg-blue-600/15 border border-blue-500/25 text-blue-300 text-[12px] font-bold flex items-center justify-center shrink-0">
                 {initials}
               </div>
               <div className="min-w-0">
@@ -72,24 +66,6 @@ export default function UserDropdown({ size = 'md', align = 'right' }) {
                 <p className={`text-[12px] truncate leading-tight ${fullName ? 'text-zinc-500' : 'text-zinc-300 font-medium'}`}>{email}</p>
               </div>
             </div>
-
-            {/* Menu items */}
-            <div className="py-1.5">
-              {MENU_ITEMS.map(({ icon: Icon, label, href }) => (
-                <a
-                  key={label}
-                  href={href}
-                  onClick={() => setOpen(false)}
-                  className="flex items-center gap-3 px-4 py-2.5 text-[13px] text-zinc-400 hover:text-white hover:bg-white/[0.05] transition-colors group"
-                >
-                  <Icon className="w-4 h-4 text-zinc-600 group-hover:text-zinc-300 transition-colors shrink-0" />
-                  {label}
-                </a>
-              ))}
-            </div>
-
-            {/* Divider */}
-            <div className="mx-3 border-t border-white/[0.06]" />
 
             {/* Sign out */}
             <div className="py-1.5">

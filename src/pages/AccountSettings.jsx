@@ -1,21 +1,11 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
-  ArrowLeft, User, Bell, AlertTriangle, Check, Loader2, Lock, Trash2
+  User, Bell, AlertTriangle, Check, Loader2, Lock, Trash2
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
-import UserDropdown from '../components/UserDropdown';
-
-const LogoMark = () => (
-  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-teal-500/25 shrink-0">
-    <svg viewBox="0 0 20 20" fill="none" className="w-[14px] h-[14px]">
-      <path d="M6 10V7a4 4 0 0 1 8 0v3" stroke="white" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-      <rect x="3.5" y="10" width="13" height="9" rx="2.5" fill="white" fillOpacity="0.95" />
-      <circle cx="10" cy="14.5" r="1.4" fill="#0d9488" />
-    </svg>
-  </div>
-);
+import AppShell from '../components/AppShell';
 
 function ToggleRow({ label, description, value, onChange }) {
   return (
@@ -29,8 +19,8 @@ function ToggleRow({ label, description, value, onChange }) {
         onClick={() => onChange(!value)}
         role="switch"
         aria-checked={value}
-        className={`relative w-11 h-6 rounded-full transition-colors duration-200 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 ${
-          value ? 'bg-teal-500' : 'bg-zinc-700'
+        className={`relative w-11 h-6 rounded-full transition-colors duration-200 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 ${
+          value ? 'bg-blue-600' : 'bg-zinc-700'
         }`}
       >
         <span
@@ -48,11 +38,11 @@ function StatusBanner({ msg }) {
   return (
     <div className={`flex items-center gap-2 p-3 rounded-xl text-sm ${
       msg.ok
-        ? 'bg-teal-500/10 border border-teal-500/20 text-teal-400'
+        ? 'bg-blue-500/10 border border-blue-500/20 text-blue-400'
         : 'bg-rose-500/10 border border-rose-500/20 text-rose-400'
     }`}>
       {msg.ok
-        ? <Check className="w-4 h-4 shrink-0" />
+        ? <Check className="w-4 h-4 shrink-0 text-blue-400" />
         : <AlertTriangle className="w-4 h-4 shrink-0" />
       }
       {msg.text}
@@ -170,31 +160,14 @@ export default function AccountSettings() {
   }
 
   return (
-    <div className="min-h-screen bg-[#07070d] text-slate-100">
-      {/* Top nav */}
-      <div className="sticky top-0 z-40 border-b border-white/[0.06] bg-[#07070d]/90 backdrop-blur-xl">
-        <div className="max-w-3xl mx-auto px-5 h-14 flex items-center justify-between">
-          <a href="/" className="flex items-center gap-2.5">
-            <LogoMark />
-            <span className="text-[15px] font-bold tracking-tight text-white">Declawed</span>
-          </a>
-          <UserDropdown size="md" />
-        </div>
-      </div>
+    <>
+    <AppShell>
+      <div className="max-w-3xl mx-auto px-6 py-8">
 
-      <div className="max-w-2xl mx-auto px-5 py-10">
-        {/* Back */}
-        <a
-          href="/dashboard"
-          className="inline-flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-300 transition mb-8"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Dashboard
-        </a>
-
-        <div className="mb-8">
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-600 mb-2">Account</p>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Account Settings</h1>
+        {/* Page header */}
+        <div className="mb-7">
+          <h1 className="text-xl font-semibold text-white tracking-tight">Account Settings</h1>
+          <p className="text-sm text-zinc-500 mt-0.5">Manage your profile, security, and notification preferences</p>
         </div>
 
         {/* ─── Profile ─────────────────────────────────────── */}
@@ -219,7 +192,7 @@ export default function AccountSettings() {
                 onChange={(e) => setFullName(e.target.value)}
                 maxLength={100}
                 placeholder="Your name"
-                className="w-full rounded-xl bg-white/[0.04] border border-white/[0.08] px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-teal-500/50 transition"
+                className="w-full rounded-xl bg-white/[0.04] border border-white/[0.08] px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-blue-500/50 transition"
               />
             </div>
 
@@ -241,7 +214,7 @@ export default function AccountSettings() {
             <button
               type="submit"
               disabled={savingProfile}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-teal-500/15 text-teal-300 text-sm font-semibold hover:bg-teal-500/25 transition disabled:opacity-50"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600/10 text-blue-400 text-sm font-semibold hover:bg-blue-600/20 transition disabled:opacity-50"
             >
               {savingProfile
                 ? <Loader2 className="w-4 h-4 animate-spin" />
@@ -302,7 +275,7 @@ export default function AccountSettings() {
           <button
             onClick={handleSaveNotifs}
             disabled={savingNotifs}
-            className="mt-5 flex items-center gap-2 px-5 py-2.5 rounded-xl bg-teal-500/15 text-teal-300 text-sm font-semibold hover:bg-teal-500/25 transition disabled:opacity-50"
+            className="mt-5 flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600/10 text-blue-400 text-sm font-semibold hover:bg-blue-600/20 transition disabled:opacity-50"
           >
             {savingNotifs
               ? <Loader2 className="w-4 h-4 animate-spin" />
@@ -335,7 +308,7 @@ export default function AccountSettings() {
         </motion.section>
       </div>
 
-      {/* ─── Delete confirmation modal ───────────────────── */}
+      {/* ─── Delete confirmation modal ──────────────────── */}
       {deleteModalOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
@@ -406,6 +379,7 @@ export default function AccountSettings() {
           </motion.div>
         </div>
       )}
-    </div>
+    </AppShell>
+    </>
   );
 }

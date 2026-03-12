@@ -1,15 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, Zap, ChevronRight, X, AlertCircle, Calendar, ShieldCheck, AlertTriangle, FileCheck, Upload, ArrowLeft, ListChecks, RefreshCw, FileImage, Loader2, Download, Pencil, Share2, RotateCcw, Copy, Check, Users } from 'lucide-react';
+import { FileText, Zap, ChevronRight, X, AlertCircle, Calendar, ShieldCheck, AlertTriangle, FileCheck, Upload, ArrowLeft, ListChecks, RefreshCw, FileImage, Loader2, Download, Pencil, Share2, RotateCcw, Copy, Check, Users, ShieldAlert } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
-import UserDropdown from './UserDropdown';
+import AppShell from './AppShell';
 
 const PLAN_LABELS = {
-  free: { label: 'Free', color: 'text-zinc-400', border: 'border-zinc-700/60' },
-  one: { label: 'One Lease', color: 'text-cyan-400', border: 'border-cyan-700/60' },
-  pro: { label: 'Pro', color: 'text-teal-400', border: 'border-teal-600/60' },
-  unlimited: { label: 'Unlimited', color: 'text-emerald-400', border: 'border-emerald-700/60' },
+  free:      { label: 'Free',      color: 'text-zinc-400',    border: 'border-zinc-700/60',    progress: 'bg-blue-600',    badge: 'FREE PLAN'  },
+  one:       { label: 'One Lease', color: 'text-cyan-400',    border: 'border-cyan-700/60',    progress: 'bg-cyan-500',    badge: 'ONE LEASE'  },
+  pro:       { label: 'Pro',       color: 'text-teal-400',    border: 'border-teal-600/60',    progress: 'bg-teal-500',    badge: 'PRO PLAN'   },
+  unlimited: { label: 'Unlimited', color: 'text-emerald-400', border: 'border-emerald-700/60', progress: 'bg-emerald-500', badge: 'UNLIMITED'  },
 };
 
 const PLAN_FEATURES = {
@@ -538,83 +538,75 @@ export default function Dashboard({ onClose, onUpgrade }) {
 
   return (
     <>
-    <div className="min-h-screen bg-[#07070d] text-slate-100">
-      {/* Top nav */}
-      <div className="sticky top-0 z-40 border-b border-white/[0.06] bg-[#07070d]/90 backdrop-blur-xl">
-        <div className="max-w-3xl mx-auto px-5 h-14 flex items-center justify-between">
-          <a href="/" className="flex items-center gap-2.5">
-            <LogoMark />
-            <span className="text-[15px] font-bold tracking-tight text-white">Declawed</span>
+    <AppShell>
+      <div className="max-w-5xl mx-auto px-6 py-8">
+
+        {/* Page header */}
+        <div className="mb-7 flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-semibold text-white tracking-tight">Welcome back, {displayName}</h1>
+            <p className="text-sm text-zinc-500 mt-0.5">{user?.email}</p>
+          </div>
+          <a
+            href="/"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-white/[0.08] bg-white/[0.02] text-sm font-medium text-zinc-400 hover:text-white hover:border-white/[0.15] transition"
+          >
+            <Upload className="w-3.5 h-3.5" />
+            New analysis
           </a>
-          <UserDropdown size="md" />
-        </div>
-      </div>
-
-      <div className="max-w-3xl mx-auto px-5 py-10">
-
-        {/* Page heading */}
-        <div className="mb-8">
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-600 mb-2">Dashboard</p>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Hey, {displayName}</h1>
-          <p className="text-sm text-zinc-500 mt-1">{user?.email}</p>
         </div>
 
         {/* Plan card */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className={`rounded-2xl border ${planInfo.border} bg-white/[0.03] p-6 mb-8`}
+          className={`rounded-xl border ${planInfo.border} bg-[#0b0b12] p-5 mb-5`}
         >
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4 mb-4">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-600 mb-1.5">Current Plan</p>
-              <span className={`text-2xl font-bold ${planInfo.color}`}>{planInfo.label}</span>
+              <span className={`inline-block text-[9px] font-bold uppercase tracking-[0.2em] px-2 py-0.5 rounded border ${planInfo.border} ${planInfo.color} mb-2 opacity-70`}>
+                {planInfo.badge}
+              </span>
+              <p className={`text-xl font-bold ${planInfo.color} leading-tight`}>{planInfo.label}</p>
+              <p className="text-[11px] text-zinc-600 mt-0.5">Your current plan</p>
             </div>
             {plan === 'free' ? (
-              <div className="flex items-center gap-2">
-                <a
-                  href="/billing"
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-teal-500 text-black text-sm font-bold hover:bg-teal-400 active:scale-95 transition-all shadow-lg shadow-teal-500/20"
-                >
-                  <Zap className="w-3.5 h-3.5" />
-                  Upgrade
-                </a>
-                <a
-                  href="/billing"
-                  className="text-xs text-zinc-400 border border-zinc-700 rounded-full px-3 py-1.5 hover:text-white hover:border-zinc-500 transition"
-                >
-                  Billing
-                </a>
-              </div>
+              <a
+                href="/billing"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-500 active:scale-95 transition-all shadow-lg shadow-blue-600/20 whitespace-nowrap shrink-0"
+              >
+                <Zap className="w-3.5 h-3.5" />
+                Upgrade to Pro
+              </a>
             ) : (
               <a
                 href="/billing"
-                className="text-xs text-zinc-400 border border-zinc-700 rounded-full px-3 py-1.5 hover:text-white hover:border-zinc-500 transition"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/[0.08] text-xs font-medium text-zinc-400 hover:text-white hover:border-white/[0.15] transition whitespace-nowrap shrink-0"
               >
-                Billing &amp; Plan →
+                Manage plan →
               </a>
             )}
           </div>
 
           {/* Plan features */}
-          <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-1.5">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-1 mb-4">
             {(PLAN_FEATURES[plan] || []).map((feat, i) => (
-              <p key={i} className="flex items-center gap-1.5 text-xs text-zinc-400">
-                <span className="text-teal-500 shrink-0">&#10003;</span>
+              <p key={i} className="flex items-center gap-1.5 text-xs text-zinc-500">
+                <span className={`${planInfo.color} shrink-0`}>✓</span>
                 {feat}
               </p>
             ))}
           </div>
 
-          <div className="mt-5">
-            <div className="flex items-center justify-between text-xs text-zinc-500 mb-2">
+          <div className="pt-4 border-t border-white/[0.05]">
+            <div className="flex items-center justify-between text-xs text-zinc-500 mb-1.5">
               <span>Analyses used</span>
-              <span className="tabular-nums">{isUnlimited ? `${used} / ∞` : `${used} / ${limit}`}</span>
+              <span className={`font-semibold tabular-nums ${planInfo.color}`}>{isUnlimited ? `${used} / ∞` : `${used} / ${limit}`}</span>
             </div>
             {!isUnlimited && (
-              <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
+              <div className="h-1 bg-white/[0.05] rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-teal-500 to-cyan-400 rounded-full transition-all duration-700"
+                  className={`h-full ${planInfo.progress} rounded-full transition-all duration-700`}
                   style={{ width: `${Math.min((used / limit) * 100, 100)}%` }}
                 />
               </div>
@@ -640,14 +632,14 @@ export default function Dashboard({ onClose, onUpgrade }) {
                 ) : (
                   <p className="text-xs text-zinc-600">
                     {isSubscription ? 'Analysis limit reached — ' : 'Analysis already used — '}
-                    <a href="/contact" className="text-teal-600 hover:text-teal-400 transition">contact support</a> for disputes.
+                    <a href="/contact" className="text-blue-500 hover:text-blue-400 transition">contact support</a> for disputes.
                   </p>
                 )}
               </div>
             );
           })()}
           {refundResult && (
-            <p className={`mt-4 text-xs ${refundResult.ok ? 'text-teal-400' : 'text-rose-400'}`}>
+            <p className={`mt-4 text-xs ${refundResult.ok ? 'text-emerald-400' : 'text-rose-400'}`}>
               {refundResult.message}
             </p>
           )}
@@ -659,28 +651,56 @@ export default function Dashboard({ onClose, onUpgrade }) {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.04 }}
-            className="grid grid-cols-3 gap-3 mb-8"
+            className="grid grid-cols-3 gap-4 mb-6"
           >
             {[
-              { label: 'Total Analyses', value: analyses.length, color: 'text-teal-400' },
-              { label: 'Red Flags Found', value: totalRedFlags, color: 'text-rose-400' },
               {
+                icon: FileText,
+                label: 'Total Analyses',
+                value: analyses.length,
+                sub: 'leases reviewed',
+                valueColor: 'text-blue-400',
+                iconBg: 'bg-blue-600/10 border-blue-600/20',
+                iconColor: 'text-blue-400',
+              },
+              {
+                icon: AlertTriangle,
+                label: 'Red Flags Found',
+                value: totalRedFlags,
+                sub: 'across all leases',
+                valueColor: 'text-rose-400',
+                iconBg: 'bg-rose-500/10 border-rose-500/20',
+                iconColor: 'text-rose-400',
+              },
+              {
+                icon: ShieldAlert,
                 label: 'Highest Risk',
                 value: riskiest == null || riskiest.result?.score == null ? '—'
                   : riskiest.result.score <= 4 ? 'High'
                   : riskiest.result.score <= 7 ? 'Medium'
                   : 'Low',
-                sub: riskiest?.result?.score != null ? `Score: ${riskiest.result.score}/10` : undefined,
-                color: riskiest?.result?.score == null ? 'text-zinc-500'
+                sub: riskiest?.result?.score != null ? `Score: ${riskiest.result.score}/10` : 'no analyses yet',
+                valueColor: riskiest?.result?.score == null ? 'text-zinc-500'
+                  : riskiest.result.score <= 4 ? 'text-rose-400'
+                  : riskiest.result.score <= 7 ? 'text-amber-400'
+                  : 'text-emerald-400',
+                iconBg: riskiest?.result?.score == null ? 'bg-zinc-800/60 border-zinc-700/40'
+                  : riskiest.result.score <= 4 ? 'bg-rose-500/10 border-rose-500/20'
+                  : riskiest.result.score <= 7 ? 'bg-amber-500/10 border-amber-500/20'
+                  : 'bg-emerald-500/10 border-emerald-500/20',
+                iconColor: riskiest?.result?.score == null ? 'text-zinc-600'
                   : riskiest.result.score <= 4 ? 'text-rose-400'
                   : riskiest.result.score <= 7 ? 'text-amber-400'
                   : 'text-emerald-400',
               },
-            ].map(({ label, value, sub, color }) => (
-              <div key={label} className="rounded-xl bg-white/[0.03] border border-white/[0.06] px-4 py-4 text-center">
-                <p className={`text-2xl font-extrabold tabular-nums ${color}`}>{value}</p>
-                {sub && <p className="text-[10px] text-zinc-600 truncate mt-0.5 max-w-[90%] mx-auto">{sub}</p>}
-                <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-zinc-600 mt-1">{label}</p>
+            ].map(({ icon: Icon, label, value, sub, valueColor, iconBg, iconColor }) => (
+              <div key={label} className="rounded-xl bg-[#0b0b12] border border-white/[0.06] px-5 py-5">
+                <div className={`w-8 h-8 rounded-lg border ${iconBg} flex items-center justify-center mb-3`}>
+                  <Icon className={`w-4 h-4 ${iconColor}`} />
+                </div>
+                <p className={`text-2xl font-bold tabular-nums ${valueColor}`}>{value}</p>
+                <p className="text-[12px] font-medium text-zinc-400 mt-0.5">{label}</p>
+                <p className="text-[11px] text-zinc-600 mt-0.5">{sub}</p>
               </div>
             ))}
           </motion.div>
@@ -688,10 +708,11 @@ export default function Dashboard({ onClose, onUpgrade }) {
 
         {/* Analysis history */}
         <motion.div
+          id="history"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.07 }}
-          className="rounded-2xl border border-white/[0.07] bg-white/[0.02] overflow-hidden"
+          className="rounded-xl border border-white/[0.07] bg-[#0b0b12] overflow-hidden"
         >
           <div className="px-6 py-4 border-b border-white/[0.06] flex items-center justify-between">
             <h2 className="text-sm font-semibold text-white flex items-center gap-2">
@@ -721,13 +742,13 @@ export default function Dashboard({ onClose, onUpgrade }) {
               </div>
               <p className="text-base font-semibold text-zinc-300 mb-1.5">No leases analyzed yet</p>
               <p className="text-sm text-zinc-600 max-w-xs leading-relaxed mb-6">Upload your first lease and Declawed AI will flag red flags, key dates, and your tenant rights — in plain English.</p>
-              <button
-                onClick={onClose}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 active:scale-95 transition-all text-black text-sm font-bold shadow-lg shadow-teal-500/20"
+              <a
+                href="/"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all text-white text-sm font-semibold shadow-lg shadow-blue-600/20"
               >
                 <Upload className="w-4 h-4" />
                 Analyze your first lease
-              </button>
+              </a>
             </div>
           ) : (
             <ul className="divide-y divide-white/[0.04]">
@@ -746,10 +767,10 @@ export default function Dashboard({ onClose, onUpgrade }) {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.04 }}
                     onClick={() => setSelectedAnalysis(a)}
-                    className="relative px-6 py-4 flex items-start gap-3 cursor-pointer transition-all group border-l-2 border-transparent hover:border-teal-500/50 hover:bg-white/[0.04] active:bg-white/[0.05]"
+                    className="relative px-6 py-4 flex items-start gap-3 cursor-pointer transition-all group border-l-2 border-transparent hover:border-blue-500/40 hover:bg-white/[0.03] active:bg-white/[0.04]"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.07] flex items-center justify-center shrink-0 mt-0.5 group-hover:border-teal-500/30 transition">
-                      <FileText className="w-3.5 h-3.5 text-zinc-500 group-hover:text-teal-400 transition" />
+                    <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.07] flex items-center justify-center shrink-0 mt-0.5 group-hover:border-blue-500/30 transition">
+                      <FileText className="w-3.5 h-3.5 text-zinc-500 group-hover:text-blue-400 transition" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-zinc-200 truncate group-hover:text-white transition">{a.filename || 'Untitled document'}</p>
@@ -764,7 +785,7 @@ export default function Dashboard({ onClose, onUpgrade }) {
                           </span>
                         )}
                         {dates > 0 && (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20">
                             <Calendar className="w-2.5 h-2.5" />{dates} key date{dates !== 1 ? 's' : ''}
                           </span>
                         )}
@@ -814,34 +835,27 @@ export default function Dashboard({ onClose, onUpgrade }) {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          className="mt-8 rounded-2xl border border-teal-500/20 bg-gradient-to-br from-teal-500/[0.06] to-cyan-500/[0.03] p-6 flex flex-col sm:flex-row items-center justify-between gap-4"
+          className="mt-6 rounded-xl border border-blue-600/20 bg-blue-600/[0.04] p-5 flex flex-col sm:flex-row items-center justify-between gap-4"
         >
           <div>
             <p className="font-semibold text-white text-sm">Ready to analyze another lease?</p>
             <p className="text-xs text-zinc-500 mt-0.5">Catch hidden clauses before you sign.</p>
           </div>
-          <button
-            onClick={onClose}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 active:scale-95 transition-all text-black text-sm font-bold whitespace-nowrap shadow-lg shadow-teal-500/20"
+          <a
+            href="/"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all text-white text-sm font-semibold whitespace-nowrap shadow-lg shadow-blue-600/20"
           >
             <Upload className="w-4 h-4" />
-            Analyze another lease
-          </button>
+            New analysis
+          </a>
         </motion.div>
-
-        <div className="mt-6 text-center">
-          <button onClick={onClose} className="inline-flex items-center gap-1.5 text-sm text-zinc-600 hover:text-zinc-400 transition">
-            <ArrowLeft className="w-3.5 h-3.5" />
-            Back to app
-          </button>
-        </div>
 
         {/* Referral section */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="mt-8 rounded-2xl border border-violet-500/20 bg-gradient-to-br from-violet-500/[0.05] to-purple-500/[0.02] p-6"
+          className="mt-6 rounded-xl border border-violet-500/20 bg-violet-500/[0.04] p-5"
         >
           <div className="flex items-center gap-2 mb-1.5">
             <Users className="w-4 h-4 text-violet-400" />
@@ -862,7 +876,7 @@ export default function Dashboard({ onClose, onUpgrade }) {
           </div>
         </motion.div>
       </div>
-    </div>
+    </AppShell>
 
     {/* Analysis detail modal */}
     {selectedAnalysis && (
@@ -883,7 +897,7 @@ export default function Dashboard({ onClose, onUpgrade }) {
           initial={{ opacity: 0, y: -16 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -16 }}
-          className="fixed top-4 left-1/2 -translate-x-1/2 z-[60] px-5 py-2.5 rounded-xl bg-teal-500 text-black text-sm font-semibold shadow-xl shadow-teal-500/25 whitespace-nowrap"
+          className="fixed top-4 left-1/2 -translate-x-1/2 z-[60] px-5 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-semibold shadow-xl shadow-blue-600/25 whitespace-nowrap"
         >
           {toast}
         </motion.div>
