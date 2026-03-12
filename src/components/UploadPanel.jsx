@@ -252,14 +252,6 @@ export default function UploadPanel({ onUpload, loading, usage, onUpgrade, landl
       )}
 
       {/* Free tier exhausted banner */}
-      {/* Image scanning badge for paid users */}
-      {isPaidUser && !freeExhausted && (
-        <div className="mt-3 flex items-center gap-1.5 text-[11px] text-teal-400/80">
-          <ImageIcon className="w-3 h-3" />
-          <span>Image scanning unlocked — upload photos of leases or scanned documents</span>
-        </div>
-      )}
-
       {freeExhausted && (
         <motion.div
           initial={{ opacity: 0, y: 6 }}

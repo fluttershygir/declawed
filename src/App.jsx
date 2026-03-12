@@ -176,10 +176,17 @@ function MainApp() {
       <TrustBar />
 
       {/* Tool: upload + summary */}
-      <section id="upload" className="w-full flex flex-col items-center px-4 py-16 border-t border-white/[0.05]">
-        <div className="w-full max-w-5xl grid md:grid-cols-[1fr_1.2fr] gap-6">
-          <UploadPanel onUpload={handleUpload} loading={loading} usage={usage} onUpgrade={() => setPaywallOpen(true)} landlordMode={landlordMode} onLandlordModeChange={setLandlordMode} />
-          <SummaryPanel summary={summary} loading={loading} error={error} modelTier={modelTier} usage={usage} filename={uploadedFilename} onUpgrade={() => setPaywallOpen(true)} landlordMode={analysisLandlordMode} />
+      <section id="upload" className="w-full border-t border-b border-white/[0.06] bg-[#0f1117]" style={{ paddingTop: '80px', paddingBottom: '80px' }}>
+        <div className="w-full max-w-5xl mx-auto px-4">
+          {/* Section header */}
+          <div className="text-center mb-10">
+            <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">Analyze Your Lease</h2>
+            <p className="text-zinc-500 mt-2 text-sm sm:text-base">Upload your lease and get a full breakdown in under 30 seconds.</p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-6 items-stretch">
+            <UploadPanel onUpload={handleUpload} loading={loading} usage={usage} onUpgrade={() => setPaywallOpen(true)} landlordMode={landlordMode} onLandlordModeChange={setLandlordMode} />
+            <SummaryPanel summary={summary} loading={loading} error={error} modelTier={modelTier} usage={usage} filename={uploadedFilename} onUpgrade={() => setPaywallOpen(true)} landlordMode={analysisLandlordMode} />
+          </div>
         </div>
       </section>
 

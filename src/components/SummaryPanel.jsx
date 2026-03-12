@@ -57,17 +57,17 @@ function StructuredSummary({ data, landlordMode }) {
       {/* Red Flags — relabelled in landlord mode */}
       {data.redFlags?.length > 0 && (
         <section>
-          <h2 className="flex items-center gap-1.5 text-rose-400 text-[11px] font-bold uppercase tracking-widest mb-2">
-            <AlertCircle className="w-3 h-3" /> {landlordMode ? 'Landlord Risk Flags' : 'Red Flags'}
+          <h2 className="flex items-center gap-2 text-rose-400 text-sm font-bold uppercase tracking-widest mb-3">
+            <AlertCircle className="w-4 h-4" /> {landlordMode ? 'Landlord Risk Flags' : 'Red Flags'}
           </h2>
-          <ul className="space-y-1.5">
+          <ul className="space-y-2">
             {data.redFlags.map((flag, i) => {
               const text = typeof flag === 'string' ? flag : flag.text;
               const severity = typeof flag === 'string' ? 'MEDIUM' : (flag.severity ?? 'MEDIUM');
-              const bar = severity === 'HIGH' ? 'border-l-rose-500' : severity === 'MEDIUM' ? 'border-l-amber-500/60' : 'border-l-zinc-600';
+              const bar = severity === 'HIGH' ? 'border-l-rose-500 bg-rose-500/[0.04]' : severity === 'MEDIUM' ? 'border-l-amber-400 bg-amber-500/[0.03]' : 'border-l-zinc-600';
               return (
-                <li key={i} className={`flex items-start gap-3 border-l-2 ${bar} pl-3 py-1`}>
-                  <span className="flex-1 text-slate-300 leading-relaxed">{text}</span>
+                <li key={i} className={`flex items-start gap-3 border-l-[3px] ${bar} pl-3 py-1.5 rounded-r`}>
+                  <span className="flex-1 text-slate-300 leading-relaxed text-sm">{text}</span>
                   <SeverityBadge severity={severity} />
                 </li>
               );
@@ -79,8 +79,8 @@ function StructuredSummary({ data, landlordMode }) {
       {/* Key Dates */}
       {data.keyDates?.length > 0 && (
         <section>
-          <h2 className="flex items-center gap-1.5 text-cyan-400 text-[11px] font-bold uppercase tracking-widest mb-2">
-            <Calendar className="w-3 h-3" /> Key Dates
+          <h2 className="flex items-center gap-2 text-cyan-400 text-sm font-bold uppercase tracking-widest mb-3">
+            <Calendar className="w-4 h-4" /> Key Dates
           </h2>
           <div className="grid grid-cols-2 gap-1.5">
             {data.keyDates.map((item, i) => (
@@ -96,8 +96,8 @@ function StructuredSummary({ data, landlordMode }) {
       {/* Tenant rights — relabelled in landlord mode */}
       {data.tenantRights?.length > 0 && (
         <section>
-          <h2 className="flex items-center gap-1.5 text-emerald-400 text-[11px] font-bold uppercase tracking-widest mb-2">
-            <ShieldCheck className="w-3 h-3" /> {landlordMode ? 'Enforceable Tenant Obligations' : 'Your Rights'}
+          <h2 className="flex items-center gap-2 text-emerald-400 text-sm font-bold uppercase tracking-widest mb-3">
+            <ShieldCheck className="w-4 h-4" /> {landlordMode ? 'Enforceable Tenant Obligations' : 'Your Rights'}
           </h2>
           <div className="space-y-1">
             {data.tenantRights.map((right, i) => (
@@ -113,8 +113,8 @@ function StructuredSummary({ data, landlordMode }) {
       {/* Unusual Clauses — amber grouped block */}
       {data.unusualClauses?.length > 0 && (
         <section>
-          <h2 className="flex items-center gap-1.5 text-amber-400 text-[11px] font-bold uppercase tracking-widest mb-2">
-            <AlertTriangle className="w-3 h-3" /> Unusual Clauses
+          <h2 className="flex items-center gap-2 text-amber-400 text-sm font-bold uppercase tracking-widest mb-3">
+            <AlertTriangle className="w-4 h-4" /> Unusual Clauses
           </h2>
           <div className="rounded-xl border border-amber-500/15 bg-amber-500/[0.04] divide-y divide-amber-500/[0.08]">
             {data.unusualClauses.map((clause, i) => (
@@ -209,7 +209,8 @@ export default function SummaryPanel({ summary, loading, error, modelTier, usage
           </span>
         )}
       </div>
-      <div className="flex-1 min-h-[320px] p-4 overflow-y-auto">
+      <div className="relative flex-1">
+        <div className="h-full max-h-[600px] min-h-[320px] overflow-y-auto p-4" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.08) transparent' }}>
         {loading && (
           <div className="flex flex-col items-center justify-center h-full text-slate-400">
             <div className="w-10 h-10 border-2 border-cyan-500/50 border-t-cyan-400 rounded-full animate-spin mb-3" />
@@ -309,7 +310,7 @@ export default function SummaryPanel({ summary, loading, error, modelTier, usage
               </button>
             </div>
 
-            <p className="mt-3 text-[11px] text-zinc-600 flex items-center gap-1.5">
+            <p className="mt-3 text-[11px] text-zinc-600 flex items-center gap-1.5 pb-1">
               <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
                 modelTier === 'advanced' ? 'bg-teal-500' : 'bg-zinc-600'
               }`} />
@@ -324,6 +325,9 @@ export default function SummaryPanel({ summary, loading, error, modelTier, usage
             </p>
           </>
         )}
+        </div>
+        {/* Scroll fade indicator */}
+        <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-10 rounded-b-2xl bg-gradient-to-t from-slate-900/80 to-transparent" />
       </div>
 
       <EmailReportModal
