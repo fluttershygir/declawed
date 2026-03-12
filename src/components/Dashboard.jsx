@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, LogOut, Zap, ChevronRight, X, AlertCircle, Calendar, ShieldCheck, AlertTriangle, FileCheck, Upload, ArrowLeft } from 'lucide-react';
+import { FileText, LogOut, Zap, ChevronRight, X, AlertCircle, Calendar, ShieldCheck, AlertTriangle, FileCheck, Upload, ArrowLeft, ClipboardList } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 
@@ -10,6 +10,21 @@ const PLAN_LABELS = {
   pro: { label: 'Pro', color: 'text-teal-400', border: 'border-teal-600/60' },
   unlimited: { label: 'Unlimited', color: 'text-emerald-400', border: 'border-emerald-700/60' },
 };
+
+const SEVERITY_STYLES = {
+  HIGH:   { bg: 'bg-rose-500/15',  text: 'text-rose-400',  border: 'border-rose-500/30'  },
+  MEDIUM: { bg: 'bg-amber-500/12', text: 'text-amber-400', border: 'border-amber-500/30' },
+  LOW:    { bg: 'bg-zinc-500/15',  text: 'text-zinc-400',  border: 'border-zinc-600/40'  },
+};
+
+function SeverityBadge({ severity }) {
+  const s = SEVERITY_STYLES[severity] ?? SEVERITY_STYLES.LOW;
+  return (
+    <span className={`inline-block text-[9px] font-bold uppercase tracking-[0.14em] px-1.5 py-0.5 rounded border ${s.bg} ${s.text} ${s.border} shrink-0 leading-none`}>
+      {severity ?? 'LOW'}
+    </span>
+  );
+}
 
 const LogoMark = () => (
   <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-teal-500/25 shrink-0">
@@ -23,6 +38,14 @@ const LogoMark = () => (
 
 function AnalysisModal({ analysis, onClose }) {
   const data = analysis?.result || {};
+  const score = data.score ?? null;
+  const isRed = score !== null && score <= 4;
+  const isYellow = score !== null && score >= 5 && score <= 7;
+  const isGreen = score !== null && score >= 8;
+  const scoreColor = isRed ? 'text-rose-400' : isYellow ? 'text-amber-400' : isGreen ? 'text-emerald-400' : 'text-zinc-400';
+  const scoreRing = isRed ? 'border-rose-500/40 bg-rose-500/[0.07]' : isYellow ? 'border-amber-500/40 bg-amber-500/[0.07]' : isGreen ? 'border-emerald-500/40 bg-emerald-500/[0.07]' : 'border-zinc-700 bg-zinc-800/40';
+  const scoreLabel = isRed ? 'Problematic' : isYellow ? 'Fair' : isGreen ? 'Favorable' : '';
+
   return (
     <AnimatePresence>
       <motion.div
@@ -55,65 +78,109 @@ function AnalysisModal({ analysis, onClose }) {
 
           {/* Modal body */}
           <div className="p-5 space-y-5 text-sm">
-            {data.verdict && (
+
+            {/* Score + Verdict hero */}
+            {score !== null ? (
+              <div className={`rounded-xl border ${scoreRing} p-4 flex items-center gap-4`}>
+                <div className={`w-14 h-14 rounded-full border-2 ${scoreRing} flex items-center justify-center shrink-0`}>
+                  <span className={`text-2xl font-extrabold ${scoreColor}`}>{Math.max(1, Math.min(10, score))}</span>
+                </div>
+                <div className="min-w-0">
+                  <p className={`text-[10px] font-bold uppercase tracking-[0.18em] ${scoreColor} mb-1`}>Lease Score · {scoreLabel}</p>
+                  {data.verdict && <p className="text-sm text-slate-200 leading-snug">{data.verdict}</p>}
+                </div>
+              </div>
+            ) : data.verdict && (
               <div className="rounded-xl bg-slate-800/60 border border-slate-700/60 p-4">
                 <p className="text-slate-200 leading-relaxed">{data.verdict}</p>
               </div>
             )}
+
+            {/* Red Flags */}
             {data.redFlags?.length > 0 && (
               <section>
-                <h3 className="flex items-center gap-1.5 text-rose-400 font-semibold mb-2.5">
+                <h3 className="flex items-center gap-1.5 text-rose-400 font-semibold mb-3">
                   <AlertCircle className="w-4 h-4" /> Red Flags
                 </h3>
-                <ul className="space-y-2">
-                  {data.redFlags.map((flag, i) => (
-                    <li key={i} className="flex gap-2 text-slate-300 leading-relaxed">
-                      <span className="text-rose-500 mt-0.5 shrink-0">•</span>{flag}
-                    </li>
-                  ))}
+                <ul className="space-y-3">
+                  {data.redFlags.map((flag, i) => {
+                    const text = typeof flag === 'string' ? flag : flag.text;
+                    const severity = typeof flag === 'string' ? 'MEDIUM' : (flag.severity ?? 'MEDIUM');
+                    return (
+                      <li key={i} className="flex gap-2.5 text-slate-300 leading-relaxed">
+                        <span className="text-rose-500 mt-0.5 shrink-0">•</span>
+                        <span className="flex-1">{text}</span>
+                        <SeverityBadge severity={severity} />
+                      </li>
+                    );
+                  })}
                 </ul>
               </section>
             )}
+
+            {/* Key Dates grid */}
             {data.keyDates?.length > 0 && (
               <section>
-                <h3 className="flex items-center gap-1.5 text-cyan-400 font-semibold mb-2.5">
+                <h3 className="flex items-center gap-1.5 text-cyan-400 font-semibold mb-3">
                   <Calendar className="w-4 h-4" /> Key Dates
                 </h3>
-                <ul className="space-y-2">
+                <div className="grid grid-cols-2 gap-2">
                   {data.keyDates.map((item, i) => (
-                    <li key={i} className="flex gap-2 text-slate-300 leading-relaxed">
-                      <span className="text-cyan-500 font-medium shrink-0">{item.label}:</span>{item.value}
-                    </li>
+                    <div key={i} className="rounded-lg bg-cyan-500/[0.06] border border-cyan-500/20 px-3 py-2.5">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-cyan-500/80 mb-0.5">{item.label}</p>
+                      <p className="text-xs text-slate-300 leading-snug">{item.value}</p>
+                    </div>
                   ))}
-                </ul>
+                </div>
               </section>
             )}
+
+            {/* Tenant Rights */}
             {data.tenantRights?.length > 0 && (
               <section>
-                <h3 className="flex items-center gap-1.5 text-emerald-400 font-semibold mb-2.5">
+                <h3 className="flex items-center gap-1.5 text-emerald-400 font-semibold mb-3">
                   <ShieldCheck className="w-4 h-4" /> Your Rights
                 </h3>
-                <ul className="space-y-2">
+                <ul className="space-y-3">
                   {data.tenantRights.map((right, i) => (
-                    <li key={i} className="flex gap-2 text-slate-300 leading-relaxed">
+                    <li key={i} className="flex gap-2.5 text-slate-300 leading-relaxed">
                       <span className="text-emerald-500 mt-0.5 shrink-0">•</span>{right}
                     </li>
                   ))}
                 </ul>
               </section>
             )}
+
+            {/* Unusual Clauses */}
             {data.unusualClauses?.length > 0 && (
               <section>
-                <h3 className="flex items-center gap-1.5 text-amber-400 font-semibold mb-2.5">
+                <h3 className="flex items-center gap-1.5 text-amber-400 font-semibold mb-3">
                   <AlertTriangle className="w-4 h-4" /> Unusual Clauses
                 </h3>
-                <ul className="space-y-2">
+                <ul className="space-y-3">
                   {data.unusualClauses.map((clause, i) => (
-                    <li key={i} className="flex gap-2 text-slate-300 leading-relaxed">
+                    <li key={i} className="flex gap-2.5 text-slate-300 leading-relaxed">
                       <span className="text-amber-500 mt-0.5 shrink-0">•</span>{clause}
                     </li>
                   ))}
                 </ul>
+              </section>
+            )}
+
+            {/* What to do before signing */}
+            {data.actionSteps?.length > 0 && (
+              <section className="rounded-xl border border-teal-500/20 bg-teal-500/[0.05] p-4">
+                <h3 className="flex items-center gap-1.5 text-teal-300 font-semibold mb-3">
+                  <ClipboardList className="w-4 h-4" /> What to do before signing
+                </h3>
+                <ol className="space-y-3">
+                  {data.actionSteps.map((step, i) => (
+                    <li key={i} className="flex gap-3 text-slate-300 leading-relaxed">
+                      <span className="w-5 h-5 rounded-full bg-teal-500/20 border border-teal-500/30 text-teal-400 text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
+                      {step}
+                    </li>
+                  ))}
+                </ol>
               </section>
             )}
           </div>
@@ -270,6 +337,11 @@ export default function Dashboard({ onClose, onUpgrade }) {
               {analyses.map((a, i) => {
                 const flags = a.result?.redFlags?.length ?? 0;
                 const dates = a.result?.keyDates?.length ?? 0;
+                const score = a.result?.score ?? null;
+                const scoreIsRed = score !== null && score <= 4;
+                const scoreIsYellow = score !== null && score >= 5 && score <= 7;
+                const scoreIsGreen = score !== null && score >= 8;
+                const scoreColor = scoreIsRed ? 'text-rose-400 border-rose-500/40 bg-rose-500/10' : scoreIsYellow ? 'text-amber-400 border-amber-500/40 bg-amber-500/10' : scoreIsGreen ? 'text-emerald-400 border-emerald-500/40 bg-emerald-500/10' : 'text-zinc-500 border-zinc-700 bg-zinc-800/40';
                 return (
                   <motion.li
                     key={a.id}
@@ -302,6 +374,11 @@ export default function Dashboard({ onClose, onUpgrade }) {
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-2 shrink-0">
+                      {score !== null && (
+                        <span className={`w-7 h-7 rounded-full border text-[11px] font-extrabold flex items-center justify-center ${scoreColor}`}>
+                          {Math.max(1, Math.min(10, score))}
+                        </span>
+                      )}
                       <time className="text-[11px] text-zinc-600">{new Date(a.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</time>
                       <ChevronRight className="w-3.5 h-3.5 text-zinc-700 group-hover:text-zinc-400 transition" />
                     </div>
