@@ -278,6 +278,15 @@ async function handleRequest(request, env) {
     if (typeof analysis !== 'object' || analysis === null) throw new Error('Not an object');
     analysis.score = typeof analysis.score === 'number' ? analysis.score : null;
     analysis.verdict = analysis.verdict || '';
+    // Sanitize: strip if raw JSON or markdown fences leaked into the verdict field
+    if (analysis.verdict) {
+      const _v = analysis.verdict.trim();
+      if (_v.startsWith('{') || _v.startsWith('`')) {
+        analysis.verdict = '';
+      } else {
+        analysis.verdict = _v;
+      }
+    }
     analysis.redFlags = Array.isArray(analysis.redFlags)
       ? analysis.redFlags.map(f => typeof f === 'string' ? { text: f, severity: 'MEDIUM' } : f)
       : [];

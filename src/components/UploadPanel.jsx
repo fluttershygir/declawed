@@ -2,13 +2,6 @@ import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Upload, FileText, Loader2, AlertCircle, Lock, Zap, Image as ImageIcon, Building2, Gift } from 'lucide-react';
 import ShareToUnlockModal from './ShareToUnlockModal';
-import * as pdfjsLib from 'pdfjs-dist';
-import * as mammoth from 'mammoth';
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.mjs',
-  import.meta.url
-).toString();
 
 const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 const IMAGE_EXTS = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
@@ -41,12 +34,18 @@ async function resizeAndEncodeImage(file) {
 }
 
 async function extractTextFromDocx(file) {
+  const mammoth = await import('mammoth');
   const arrayBuffer = await file.arrayBuffer();
   const result = await mammoth.extractRawText({ arrayBuffer });
   return result.value;
 }
 
 async function extractTextFromPdf(file) {
+  const pdfjsLib = await import('pdfjs-dist');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+    'pdfjs-dist/build/pdf.worker.mjs',
+    import.meta.url
+  ).toString();
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
   const pages = [];
@@ -122,7 +121,8 @@ export default function UploadPanel({ onUpload, loading, usage, onUpgrade, landl
   };
 
   const freeExhausted = usage && usage.plan === 'free' && (usage.used ?? 0) >= (usage.limit ?? 1);
-  const canUpload = !freeExhausted;
+  const paidAtLimit = usage && usage.plan !== 'free' && usage.plan !== 'unlimited' && (usage.used ?? 0) >= (usage.limit ?? 1);
+  const canUpload = !freeExhausted && !paidAtLimit;
 
   return (
     <motion.section
@@ -276,6 +276,29 @@ export default function UploadPanel({ onUpload, loading, usage, onUpgrade, landl
               Upgrade
             </button>
           </div>
+        </motion.div>
+      )}
+
+      {paidAtLimit && (
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-4 rounded-xl border border-amber-500/20 bg-amber-500/[0.04] p-4"
+        >
+          <div className="flex items-center gap-2 mb-1.5">
+            <Zap className="w-4 h-4 text-amber-500 shrink-0" />
+            <p className="text-sm font-semibold text-white">Monthly limit reached</p>
+          </div>
+          <p className="text-xs text-zinc-500 leading-relaxed mb-3">
+            You've used all {usage?.limit ?? ''} analyses this month. Upgrade to Unlimited for unlimited analyses.
+          </p>
+          <button
+            onClick={onUpgrade}
+            className="flex items-center justify-center gap-1.5 w-full rounded-xl py-2.5 px-3 text-xs font-semibold bg-amber-500/10 border border-amber-500/30 text-amber-300 hover:bg-amber-500/20 hover:border-amber-500/50 transition-all"
+          >
+            <Zap className="w-3.5 h-3.5" />
+            Upgrade to Unlimited
+          </button>
         </motion.div>
       )}
 

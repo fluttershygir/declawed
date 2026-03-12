@@ -21,6 +21,13 @@ const PLAN_FEATURES = {
 
 import AnalysisModal, { SeverityBadge } from './AnalysisModal';
 
+function cleanVerdict(v) {
+  if (!v || typeof v !== 'string') return '';
+  const t = v.trim();
+  if (t.startsWith('{') || t.startsWith('`') || t.startsWith('```')) return '';
+  return t;
+}
+
 export default function Dashboard({ onClose, onUpgrade }) {
   const { user, profile, signOut, refreshProfile } = useAuth();
   const [analyses, setAnalyses] = useState([]);
@@ -262,7 +269,17 @@ export default function Dashboard({ onClose, onUpgrade }) {
         </motion.div>
 
         {/* Quick Stats row */}
-        {!loadingHistory && analyses.length > 0 && (
+        {loadingHistory ? (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 mb-5 sm:mb-6">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="rounded-xl bg-[#0b0b12] border border-white/[0.06] px-3 py-4 sm:px-5 sm:py-5 animate-pulse">
+                <div className="w-8 h-8 rounded-lg bg-white/[0.05] mb-3" />
+                <div className="h-7 w-10 rounded bg-white/[0.05] mb-2" />
+                <div className="h-3 w-20 rounded bg-white/[0.04]" />
+              </div>
+            ))}
+          </div>
+        ) : analyses.length > 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -320,7 +337,7 @@ export default function Dashboard({ onClose, onUpgrade }) {
               </div>
             ))}
           </motion.div>
-        )}
+        ) : null}
 
         {/* Analysis history */}
         <motion.div
@@ -341,7 +358,22 @@ export default function Dashboard({ onClose, onUpgrade }) {
           </div>
 
           {loadingHistory ? (
-            <div className="px-6 py-12 text-center text-sm text-zinc-600">Loading…</div>
+            <div className="divide-y divide-white/[0.04]">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="px-4 py-4 sm:px-6 flex items-start gap-3 animate-pulse">
+                  <div className="w-8 h-8 rounded-lg bg-white/[0.05] shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0 space-y-2">
+                    <div className="h-4 w-2/3 rounded bg-white/[0.05]" />
+                    <div className="h-3 w-1/2 rounded bg-white/[0.04]" />
+                    <div className="flex gap-2">
+                      <div className="h-4 w-16 rounded bg-white/[0.04]" />
+                      <div className="h-4 w-16 rounded bg-white/[0.04]" />
+                    </div>
+                  </div>
+                  <div className="w-7 h-7 rounded-full bg-white/[0.05] shrink-0" />
+                </div>
+              ))}
+            </div>
           ) : analyses.length === 0 ? (
             /* Empty state */
             <div className="px-6 py-14 flex flex-col items-center text-center">
@@ -356,8 +388,20 @@ export default function Dashboard({ onClose, onUpgrade }) {
                   <path d="M43 47l3 3 6-6" stroke="#14b8a6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
-              <p className="text-base font-semibold text-zinc-300 mb-1.5">No leases analyzed yet</p>
-              <p className="text-sm text-zinc-600 max-w-xs leading-relaxed mb-6">Upload your first lease and Declawed AI will flag red flags, key dates, and your tenant rights — in plain English.</p>
+              <p className="text-base font-semibold text-zinc-300 mb-1.5">Welcome to Declawed!</p>
+              <p className="text-sm text-zinc-600 max-w-xs leading-relaxed mb-5">Analyze your first lease and get a full breakdown of red flags, key dates, and your rights — in plain English.</p>
+              <div className="w-full max-w-xs text-left space-y-3 mb-7">
+                {[
+                  'Upload a lease PDF, Word doc, or image',
+                  'AI flags red flags, key dates & action steps in ~30s',
+                  'Review your analysis here and export a PDF report',
+                ].map((step, idx) => (
+                  <div key={idx} className="flex items-start gap-2.5">
+                    <span className="w-5 h-5 rounded-full bg-blue-600/20 border border-blue-600/30 text-blue-400 text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">{idx + 1}</span>
+                    <p className="text-xs text-zinc-500 leading-relaxed">{step}</p>
+                  </div>
+                ))}
+              </div>
               <a
                 href="/"
                 className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all text-white text-sm font-semibold shadow-lg shadow-blue-600/20"
@@ -391,8 +435,8 @@ export default function Dashboard({ onClose, onUpgrade }) {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-zinc-200 truncate group-hover:text-white transition">{a.filename || 'Untitled document'}</p>
-                      {a.verdict && (
-                        <p className="text-xs text-zinc-500 mt-0.5 line-clamp-1 leading-relaxed">{a.verdict}</p>
+                      {cleanVerdict(a.verdict) && (
+                        <p className="text-xs text-zinc-500 mt-0.5 line-clamp-1 leading-relaxed">{cleanVerdict(a.verdict)}</p>
                       )}
                       {/* Summary badges */}
                       <div className="flex items-center gap-2 mt-2">

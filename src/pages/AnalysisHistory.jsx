@@ -12,6 +12,13 @@ const SORT_OPTIONS = [
   { value: 'highest-risk', label: 'Highest risk' },
 ];
 
+function cleanVerdict(v) {
+  if (!v || typeof v !== 'string') return '';
+  const t = v.trim();
+  if (t.startsWith('{') || t.startsWith('`') || t.startsWith('```')) return '';
+  return t;
+}
+
 function sortAnalyses(analyses, sort) {
   const copy = [...analyses];
   if (sort === 'newest') {
@@ -163,7 +170,22 @@ export default function AnalysisHistory() {
           <div className="rounded-xl border border-white/[0.07] bg-[#0b0b12] overflow-hidden">
 
             {loading ? (
-              <div className="px-6 py-12 text-center text-sm text-zinc-600">Loading…</div>
+              <div className="divide-y divide-white/[0.04]">
+                {[0, 1, 2, 3].map((i) => (
+                  <div key={i} className="px-4 py-4 sm:px-6 flex items-start gap-3 animate-pulse">
+                    <div className="w-8 h-8 rounded-lg bg-white/[0.05] shrink-0 mt-0.5" />
+                    <div className="flex-1 min-w-0 space-y-2">
+                      <div className="h-4 w-3/4 rounded bg-white/[0.05]" />
+                      <div className="h-3 w-1/2 rounded bg-white/[0.04]" />
+                      <div className="flex gap-2">
+                        <div className="h-4 w-16 rounded bg-white/[0.04]" />
+                        <div className="h-4 w-16 rounded bg-white/[0.04]" />
+                      </div>
+                    </div>
+                    <div className="w-7 h-7 rounded-full bg-white/[0.05] shrink-0" />
+                  </div>
+                ))}
+              </div>
             ) : analyses.length === 0 ? (
               /* Empty state — no analyses at all */
               <div className="px-6 py-14 flex flex-col items-center text-center">
@@ -223,8 +245,8 @@ export default function AnalysisHistory() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-zinc-200 truncate group-hover:text-white transition">{a.filename || 'Untitled document'}</p>
-                        {a.verdict && (
-                          <p className="text-xs text-zinc-500 mt-0.5 line-clamp-1 leading-relaxed">{a.verdict}</p>
+                        {cleanVerdict(a.verdict) && (
+                          <p className="text-xs text-zinc-500 mt-0.5 line-clamp-1 leading-relaxed">{cleanVerdict(a.verdict)}</p>
                         )}
                         <div className="flex items-center gap-2 mt-2">
                           {flags > 0 && (
