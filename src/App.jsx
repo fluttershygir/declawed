@@ -47,7 +47,7 @@ function DashboardPage() {
 }
 
 function MainApp() {
-  const { user } = useAuth();
+  const { user, refreshProfile } = useAuth();
   const [summary, setSummary] = useState('');
   const [loading, setLoading] = useState(false);
   const [paywallOpen, setPaywallOpen] = useState(false);
@@ -107,6 +107,7 @@ function MainApp() {
             const labels = { one: 'One Lease unlocked!', pro: 'Pro access activated!', unlimited: 'Unlimited access activated!' };
             setSuccessToast(labels[tier] || 'Access unlocked!');
             fetchUsage();
+            refreshProfile();
           }
         } catch {
           // ignore

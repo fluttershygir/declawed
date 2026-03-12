@@ -12,16 +12,19 @@ function json(data, status = 200) {
   });
 }
 
-async function upgradeUserPlan(userId, plan, supabaseUrl, serviceKey) {
+async function upgradeUserPlan(userId, plan, supabaseUrl, serviceKey, stripeCustomerId = null) {
   const limit = PLAN_LIMITS[plan] ?? 1;
-  await fetch(`${supabaseUrl}/rest/v1/rpc/upgrade_user_plan`, {
-    method: 'POST',
+  const body = { plan, analyses_limit: limit, analyses_used: 0 };
+  if (stripeCustomerId) body.stripe_customer_id = stripeCustomerId;
+  await fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${userId}`, {
+    method: 'PATCH',
     headers: {
       apikey: serviceKey,
       Authorization: `Bearer ${serviceKey}`,
       'Content-Type': 'application/json',
+      Prefer: 'return=minimal',
     },
-    body: JSON.stringify({ user_id: userId, new_plan: plan, new_limit: limit }),
+    body: JSON.stringify(body),
   });
 }
 
@@ -54,9 +57,10 @@ export async function onRequestPost(context) {
 
   const userId = session.metadata?.user_id || session.client_reference_id;
   const plan = session.metadata?.plan;
+  const stripeCustomerId = session.customer || null;
 
   if (userId && plan && env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) {
-    await upgradeUserPlan(userId, plan, env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
+    await upgradeUserPlan(userId, plan, env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, stripeCustomerId);
   }
 
   return json({ ok: true, plan: plan || 'unknown' });

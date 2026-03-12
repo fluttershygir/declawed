@@ -41,17 +41,36 @@ async function verifyStripeSignature(rawBody, header, secret) {
   return computed === expectedSig;
 }
 
-async function upgradeUserPlan(userId, plan, supabaseUrl, serviceKey) {
+async function upgradeUserPlan(userId, plan, supabaseUrl, serviceKey, stripeCustomerId = null) {
   const limit = PLAN_LIMITS[plan] ?? 1;
-  await fetch(`${supabaseUrl}/rest/v1/rpc/upgrade_user_plan`, {
-    method: 'POST',
+  const body = { plan, analyses_limit: limit, analyses_used: 0 };
+  if (stripeCustomerId) body.stripe_customer_id = stripeCustomerId;
+  await fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${userId}`, {
+    method: 'PATCH',
     headers: {
       apikey: serviceKey,
       Authorization: `Bearer ${serviceKey}`,
       'Content-Type': 'application/json',
+      Prefer: 'return=minimal',
     },
-    body: JSON.stringify({ user_id: userId, new_plan: plan, new_limit: limit }),
+    body: JSON.stringify(body),
   });
+}
+
+// Look up a user by their Stripe customer ID (for subscription cancellation events)
+async function getUserByCustomerId(stripeCustomerId, supabaseUrl, serviceKey) {
+  const res = await fetch(
+    `${supabaseUrl}/rest/v1/profiles?stripe_customer_id=eq.${encodeURIComponent(stripeCustomerId)}&select=id&limit=1`,
+    {
+      headers: {
+        apikey: serviceKey,
+        Authorization: `Bearer ${serviceKey}`,
+      },
+    }
+  );
+  if (!res.ok) return null;
+  const rows = await res.json();
+  return rows?.[0]?.id ?? null;
 }
 
 export async function onRequestPost(context) {
@@ -72,17 +91,21 @@ export async function onRequestPost(context) {
     const session = event.data.object;
     const userId = session.metadata?.user_id || session.client_reference_id;
     const plan = session.metadata?.plan;
+    const stripeCustomerId = session.customer || null;
 
     if (userId && plan && env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) {
-      await upgradeUserPlan(userId, plan, env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
+      await upgradeUserPlan(userId, plan, env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, stripeCustomerId);
     }
   }
 
   // Handle subscription cancellations — revert to free
   if (event.type === 'customer.subscription.deleted') {
     const sub = event.data.object;
-    // customer_reference_id isn't on subscription objects, so we look up via metadata if present
-    const userId = sub.metadata?.user_id;
+    // Try user_id from metadata first; fall back to looking up by stripe_customer_id
+    let userId = sub.metadata?.user_id;
+    if (!userId && sub.customer && env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) {
+      userId = await getUserByCustomerId(sub.customer, env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
+    }
     if (userId && env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) {
       await upgradeUserPlan(userId, 'free', env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
     }

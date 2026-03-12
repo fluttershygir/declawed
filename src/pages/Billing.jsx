@@ -84,12 +84,18 @@ const PLAN_INFO = {
 };
 
 export default function Billing() {
-  const { user, profile, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading, refreshProfile } = useAuth();
   const [portalLoading, setPortalLoading] = useState(false);
   const [portalError,   setPortalError]   = useState('');
 
   const plan     = (profile?.plan || 'free').toLowerCase();
   const planInfo = PLAN_INFO[plan] || PLAN_INFO.free;
+
+  // Always fetch the latest profile on mount so plan changes (webhook, manual update) reflect immediately
+  useEffect(() => {
+    if (user) refreshProfile();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   useEffect(() => {
     if (!authLoading && !user) window.location.href = '/';

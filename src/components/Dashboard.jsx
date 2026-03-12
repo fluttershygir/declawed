@@ -436,6 +436,12 @@ export default function Dashboard({ onClose, onUpgrade }) {
       });
   }, [user]);
 
+  // Always fetch the latest profile on mount so plan changes (webhook, manual update) reflect immediately
+  useEffect(() => {
+    if (user) refreshProfile();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
   const plan = (profile?.plan || 'free').toLowerCase();
   const planInfo = PLAN_LABELS[plan] || PLAN_LABELS.free;
   const used = profile?.analyses_used ?? 0;
