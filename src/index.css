@@ -1,11 +1,7 @@
 @import "tailwindcss";
 
-/* Firefox "Save Full Page" screenshot fix.
-   overflow-x: clip does visual clipping without creating a scroll container
-   (unlike overflow-x: hidden), so Firefox correctly reads the full
-   document scrollHeight when capturing the page. */
-html {
-  overflow-x: clip;
+html, body {
+  overflow-x: hidden;
 }
 
 :root {

@@ -159,7 +159,7 @@ export default function AppShell({ children }) {
       </aside>
 
       {/* ─── Main content ────────────────────────────────── */}
-      <div className="flex-1 min-h-screen md:ml-[240px] pt-14 md:pt-0">
+      <div className="flex-1 min-w-0 min-h-screen md:ml-[240px] pt-14 md:pt-0 overflow-x-hidden">
         {children}
       </div>
     </div>

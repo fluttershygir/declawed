@@ -250,7 +250,7 @@ export default function AnalysisHistory() {
                             {Math.max(1, Math.min(10, score))}
                           </span>
                         )}
-                        <time className="text-[11px] text-zinc-600">{new Date(a.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</time>
+                        <time className="text-[11px] text-zinc-600">{new Date(a.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}</time>
                         <div className="flex items-center gap-1.5">
                           <button
                             onClick={(e) => { e.stopPropagation(); setSelectedAnalysis(a); }}

@@ -165,10 +165,10 @@ export default function Dashboard({ onClose, onUpgrade }) {
           </div>
           <a
             href="/"
-            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-white/[0.08] bg-white/[0.02] text-sm font-medium text-zinc-400 hover:text-white hover:border-white/[0.15] transition"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg border border-white/[0.08] bg-white/[0.02] text-sm font-medium text-zinc-400 hover:text-white hover:border-white/[0.15] transition shrink-0"
           >
             <Upload className="w-3.5 h-3.5" />
-            New analysis
+            <span className="hidden sm:inline">New analysis</span>
           </a>
         </div>
 
@@ -205,11 +205,11 @@ export default function Dashboard({ onClose, onUpgrade }) {
           </div>
 
           {/* Plan features */}
-          <div className="grid grid-cols-2 gap-x-6 gap-y-1 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 mb-4">
             {(PLAN_FEATURES[plan] || []).map((feat, i) => (
-              <p key={i} className="flex items-center gap-1.5 text-xs text-zinc-500">
+              <p key={i} className="flex items-center gap-1.5 text-xs text-zinc-500 min-w-0">
                 <span className={`${planInfo.color} shrink-0`}>✓</span>
-                {feat}
+                <span className="truncate">{feat}</span>
               </p>
             ))}
           </div>
@@ -419,7 +419,7 @@ export default function Dashboard({ onClose, onUpgrade }) {
                           {Math.max(1, Math.min(10, score))}
                         </span>
                       )}
-                      <time className="text-[11px] text-zinc-600">{new Date(a.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</time>
+                      <time className="text-[11px] text-zinc-600">{new Date(a.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}</time>
                       <div className="flex items-center gap-1.5">
                         <button
                           onClick={(e) => { e.stopPropagation(); setSelectedAnalysis(a); }}

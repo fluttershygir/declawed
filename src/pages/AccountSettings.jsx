@@ -99,11 +99,11 @@ export default function AccountSettings() {
     e.preventDefault();
     setSavingProfile(true);
     setProfileMsg(null);
-    // Use RPC to avoid PostgREST schema-cache issues with the full_name column
-    const { error } = await supabase.rpc('update_full_name', {
-      user_id: user.id,
-      new_name: fullName.trim(),
-    });
+    // Direct table update — simpler and avoids schema-cache RPC issues
+    const { error } = await supabase
+      .from('profiles')
+      .update({ full_name: fullName.trim() })
+      .eq('id', user.id);
     if (!error) {
       // Also sync into auth user_metadata so avatar initials update immediately
       await supabase.auth.updateUser({ data: { full_name: fullName.trim() } });
