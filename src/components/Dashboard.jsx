@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileText, LogOut, Zap, ChevronRight, X, AlertCircle, Calendar, ShieldCheck, AlertTriangle, FileCheck, Upload, ArrowLeft, ClipboardList, RefreshCw } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -9,6 +9,13 @@ const PLAN_LABELS = {
   one: { label: 'One Lease', color: 'text-cyan-400', border: 'border-cyan-700/60' },
   pro: { label: 'Pro', color: 'text-teal-400', border: 'border-teal-600/60' },
   unlimited: { label: 'Unlimited', color: 'text-emerald-400', border: 'border-emerald-700/60' },
+};
+
+const PLAN_FEATURES = {
+  free:      ['1 free analysis', 'PDF & .docx upload', 'Red flags & key dates'],
+  one:       ['1 full analysis', 'PDF, .docx & image', 'Advanced AI model', '7-day money-back guarantee'],
+  pro:       ['10 analyses / month', 'PDF, .docx & image', 'Advanced AI model', '7-day money-back guarantee'],
+  unlimited: ['Unlimited analyses', 'PDF, .docx & image', 'Advanced AI model', 'All red flags, dates & rights'],
 };
 
 const SEVERITY_STYLES = {
@@ -197,6 +204,19 @@ export default function Dashboard({ onClose, onUpgrade }) {
   const [selectedAnalysis, setSelectedAnalysis] = useState(null);
   const [refundLoading, setRefundLoading] = useState(false);
   const [refundResult, setRefundResult] = useState(null);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    if (!userMenuOpen) return;
+    function handleClickOutside(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setUserMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [userMenuOpen]);
 
   useEffect(() => {
     if (!user) return;
@@ -217,6 +237,8 @@ export default function Dashboard({ onClose, onUpgrade }) {
   const used = profile?.analyses_used ?? 0;
   const limit = profile?.analyses_limit ?? 1;
   const isUnlimited = plan === 'unlimited';
+  const displayName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'there';
+  const avatarInitials = displayName.slice(0, 2).toUpperCase();
 
   const handleSignOut = async () => {
     await signOut();
@@ -259,13 +281,28 @@ export default function Dashboard({ onClose, onUpgrade }) {
             <LogoMark />
             <span className="text-[15px] font-bold tracking-tight text-white">Declawed</span>
           </a>
-          <button
-            onClick={handleSignOut}
-            className="flex items-center gap-1.5 text-sm text-zinc-500 hover:text-white transition"
-          >
-            <LogOut className="w-4 h-4" />
-            Sign out
-          </button>
+          <div className="relative" ref={menuRef}>
+            <button
+              onClick={() => setUserMenuOpen((v) => !v)}
+              className="w-8 h-8 rounded-full bg-teal-500/15 border border-teal-500/25 text-teal-300 text-xs font-bold flex items-center justify-center hover:bg-teal-500/25 hover:border-teal-500/40 transition"
+            >
+              {avatarInitials}
+            </button>
+            {userMenuOpen && (
+              <div className="absolute right-0 top-10 w-52 rounded-xl bg-zinc-950 border border-white/[0.08] shadow-2xl py-1 z-50">
+                <div className="px-3.5 py-2.5 border-b border-white/[0.06]">
+                  <p className="text-xs text-zinc-400 truncate">{user?.email}</p>
+                </div>
+                <button
+                  onClick={handleSignOut}
+                  className="flex items-center gap-2 w-full px-3.5 py-2.5 text-sm text-zinc-400 hover:text-white hover:bg-white/[0.05] transition-colors text-left"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Sign out
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -273,7 +310,8 @@ export default function Dashboard({ onClose, onUpgrade }) {
 
         {/* Page heading */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white tracking-tight">My Leases</h1>
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-600 mb-2">Dashboard</p>
+          <h1 className="text-3xl font-bold text-white tracking-tight">Hey, {displayName}</h1>
           <p className="text-sm text-zinc-500 mt-1">{user?.email}</p>
         </div>
 
@@ -299,6 +337,16 @@ export default function Dashboard({ onClose, onUpgrade }) {
             ) : (
               <span className="text-xs text-zinc-500 border border-zinc-800 rounded-full px-3 py-1">Active</span>
             )}
+          </div>
+
+          {/* Plan features */}
+          <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-1.5">
+            {(PLAN_FEATURES[plan] || []).map((feat, i) => (
+              <p key={i} className="flex items-center gap-1.5 text-xs text-zinc-400">
+                <span className="text-teal-500 shrink-0">&#10003;</span>
+                {feat}
+              </p>
+            ))}
           </div>
 
           <div className="mt-5">
@@ -408,7 +456,7 @@ export default function Dashboard({ onClose, onUpgrade }) {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.04 }}
                     onClick={() => setSelectedAnalysis(a)}
-                    className="px-6 py-4 flex items-start gap-3 hover:bg-white/[0.025] active:bg-white/[0.04] cursor-pointer transition group"
+                    className="relative px-6 py-4 flex items-start gap-3 cursor-pointer transition-all group border-l-2 border-transparent hover:border-teal-500/50 hover:bg-white/[0.04] active:bg-white/[0.05]"
                   >
                     <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.07] flex items-center justify-center shrink-0 mt-0.5 group-hover:border-teal-500/30 transition">
                       <FileText className="w-3.5 h-3.5 text-zinc-500 group-hover:text-teal-400 transition" />
