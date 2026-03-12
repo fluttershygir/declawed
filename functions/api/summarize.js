@@ -2,6 +2,41 @@
 // Receives { text: string } (PDF parsed on client), JWT in Authorization header.
 // env: ANTHROPIC_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
 
+const LANDLORD_PROMPT = `You are a landlord-side real estate attorney reviewing a lease agreement. Analyze the lease from the LANDLORD'S perspective and return ONLY a JSON object with exactly these keys:
+
+{
+  "score": number,
+  "verdict": "string",
+  "redFlags": [{"text": "string", "severity": "HIGH"|"MEDIUM"|"LOW"}],
+  "keyDates": [{"label": "string", "value": "string"}],
+  "tenantRights": ["string"],
+  "actionSteps": ["string"],
+  "unusualClauses": ["string"]
+}
+
+score: Integer 1–10 rating of how well this lease protects the LANDLORD (1 = very weak landlord protections, 10 = very strong landlord protections).
+
+verdict: 1–2 sentences naming the single biggest landlord risk in this lease and overall assessment of how well the landlord is protected.
+
+redFlags: 3–6 items that create RISK OR LIABILITY FOR THE LANDLORD — clauses that:
+  HIGH: expose the landlord to significant legal liability, missing clauses that landlords typically need (no auto-renewal, no early termination fee, no attorney's fees clause), language that could be challenged as unenforceable, clauses waiving landlord's standard remedies, missing required disclosures that could void the lease.
+  MEDIUM: tenant obligations that are vague or hard to enforce, notice periods too short to protect landlord interests, rent increase restrictions, unusual repair/maintenance allocations that favor the tenant.
+  LOW: minor administrative gaps, cosmetic issues, non-standard formatting that could cause ambiguity.
+
+keyDates: Every important date or deadline the landlord must track (rent due dates, lease expiry, notice deadlines, inspection windows, deposit return deadlines).
+
+tenantRights: 3–5 TENANT OBLIGATIONS under this lease — things the tenant is contractually required to do that the landlord can enforce.
+
+actionSteps: 3–5 SPECIFIC changes the landlord's attorney should make to strengthen this lease before using it again — each must:
+  - Reference the exact clause, section number, or missing provision
+  - State exactly what to add, remove, or rewrite
+  - Explain the legal protection it provides
+  Examples: "Add an attorney's fees clause — currently absent — so landlord can recover legal costs if tenant defaults", "Tighten Section 8 to specify tenant is responsible for all pest control costs, not just 'infestations they cause'", "Add a holdover rent clause at 150% of monthly rent — currently silent on holdover tenancy"
+
+unusualClauses: 2–4 clauses that are atypical, overly tenant-favorable, or may be unenforceable under standard landlord-tenant law.
+
+Respond with ONLY valid JSON. No markdown, no explanation, no text outside the JSON object.`;
+
 const SYSTEM_PROMPT = `You are a tenant-rights legal document analyzer. Read the lease and return ONLY a JSON object with exactly these keys:
 
 {
@@ -112,8 +147,9 @@ async function handleRequest(request, env) {
   let body;
   try { body = await request.json(); } catch { return json({ error: 'Invalid JSON body.' }, 400); }
 
-  const { text, filename, imageBase64, imageMediaType } = body || {};
+  const { text, filename, imageBase64, imageMediaType, landlordMode: rawLandlordMode } = body || {};
   const isImageRequest = !!imageBase64;
+  const landlordMode = rawLandlordMode === true;
 
   if (!isImageRequest && (!text || text.trim().length < 50)) {
     return json({ error: 'Document text is too short or missing.' }, 400);
@@ -166,14 +202,24 @@ async function handleRequest(request, env) {
 
   // --- Pick model based on plan ---
   const isPaid = userId && ['one', 'pro', 'unlimited'].includes(userPlan);
+  const isUnlimited = userId && userPlan === 'unlimited';
+
+  // Landlord mode requires Unlimited plan
+  const useLandlordMode = landlordMode && isUnlimited;
 
   // Image analysis requires a paid plan (vision-capable model)
   if (isImageRequest && !isPaid) {
     return json({ error: 'Image scanning is available on paid plans. Please upgrade.' }, 402);
   }
 
+  // Landlord mode requires Unlimited
+  if (landlordMode && !isUnlimited) {
+    return json({ error: 'Landlord Mode is available on the Unlimited plan.' }, 402);
+  }
+
   const model = isPaid ? 'claude-sonnet-4-6' : 'claude-haiku-4-5-20251001';
   const modelTier = isPaid ? 'advanced' : 'standard';
+  const activePrompt = useLandlordMode ? LANDLORD_PROMPT : SYSTEM_PROMPT;
 
   // --- Build Anthropic message content ---
   const userMessageContent = isImageRequest
@@ -186,16 +232,16 @@ async function handleRequest(request, env) {
             data: imageBase64,
           },
         },
-        { type: 'text', text: 'Analyze this lease document shown in the image:' },
+        { type: 'text', text: useLandlordMode ? 'Analyze this lease from the landlord\'s perspective:' : 'Analyze this lease document shown in the image:' },
       ]
-    : `Analyze this lease:\n\n${text.slice(0, isPaid ? 40000 : 20000)}`;
+    : `${useLandlordMode ? 'Analyze this lease from the landlord\'s perspective' : 'Analyze this lease'}:\n\n${text.slice(0, isPaid ? 40000 : 20000)}`;
 
   // --- AI call (with one retry on server errors) ---
   let claudeRes = await callAnthropic(
     env.ANTHROPIC_API_KEY,
     model,
     isPaid ? 2048 : 2000,
-    SYSTEM_PROMPT,
+    activePrompt,
     userMessageContent
   );
   if (!claudeRes.ok && claudeRes.status >= 500) {
@@ -204,7 +250,7 @@ async function handleRequest(request, env) {
       env.ANTHROPIC_API_KEY,
       model,
       isPaid ? 2048 : 2000,
-      SYSTEM_PROMPT,
+      activePrompt,
       userMessageContent
     );
   }
@@ -259,7 +305,7 @@ async function handleRequest(request, env) {
     responseHeaders.append('Set-Cookie', 'dcl_free_used=1; Path=/; HttpOnly; SameSite=Strict; Max-Age=31536000; Secure');
   }
 
-  return new Response(JSON.stringify({ summary: analysis, modelTier }), { status: 200, headers: responseHeaders });
+  return new Response(JSON.stringify({ summary: analysis, modelTier, landlordMode: useLandlordMode }), { status: 200, headers: responseHeaders });
 }
 
 export async function onRequestOptions() {

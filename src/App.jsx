@@ -53,6 +53,8 @@ function MainApp() {
   const [successToast, setSuccessToast] = useState(null);
   const [modelTier, setModelTier] = useState(null);
   const [uploadedFilename, setUploadedFilename] = useState('');
+  const [landlordMode, setLandlordMode] = useState(false);
+  const [analysisLandlordMode, setAnalysisLandlordMode] = useState(false);
 
   const fetchUsage = async () => {
     try {
@@ -117,6 +119,7 @@ function MainApp() {
     setError('');
     setSummary('');
     setModelTier(null);
+    setAnalysisLandlordMode(false);
     setUploadedFilename(filename || '');
     setLoading(true);
     try {
@@ -125,8 +128,8 @@ function MainApp() {
       if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`;
 
       const bodyPayload = imageBase64
-        ? { imageBase64, imageMediaType, filename }
-        : { text, filename };
+        ? { imageBase64, imageMediaType, filename, landlordMode: payload?.landlordMode }
+        : { text, filename, landlordMode: payload?.landlordMode };
 
       const res = await fetch('/api/summarize', {
         method: 'POST',
@@ -152,6 +155,7 @@ function MainApp() {
       if (!res.ok || data.error) throw new Error(data.error || 'Something went wrong.');
       setSummary(data.summary);
       setModelTier(data.modelTier || null);
+      setAnalysisLandlordMode(!!data.landlordMode);
       fetchUsage();
     } catch (e) {
       setError(e.message || 'Something went wrong.');
@@ -170,8 +174,8 @@ function MainApp() {
       {/* Tool: upload + summary */}
       <section id="upload" className="w-full flex flex-col items-center px-4 py-16 border-t border-white/[0.05]">
         <div className="w-full max-w-5xl grid md:grid-cols-[1fr_1.2fr] gap-6">
-          <UploadPanel onUpload={handleUpload} loading={loading} usage={usage} onUpgrade={() => setPaywallOpen(true)} />
-          <SummaryPanel summary={summary} loading={loading} error={error} modelTier={modelTier} usage={usage} filename={uploadedFilename} onUpgrade={() => setPaywallOpen(true)} />
+          <UploadPanel onUpload={handleUpload} loading={loading} usage={usage} onUpgrade={() => setPaywallOpen(true)} landlordMode={landlordMode} onLandlordModeChange={setLandlordMode} />
+          <SummaryPanel summary={summary} loading={loading} error={error} modelTier={modelTier} usage={usage} filename={uploadedFilename} onUpgrade={() => setPaywallOpen(true)} landlordMode={analysisLandlordMode} />
         </div>
       </section>
 

@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Upload, FileText, Loader2, AlertCircle, Lock, Zap, Image as ImageIcon } from 'lucide-react';
+import { Upload, FileText, Loader2, AlertCircle, Lock, Zap, Image as ImageIcon, Building2 } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
 import * as mammoth from 'mammoth';
 
@@ -57,14 +57,16 @@ async function extractTextFromPdf(file) {
   return pages.join('\n');
 }
 
-export default function UploadPanel({ onUpload, loading, usage, onUpgrade }) {
+export default function UploadPanel({ onUpload, loading, usage, onUpgrade, landlordMode, onLandlordModeChange }) {
   const inputRef = useRef(null);
   const [fileName, setFileName] = useState('');
   const [dragActive, setDragActive] = useState(false);
   const [parseError, setParseError] = useState('');
   const [isImage, setIsImage] = useState(false);
+  const [tooltipVisible, setTooltipVisible] = useState(false);
 
   const isPaidUser = usage?.plan && ['one', 'pro', 'unlimited'].includes(usage.plan);
+  const isUnlimited = usage?.plan === 'unlimited';
 
   const handleFile = async (file) => {
     if (!file) return;
@@ -90,7 +92,7 @@ export default function UploadPanel({ onUpload, loading, usage, onUpgrade }) {
       setFileName(file.name);
       setIsImage(true);
       const imageBase64 = await resizeAndEncodeImage(file);
-      onUpload({ imageBase64, imageMediaType: 'image/jpeg', filename: file.name });
+      onUpload({ imageBase64, imageMediaType: 'image/jpeg', filename: file.name, landlordMode: !!landlordMode });
       return;
     }
     setFileName(file.name);
@@ -108,7 +110,7 @@ export default function UploadPanel({ onUpload, loading, usage, onUpgrade }) {
       setParseError('Could not extract text. Ensure the file is not a scanned image.');
       return;
     }
-    onUpload({ text, filename: file.name });
+    onUpload({ text, filename: file.name, landlordMode: !!landlordMode });
   };
 
   const handleDrop = (e) => {
@@ -134,6 +136,76 @@ export default function UploadPanel({ onUpload, loading, usage, onUpgrade }) {
       <p className="text-sm text-slate-400 mb-4">
         PDF, .docx, .txt{isPaidUser ? ', or image (JPG/PNG/WebP)' : ''} · Processed in your browser — your file is never stored.
       </p>
+
+      {/* Landlord Mode toggle */}
+      <div className="flex items-center justify-between mb-4 rounded-xl border px-3.5 py-2.5 transition-all duration-200"
+        style={{
+          borderColor: landlordMode ? 'rgba(245,158,11,0.35)' : 'rgba(51,65,85,0.6)',
+          background: landlordMode ? 'rgba(245,158,11,0.06)' : 'rgba(15,23,42,0.3)',
+        }}
+      >
+        <div className="flex items-center gap-2">
+          <Building2 className={`w-3.5 h-3.5 shrink-0 transition-colors ${landlordMode ? 'text-amber-400' : 'text-zinc-500'}`} />
+          <span className={`text-xs font-semibold transition-colors ${landlordMode ? 'text-amber-300' : 'text-zinc-400'}`}>
+            Landlord Mode
+          </span>
+          {/* Tooltip trigger */}
+          <div className="relative">
+            <button
+              type="button"
+              onMouseEnter={() => setTooltipVisible(true)}
+              onFocus={() => setTooltipVisible(true)}
+              onMouseLeave={() => setTooltipVisible(false)}
+              onBlur={() => setTooltipVisible(false)}
+              className="w-4 h-4 rounded-full border border-zinc-600 text-zinc-500 hover:text-zinc-300 hover:border-zinc-400 transition text-[9px] font-bold flex items-center justify-center leading-none"
+              aria-label="Landlord Mode info"
+            >
+              ?
+            </button>
+            {tooltipVisible && (
+              <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-56 rounded-lg bg-zinc-800 border border-zinc-700 shadow-xl p-2.5 text-[11px] text-zinc-300 leading-relaxed z-30 pointer-events-none">
+                <p className="font-semibold text-amber-300 mb-1">Landlord Mode</p>
+                Analyzes the lease from a landlord&rsquo;s perspective — highlighting tenant obligations, liability gaps, unenforceable clauses, and recommended additions to better protect you as the landlord.
+                {!isUnlimited && <p className="mt-1.5 text-amber-400 font-semibold">Requires Unlimited plan.</p>}
+                <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-zinc-800" />
+              </div>
+            )}
+          </div>
+          {!isUnlimited && (
+            <span className="text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500/70 border border-amber-500/20">Unlimited</span>
+          )}
+        </div>
+
+        {/* The toggle switch */}
+        {isUnlimited ? (
+          <button
+            type="button"
+            role="switch"
+            aria-checked={!!landlordMode}
+            onClick={() => onLandlordModeChange?.(!landlordMode)}
+            className={`relative w-9 h-5 rounded-full border transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50 ${
+              landlordMode
+                ? 'bg-amber-400 border-amber-500'
+                : 'bg-zinc-700 border-zinc-600'
+            }`}
+          >
+            <span
+              className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform duration-200 ${
+                landlordMode ? 'translate-x-4' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={onUpgrade}
+            className="relative w-9 h-5 rounded-full border bg-zinc-800 border-zinc-700 opacity-50 cursor-pointer"
+            aria-label="Upgrade to unlock Landlord Mode"
+          >
+            <span className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-zinc-600 shadow" />
+          </button>
+        )}
+      </div>
 
       <div
         onDrop={handleDrop}
