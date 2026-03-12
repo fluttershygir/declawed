@@ -36,6 +36,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import CookiePolicy from './pages/CookiePolicy';
 import Contact from './pages/Contact';
+import SharedReport from './pages/SharedReport';
 import './index.css';
 
 function DashboardPage() {
@@ -209,6 +210,7 @@ export default function App() {
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/cookies" element={<CookiePolicy />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/shared/:token" element={<SharedReport />} />
           </Routes>
         </AuthProvider>
       </BrowserRouter>

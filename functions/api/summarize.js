@@ -298,7 +298,14 @@ async function handleRequest(request, env) {
         'Content-Type': 'application/json',
         Prefer: 'return=minimal',
       },
-      body: JSON.stringify({ user_id: userId, filename: filename || null, verdict: analysis.verdict, result: analysis }),
+      body: JSON.stringify({
+        user_id: userId,
+        filename: filename || null,
+        verdict: analysis.verdict,
+        result: analysis,
+        // Store original text for re-analysis (null for image uploads)
+        source_text: isImageRequest ? null : (text ? text.slice(0, 40000) : null),
+      }),
     });
   } else {
     // Anonymous — set a simple cookie. Not tamper-proof like before, but Supabase auth is the real gate now.

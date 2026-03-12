@@ -21,12 +21,15 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 -- Stores analysis history for paid/logged-in users.
 -- =========================================================
 CREATE TABLE IF NOT EXISTS public.analyses (
-  id          UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id     UUID        REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
-  filename    TEXT,
-  verdict     TEXT,
-  result      JSONB,
-  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  id           UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id      UUID        REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  filename     TEXT,
+  verdict      TEXT,
+  result       JSONB,
+  note         TEXT,                 -- user's personal note (max 500 chars)
+  share_token  TEXT UNIQUE,          -- read-only share token
+  source_text  TEXT,                 -- original lease text for re-analysis
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- =========================================================

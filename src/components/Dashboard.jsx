@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, LogOut, Zap, ChevronRight, X, AlertCircle, Calendar, ShieldCheck, AlertTriangle, FileCheck, Upload, ArrowLeft, ListChecks, RefreshCw, FileImage, Loader2, Download } from 'lucide-react';
+import { FileText, LogOut, Zap, ChevronRight, X, AlertCircle, Calendar, ShieldCheck, AlertTriangle, FileCheck, Upload, ArrowLeft, ListChecks, RefreshCw, FileImage, Loader2, Download, Pencil, Share2, RotateCcw, Copy, Check, Users } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 
@@ -43,10 +43,18 @@ const LogoMark = () => (
   </div>
 );
 
-function AnalysisModal({ analysis, onClose }) {
+function AnalysisModal({ analysis, onClose, onNoteUpdate, onReanalyzeComplete, onUpgrade }) {
   const data = analysis?.result || {};
   const cardRef = useRef(null);
   const [downloading, setDownloading] = useState('');
+  const [note, setNote] = useState(analysis?.note ?? '');
+  const [editingNote, setEditingNote] = useState(false);
+  const [noteSaving, setNoteSaving] = useState(false);
+  const [shareLoading, setShareLoading] = useState(false);
+  const [shareToken, setShareToken] = useState(analysis?.share_token ?? null);
+  const [shareCopied, setShareCopied] = useState(false);
+  const [reanalyzeLoading, setReanalyzeLoading] = useState(false);
+  const [reanalyzeError, setReanalyzeError] = useState(null);
   const score = data.score ?? null;
 
   async function handleDownload(type) {
@@ -82,11 +90,84 @@ function AnalysisModal({ analysis, onClose }) {
     }
   }
   const isRed = score !== null && score <= 4;
+
+  async function handleSaveNote() {
+    setNoteSaving(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      await fetch('/api/note', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ analysis_id: analysis.id, note }),
+      });
+      setEditingNote(false);
+      onNoteUpdate?.(analysis.id, note);
+    } finally {
+      setNoteSaving(false);
+    }
+  }
+
+  async function handleShare() {
+    setShareLoading(true);
+    try {
+      let token = shareToken;
+      if (!token) {
+        const { data: { session } } = await supabase.auth.getSession();
+        const res = await fetch('/api/share', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+          body: JSON.stringify({ analysis_id: analysis.id }),
+        });
+        const d = await res.json();
+        token = d.share_token;
+        if (token) setShareToken(token);
+      }
+      if (token) {
+        await navigator.clipboard.writeText(`https://declawed.app/shared/${token}`);
+        setShareCopied(true);
+        setTimeout(() => setShareCopied(false), 2500);
+      }
+    } catch { /* ignore */ } finally {
+      setShareLoading(false);
+    }
+  }
+
+  async function handleReanalyze() {
+    setReanalyzeLoading(true);
+    setReanalyzeError(null);
+    try {
+      const { data: srcData } = await supabase
+        .from('analyses')
+        .select('source_text')
+        .eq('id', analysis.id)
+        .single();
+      if (!srcData?.source_text) {
+        setReanalyzeError('Original text not stored — please re-upload the file to re-analyze.');
+        return;
+      }
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/summarize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ text: srcData.source_text, filename: analysis.filename }),
+      });
+      if (res.status === 402) { onUpgrade?.(); return; }
+      const resData = await res.json();
+      if (!res.ok || resData.error) throw new Error(resData.error || 'Analysis failed');
+      onReanalyzeComplete?.();
+    } catch (e) {
+      if (e.message !== 'Analysis failed') setReanalyzeError(e.message || 'Re-analysis failed.');
+    } finally {
+      setReanalyzeLoading(false);
+    }
+  }
+
+  const isRed2 = score !== null && score <= 4;
   const isYellow = score !== null && score >= 5 && score <= 7;
   const isGreen = score !== null && score >= 8;
-  const scoreColor = isRed ? 'text-rose-400' : isYellow ? 'text-amber-400' : isGreen ? 'text-emerald-400' : 'text-zinc-400';
-  const scoreRing = isRed ? 'border-rose-500/40 bg-rose-500/[0.07]' : isYellow ? 'border-amber-500/40 bg-amber-500/[0.07]' : isGreen ? 'border-emerald-500/40 bg-emerald-500/[0.07]' : 'border-zinc-700 bg-zinc-800/40';
-  const scoreLabel = isRed ? 'Problematic' : isYellow ? 'Fair' : isGreen ? 'Favorable' : '';
+  const scoreColor = isRed2 ? 'text-rose-400' : isYellow ? 'text-amber-400' : isGreen ? 'text-emerald-400' : 'text-zinc-400';
+  const scoreRing = isRed2 ? 'border-rose-500/40 bg-rose-500/[0.07]' : isYellow ? 'border-amber-500/40 bg-amber-500/[0.07]' : isGreen ? 'border-emerald-500/40 bg-emerald-500/[0.07]' : 'border-zinc-700 bg-zinc-800/40';
+  const scoreLabel = isRed2 ? 'Problematic' : isYellow ? 'Fair' : isGreen ? 'Favorable' : '';
 
   return (
     <AnimatePresence>
@@ -229,6 +310,77 @@ function AnalysisModal({ analysis, onClose }) {
             )}
           </div>
 
+          {/* Note + Share + Re-analyze */}
+          <div className="px-5 py-4 border-t border-white/[0.06] space-y-3">
+            {/* Note */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 flex items-center gap-1.5">
+                  <Pencil className="w-2.5 h-2.5" /> Note
+                </span>
+                {!editingNote && note && (
+                  <button onClick={() => setEditingNote(true)} className="text-[10px] text-teal-500 hover:text-teal-400 transition">Edit</button>
+                )}
+              </div>
+              {editingNote ? (
+                <div>
+                  <textarea
+                    value={note}
+                    onChange={(e) => setNote(e.target.value.slice(0, 500))}
+                    placeholder="Add a personal note about this lease…"
+                    rows={3}
+                    className="w-full rounded-lg bg-white/[0.05] border border-white/[0.08] text-sm text-slate-300 placeholder-zinc-600 px-3 py-2 resize-none focus:outline-none focus:border-teal-500/50 transition"
+                    autoFocus
+                  />
+                  <div className="flex items-center justify-between mt-1.5">
+                    <span className="text-[10px] text-zinc-600">{note.length}/500</span>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => { setNote(analysis?.note ?? ''); setEditingNote(false); }}
+                        className="text-[11px] text-zinc-500 hover:text-zinc-300 transition px-2 py-1"
+                      >Cancel</button>
+                      <button
+                        onClick={handleSaveNote}
+                        disabled={noteSaving}
+                        className="text-[11px] font-semibold px-3 py-1 rounded-lg bg-teal-500/15 text-teal-400 hover:bg-teal-500/25 disabled:opacity-50 transition"
+                      >{noteSaving ? 'Saving…' : 'Save note'}</button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setEditingNote(true)}
+                  className="w-full text-left px-3 py-2.5 rounded-lg bg-white/[0.03] border border-dashed border-white/[0.08] text-sm hover:border-teal-500/30 transition"
+                >
+                  {note
+                    ? <span className="text-slate-300 leading-relaxed">{note}</span>
+                    : <span className="italic text-zinc-600">+ Add a personal note…</span>}
+                </button>
+              )}
+            </div>
+
+            {/* Share + Re-analyze row */}
+            <div className="flex gap-2">
+              <button
+                onClick={handleShare}
+                disabled={shareLoading}
+                className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-white/[0.05] hover:bg-white/[0.09] border border-white/[0.07] text-xs font-semibold text-zinc-400 hover:text-white transition disabled:opacity-50"
+              >
+                {shareLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : shareCopied ? <Check className="w-3 h-3 text-teal-400" /> : <Share2 className="w-3 h-3" />}
+                {shareCopied ? 'Link copied!' : 'Share report'}
+              </button>
+              <button
+                onClick={handleReanalyze}
+                disabled={reanalyzeLoading}
+                className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-white/[0.05] hover:bg-white/[0.09] border border-white/[0.07] text-xs font-semibold text-zinc-400 hover:text-white transition disabled:opacity-50"
+              >
+                {reanalyzeLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <RotateCcw className="w-3 h-3" />}
+                {reanalyzeLoading ? 'Re-analyzing…' : 'Re-analyze'}
+              </button>
+            </div>
+            {reanalyzeError && <p className="text-xs text-rose-400">{reanalyzeError}</p>}
+          </div>
+
           {/* Export bar */}
           <div className="px-5 py-3 border-t border-white/[0.06] bg-white/[0.015] flex items-center gap-2">
             <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 shrink-0">Export</span>
@@ -266,6 +418,9 @@ export default function Dashboard({ onClose, onUpgrade }) {
   const [refundLoading, setRefundLoading] = useState(false);
   const [refundResult, setRefundResult] = useState(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [refCopied, setRefCopied] = useState(false);
+  const [toast, setToast] = useState(null);
+  const [shareLoadingIds, setShareLoadingIds] = useState(new Set());
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -283,7 +438,7 @@ export default function Dashboard({ onClose, onUpgrade }) {
     if (!user) return;
     supabase
       .from('analyses')
-      .select('id, filename, verdict, created_at, result')
+      .select('id, filename, verdict, created_at, result, note, share_token')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(20)
@@ -299,12 +454,72 @@ export default function Dashboard({ onClose, onUpgrade }) {
   const limit = profile?.analyses_limit ?? 1;
   const isUnlimited = plan === 'unlimited';
   const displayName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'there';
+
+  // Computed stats from analysis history
+  const totalRedFlags = analyses.reduce((s, a) => s + (a.result?.redFlags?.length ?? 0), 0);
+  const riskiest = analyses.length
+    ? analyses.reduce((m, a) => ((a.result?.score ?? 11) < (m.result?.score ?? 11)) ? a : m)
+    : null;
   const avatarInitials = displayName.slice(0, 2).toUpperCase();
 
   const handleSignOut = async () => {
     await signOut();
     onClose();
   };
+
+  function handleNoteUpdate(id, newNote) {
+    setAnalyses((prev) => prev.map((a) => (a.id === id ? { ...a, note: newNote } : a)));
+  }
+
+  async function handleReanalyzeComplete() {
+    const { data } = await supabase
+      .from('analyses')
+      .select('id, filename, verdict, created_at, result, note, share_token')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(20);
+    setAnalyses(data || []);
+    setSelectedAnalysis(null);
+    setToast('Re-analysis complete! New result added to your history.');
+    setTimeout(() => setToast(null), 4000);
+  }
+
+  async function shareFromList(e, a) {
+    e.stopPropagation();
+    const id = a.id;
+    if (shareLoadingIds.has(id)) return;
+    setShareLoadingIds((prev) => new Set([...prev, id]));
+    try {
+      let token = a.share_token;
+      if (!token) {
+        const { data: { session } } = await supabase.auth.getSession();
+        const res = await fetch('/api/share', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+          body: JSON.stringify({ analysis_id: id }),
+        });
+        const d = await res.json();
+        token = d.share_token;
+        if (token) setAnalyses((prev) => prev.map((item) => item.id === id ? { ...item, share_token: token } : item));
+      }
+      if (token) {
+        await navigator.clipboard.writeText(`https://declawed.app/shared/${token}`);
+        setToast('Share link copied to clipboard!');
+        setTimeout(() => setToast(null), 3000);
+      }
+    } catch {
+      setToast('Failed to copy link — try again.');
+      setTimeout(() => setToast(null), 3000);
+    } finally {
+      setShareLoadingIds((prev) => { const s = new Set(prev); s.delete(id); return s; });
+    }
+  }
+
+  function handleCopyRef() {
+    navigator.clipboard.writeText(`https://declawed.app/?ref=${user.id}`);
+    setRefCopied(true);
+    setTimeout(() => setRefCopied(false), 2500);
+  }
 
   const handleRefund = async () => {
     setRefundLoading(true);
@@ -457,6 +672,33 @@ export default function Dashboard({ onClose, onUpgrade }) {
           )}
         </motion.div>
 
+        {/* Quick Stats row */}
+        {!loadingHistory && analyses.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.04 }}
+            className="grid grid-cols-3 gap-3 mb-8"
+          >
+            {[
+              { label: 'Total Analyses', value: analyses.length, color: 'text-teal-400' },
+              { label: 'Red Flags Found', value: totalRedFlags, color: 'text-rose-400' },
+              {
+                label: 'Highest Risk',
+                value: riskiest?.result?.score != null ? `${riskiest.result.score}/10` : '—',
+                sub: riskiest?.filename,
+                color: (riskiest?.result?.score ?? 11) <= 4 ? 'text-rose-400' : 'text-amber-400',
+              },
+            ].map(({ label, value, sub, color }) => (
+              <div key={label} className="rounded-xl bg-white/[0.03] border border-white/[0.06] px-4 py-4 text-center">
+                <p className={`text-2xl font-extrabold tabular-nums ${color}`}>{value}</p>
+                {sub && <p className="text-[10px] text-zinc-600 truncate mt-0.5 max-w-[90%] mx-auto">{sub}</p>}
+                <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-zinc-600 mt-1">{label}</p>
+              </div>
+            ))}
+          </motion.div>
+        )}
+
         {/* Analysis history */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -539,6 +781,11 @@ export default function Dashboard({ onClose, onUpgrade }) {
                             <Calendar className="w-2.5 h-2.5" />{dates} key date{dates !== 1 ? 's' : ''}
                           </span>
                         )}
+                        {a.note && (
+                          <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-md bg-white/[0.04] text-zinc-500 border border-white/[0.06]">
+                            <Pencil className="w-2.5 h-2.5" /> note
+                          </span>
+                        )}
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-2 shrink-0">
@@ -548,7 +795,25 @@ export default function Dashboard({ onClose, onUpgrade }) {
                         </span>
                       )}
                       <time className="text-[11px] text-zinc-600">{new Date(a.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</time>
-                      <ChevronRight className="w-3.5 h-3.5 text-zinc-700 group-hover:text-zinc-400 transition" />
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setSelectedAnalysis(a); }}
+                          title="Add / edit note"
+                          className={`p-1 rounded transition ${a.note ? 'text-teal-500 hover:text-teal-400' : 'text-zinc-700 hover:text-zinc-400'}`}
+                        >
+                          <Pencil className="w-3 h-3" />
+                        </button>
+                        <button
+                          onClick={(e) => shareFromList(e, a)}
+                          title="Copy share link"
+                          className="p-1 rounded text-zinc-700 hover:text-zinc-400 transition"
+                        >
+                          {shareLoadingIds.has(a.id)
+                            ? <Loader2 className="w-3 h-3 animate-spin" />
+                            : <Share2 className="w-3 h-3" />}
+                        </button>
+                        <ChevronRight className="w-3.5 h-3.5 text-zinc-700 group-hover:text-zinc-400 transition" />
+                      </div>
                     </div>
                   </motion.li>
                 );
@@ -583,13 +848,59 @@ export default function Dashboard({ onClose, onUpgrade }) {
             Back to app
           </button>
         </div>
+
+        {/* Referral section */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mt-8 rounded-2xl border border-violet-500/20 bg-gradient-to-br from-violet-500/[0.05] to-purple-500/[0.02] p-6"
+        >
+          <div className="flex items-center gap-2 mb-1.5">
+            <Users className="w-4 h-4 text-violet-400" />
+            <p className="font-semibold text-white text-sm">Share Declawed with a friend</p>
+          </div>
+          <p className="text-xs text-zinc-500 mb-4 leading-relaxed">Help someone avoid a bad lease. Share your referral link — it's free for them to try.</p>
+          <div className="flex gap-2">
+            <div className="flex-1 rounded-lg bg-white/[0.04] border border-white/[0.06] px-3 py-2 text-xs text-zinc-400 font-mono truncate select-all">
+              https://declawed.app/?ref={user?.id}
+            </div>
+            <button
+              onClick={handleCopyRef}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-violet-500/15 border border-violet-500/25 text-xs font-semibold text-violet-400 hover:bg-violet-500/25 hover:text-violet-300 transition whitespace-nowrap"
+            >
+              {refCopied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+              {refCopied ? 'Copied!' : 'Copy link'}
+            </button>
+          </div>
+        </motion.div>
       </div>
     </div>
 
     {/* Analysis detail modal */}
     {selectedAnalysis && (
-      <AnalysisModal analysis={selectedAnalysis} onClose={() => setSelectedAnalysis(null)} />
+      <AnalysisModal
+        analysis={selectedAnalysis}
+        onClose={() => setSelectedAnalysis(null)}
+        onNoteUpdate={handleNoteUpdate}
+        onReanalyzeComplete={handleReanalyzeComplete}
+        onUpgrade={onUpgrade}
+      />
     )}
+
+    {/* Toast notification */}
+    <AnimatePresence>
+      {toast && (
+        <motion.div
+          initial={{ opacity: 0, y: -16 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -16 }}
+          className="fixed top-4 left-1/2 -translate-x-1/2 z-[60] px-5 py-2.5 rounded-xl bg-teal-500 text-black text-sm font-semibold shadow-xl shadow-teal-500/25 whitespace-nowrap"
+        >
+          {toast}
+        </motion.div>
+      )}
+    </AnimatePresence>
     </>
   );
 }
