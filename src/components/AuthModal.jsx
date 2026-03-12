@@ -39,6 +39,12 @@ export default function AuthModal({ open, onClose, defaultTab = 'signin' }) {
         const { error: err } = await supabase.auth.signUp({ email, password });
         if (err) throw err;
         setSuccess('Check your email for a confirmation link.');
+        // Fire-and-forget welcome email (no await — don't block UI)
+        fetch('/api/welcome-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        }).catch(() => {});
       } else {
         const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: `${window.location.origin}/reset-password`,

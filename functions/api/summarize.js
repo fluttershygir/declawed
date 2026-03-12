@@ -45,6 +45,37 @@ async function getUserFromJwt(jwt, supabaseUrl, serviceRoleKey) {
   return res.json();
 }
 
+async function callAnthropic(apiKey, model, maxTokens, systemPrompt, messageContent) {
+  return fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: maxTokens,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: messageContent }],
+    }),
+  });
+}
+
+async function checkIpRateLimit(ip, kv) {
+  if (!kv || !ip) return false; // fail open if no KV binding
+  const today = new Date().toISOString().slice(0, 10);
+  const key = `ratelimit:${ip}:${today}`;
+  try {
+    const count = parseInt((await kv.get(key)) || '0');
+    if (count >= 3) return true;
+    await kv.put(key, String(count + 1), { expirationTtl: 86400 });
+    return false;
+  } catch {
+    return false; // fail open on KV errors
+  }
+}
+
 export async function onRequestPost(context) {
   const { request, env } = context;
   try {
@@ -102,7 +133,12 @@ async function handleRequest(request, env) {
       }
     }
   } else {
-    // Anonymous — enforce via signed cookie
+    // Anonymous — check IP rate limit first, then cookie
+    const clientIp = request.headers.get('CF-Connecting-IP') || '';
+    const rateLimited = await checkIpRateLimit(clientIp, env.RATE_LIMIT_KV);
+    if (rateLimited) {
+      return json({ error: 'Too many requests from this network. Please try again tomorrow or create a free account.' }, 429);
+    }
     const cookieHeader = request.headers.get('Cookie') || '';
     if (cookieHeader.includes('dcl_free_used=1')) {
       return json({ error: 'Free analysis already used. Please sign in or upgrade.' }, 402);
@@ -117,7 +153,7 @@ async function handleRequest(request, env) {
     return json({ error: 'Image scanning is available on paid plans. Please upgrade.' }, 402);
   }
 
-  const model = isPaid ? 'claude-sonnet-4-5' : 'claude-haiku-4-5';
+  const model = isPaid ? 'claude-sonnet-4-6' : 'claude-haiku-4-5-20251001';
   const modelTier = isPaid ? 'advanced' : 'standard';
 
   // --- Build Anthropic message content ---
@@ -135,28 +171,29 @@ async function handleRequest(request, env) {
       ]
     : `Analyze this lease:\n\n${text.slice(0, isPaid ? 40000 : 20000)}`;
 
-  // --- AI call ---
-  const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': env.ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
+  // --- AI call (with one retry on server errors) ---
+  let claudeRes = await callAnthropic(
+    env.ANTHROPIC_API_KEY,
+    model,
+    isPaid ? 2048 : 1500,
+    SYSTEM_PROMPT,
+    userMessageContent
+  );
+  if (!claudeRes.ok && claudeRes.status >= 500) {
+    await new Promise((r) => setTimeout(r, 2000));
+    claudeRes = await callAnthropic(
+      env.ANTHROPIC_API_KEY,
       model,
-      max_tokens: isPaid ? 2048 : 1500,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: userMessageContent }],
-    }),
-  });
+      isPaid ? 2048 : 1500,
+      SYSTEM_PROMPT,
+      userMessageContent
+    );
+  }
 
   if (!claudeRes.ok) {
     const err = await claudeRes.text();
-    console.error('Claude error:', err);
-    let detail = err;
-    try { detail = JSON.parse(err)?.error?.message || err; } catch {}
-    return json({ error: `AI analysis failed: ${detail}` }, 500);
+    console.error('AI error:', err);
+    return json({ error: 'Our AI analysis service is temporarily unavailable. Please try again in a few minutes.' }, 500);
   }
 
   const claudeData = await claudeRes.json();

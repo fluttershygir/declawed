@@ -9,10 +9,11 @@ const TIERS = [
     iconColor: 'text-zinc-400',
     price: '$0',
     period: null,
-    desc: '1 free lease analysis to try it out.',
+    desc: 'Try your first analysis free. No credit card needed.',
     aiTier: 'standard',
     note: null,
     cta: 'Try free',
+    guarantee: null,
     popular: false,
     cardClass: 'border-white/[0.08] bg-white/[0.02]',
     ctaClass: 'border border-white/20 text-zinc-300 hover:border-white/30 hover:text-white',
@@ -28,6 +29,7 @@ const TIERS = [
     aiTier: 'advanced',
     note: 'No subscription ever.',
     cta: 'Analyze my lease',
+    guarantee: '7-day money-back guarantee',
     popular: false,
     cardClass: 'border-cyan-500/20 bg-cyan-500/[0.04]',
     ctaClass: 'border border-cyan-500/50 text-cyan-300 hover:bg-cyan-500/10 hover:border-cyan-400',
@@ -43,6 +45,7 @@ const TIERS = [
     aiTier: 'advanced',
     note: null,
     cta: 'Get Pro',
+    guarantee: '7-day money-back guarantee',
     popular: true,
     cardClass: 'border-teal-400/40 bg-teal-500/[0.07] shadow-[0_0_48px_rgba(20,184,166,0.12)]',
     ctaClass: 'bg-teal-500 text-black font-semibold hover:bg-teal-400 shadow-lg shadow-teal-500/20',
@@ -58,6 +61,7 @@ const TIERS = [
     aiTier: 'advanced',
     note: null,
     cta: 'Go unlimited',
+    guarantee: null,
     popular: false,
     cardClass: 'border-emerald-500/20 bg-emerald-500/[0.04]',
     ctaClass: 'border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 hover:border-emerald-400',
@@ -80,7 +84,7 @@ export default function PricingSection({ onSelectTier }) {
         </motion.div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {TIERS.map(({ key, label, icon: Icon, iconColor, price, period, desc, aiTier, note, cta, popular, cardClass, ctaClass }, i) => (
+          {TIERS.map(({ key, label, icon: Icon, iconColor, price, period, desc, aiTier, note, cta, guarantee, popular, cardClass, ctaClass }, i) => (
             <motion.div
               key={key}
               initial={{ opacity: 0, y: 20 }}
@@ -106,6 +110,9 @@ export default function PricingSection({ onSelectTier }) {
                   <span className="text-sm font-normal text-zinc-500 ml-1">{period}</span>
                 )}
               </div>
+              {key === 'one' && (
+                <p className="text-[11px] text-zinc-600 mt-0.5">A lawyer charges $200+/hr for this</p>
+              )}
 
               <p className="text-sm text-zinc-400 leading-relaxed mt-2">{desc}</p>
 
@@ -131,19 +138,27 @@ export default function PricingSection({ onSelectTier }) {
               )}
 
               {key === 'starter' ? (
-                <a
-                  href="/#upload"
-                  className={`mt-6 w-full rounded-xl py-2.5 text-sm transition-all active:scale-95 text-center block ${ctaClass}`}
-                >
-                  {cta}
-                </a>
+                <>
+                  <a
+                    href="/#upload"
+                    className={`mt-6 w-full rounded-xl py-2.5 text-sm transition-all active:scale-95 text-center block ${ctaClass}`}
+                  >
+                    {cta}
+                  </a>
+                  <p className="mt-2 text-center text-[11px] text-zinc-600">No credit card required</p>
+                </>
               ) : (
-                <button
-                  onClick={onSelectTier}
-                  className={`mt-6 w-full rounded-xl py-2.5 text-sm transition-all active:scale-95 ${ctaClass}`}
-                >
-                  {cta}
-                </button>
+                <>
+                  <button
+                    onClick={onSelectTier}
+                    className={`mt-6 w-full rounded-xl py-2.5 text-sm transition-all active:scale-95 ${ctaClass}`}
+                  >
+                    {cta}
+                  </button>
+                  {guarantee && (
+                    <p className="mt-2 text-center text-[11px] text-zinc-600">✓ {guarantee}</p>
+                  )}
+                </>
               )}
             </motion.div>
           ))}
