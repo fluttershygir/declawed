@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
-  User, Bell, AlertTriangle, Check, Loader2, Lock, Trash2
+  User, Bell, AlertTriangle, Check, Loader2, Lock, Trash2, Mail, Pencil, X
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
@@ -38,11 +38,11 @@ function StatusBanner({ msg }) {
   return (
     <div className={`flex items-center gap-2 p-3 rounded-xl text-sm ${
       msg.ok
-        ? 'bg-blue-500/10 border border-blue-500/20 text-blue-400'
+        ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
         : 'bg-rose-500/10 border border-rose-500/20 text-rose-400'
     }`}>
       {msg.ok
-        ? <Check className="w-4 h-4 shrink-0 text-blue-400" />
+        ? <Check className="w-4 h-4 shrink-0 text-emerald-400" />
         : <AlertTriangle className="w-4 h-4 shrink-0" />
       }
       {msg.text}
@@ -61,6 +61,13 @@ export default function AccountSettings() {
   // Password reset
   const [resetSent, setResetSent]       = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
+  const [resetMsg, setResetMsg]         = useState(null);
+
+  // Email change
+  const [editingEmail,  setEditingEmail]  = useState(false);
+  const [newEmail,      setNewEmail]      = useState('');
+  const [savingEmail,   setSavingEmail]   = useState(false);
+  const [emailMsg,      setEmailMsg]      = useState(null);
 
   // Notification prefs
   const [notifAnalysis, setNotifAnalysis] = useState(false);
@@ -92,28 +99,55 @@ export default function AccountSettings() {
     e.preventDefault();
     setSavingProfile(true);
     setProfileMsg(null);
-    const { error } = await supabase
-      .from('profiles')
-      .update({ full_name: fullName.trim() })
-      .eq('id', user.id);
+    // Use RPC to avoid PostgREST schema-cache issues with the full_name column
+    const { error } = await supabase.rpc('update_full_name', {
+      user_id: user.id,
+      new_name: fullName.trim(),
+    });
+    if (!error) {
+      // Also sync into auth user_metadata so avatar initials update immediately
+      await supabase.auth.updateUser({ data: { full_name: fullName.trim() } });
+    }
     setSavingProfile(false);
     if (error) {
       setProfileMsg({ ok: false, text: error.message });
     } else {
-      setProfileMsg({ ok: true, text: 'Profile updated.' });
+      setProfileMsg({ ok: true, text: 'Name saved successfully.' });
       refreshProfile();
-      // Also update user_metadata so the avatar initials refresh
-      await supabase.auth.updateUser({ data: { full_name: fullName.trim() } });
     }
   }
 
   async function handlePasswordReset() {
     setResetLoading(true);
-    await supabase.auth.resetPasswordForEmail(user.email, {
-      redirectTo: `${window.location.origin}/account`,
+    setResetMsg(null);
+    const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+      redirectTo: `${window.location.origin}/reset-password`,
     });
     setResetLoading(false);
-    setResetSent(true);
+    if (error) {
+      setResetMsg({ ok: false, text: error.message });
+    } else {
+      setResetSent(true);
+      setResetMsg({ ok: true, text: `Password reset email sent to ${user.email}. Check your inbox.` });
+    }
+  }
+
+  async function handleSaveEmail(e) {
+    e.preventDefault();
+    if (!newEmail.trim() || newEmail.trim() === user.email) {
+      setEmailMsg({ ok: false, text: 'Please enter a different email address.' });
+      return;
+    }
+    setSavingEmail(true);
+    setEmailMsg(null);
+    const { error } = await supabase.auth.updateUser({ email: newEmail.trim() });
+    setSavingEmail(false);
+    if (error) {
+      setEmailMsg({ ok: false, text: error.message });
+    } else {
+      setEmailMsg({ ok: true, text: `A confirmation link has been sent to ${newEmail.trim()}. Click it to confirm the change.` });
+      setEditingEmail(false);
+    }
   }
 
   async function handleSaveNotifs() {
@@ -197,16 +231,61 @@ export default function AccountSettings() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">
-                Email Address
-              </label>
-              <input
-                type="email"
-                value={user?.email || ''}
-                disabled
-                className="w-full rounded-xl bg-white/[0.02] border border-white/[0.05] px-4 py-3 text-sm text-zinc-500 cursor-not-allowed select-none"
-              />
-              <p className="mt-1.5 text-[11px] text-zinc-600">Email address cannot be changed.</p>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                  Email Address
+                </label>
+                {!editingEmail && (
+                  <button
+                    type="button"
+                    onClick={() => { setEditingEmail(true); setNewEmail(user?.email || ''); setEmailMsg(null); }}
+                    className="flex items-center gap-1 text-[11px] text-zinc-500 hover:text-blue-400 transition"
+                  >
+                    <Pencil className="w-3 h-3" /> Edit
+                  </button>
+                )}
+              </div>
+              {editingEmail ? (
+                <form onSubmit={handleSaveEmail} className="space-y-2">
+                  <input
+                    type="email"
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    required
+                    autoFocus
+                    placeholder="New email address"
+                    className="w-full rounded-xl bg-white/[0.04] border border-white/[0.08] px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-blue-500/50 transition"
+                  />
+                  <StatusBanner msg={emailMsg} />
+                  <div className="flex gap-2">
+                    <button
+                      type="submit"
+                      disabled={savingEmail}
+                      className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600/10 text-blue-400 text-sm font-semibold hover:bg-blue-600/20 transition disabled:opacity-50"
+                    >
+                      {savingEmail ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Mail className="w-3.5 h-3.5" />}
+                      {savingEmail ? 'Sending…' : 'Send confirmation'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setEditingEmail(false); setEmailMsg(null); }}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-white/[0.08] text-sm text-zinc-500 hover:text-white transition"
+                    >
+                      <X className="w-3.5 h-3.5" /> Cancel
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <>
+                  <input
+                    type="email"
+                    value={user?.email || ''}
+                    disabled
+                    className="w-full rounded-xl bg-white/[0.02] border border-white/[0.05] px-4 py-3 text-sm text-zinc-500 cursor-not-allowed select-none"
+                  />
+                  <StatusBanner msg={emailMsg} />
+                </>
+              )}
             </div>
 
             <StatusBanner msg={profileMsg} />
@@ -229,7 +308,7 @@ export default function AccountSettings() {
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-sm font-medium text-zinc-300">Password</p>
-                <p className="text-xs text-zinc-600 mt-0.5">We'll send a reset link to your email address.</p>
+                <p className="text-xs text-zinc-600 mt-0.5">We'll email a reset link to {user?.email}.</p>
               </div>
               <button
                 onClick={handlePasswordReset}
@@ -240,9 +319,10 @@ export default function AccountSettings() {
                   ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   : <Lock className="w-3.5 h-3.5" />
                 }
-                {resetSent ? 'Reset email sent ✓' : 'Change password'}
+                {resetSent ? 'Email sent ✓' : 'Send reset link'}
               </button>
             </div>
+            {resetMsg && <div className="mt-3"><StatusBanner msg={resetMsg} /></div>}
           </div>
         </motion.section>
 

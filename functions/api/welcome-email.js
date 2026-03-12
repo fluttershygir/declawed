@@ -36,25 +36,69 @@ export async function onRequestPost(context) {
       body: JSON.stringify({
         from: `Declawed <${fromEmail}>`,
         to: email,
-        subject: "Welcome to Declawed \u2014 here's how to get started",
-        html: `<div style="font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#0f0f0f;color:#e4e4e7">
-  <h2 style="color:#14b8a6;margin:0 0 16px">Welcome to Declawed &#x1F44B;</h2>
-  <p style="color:#a1a1aa">Thanks for signing up. Here&rsquo;s how to get the most out of it:</p>
-  <ol style="color:#d4d4d8;line-height:1.8">
-    <li><strong>Upload your lease</strong> &mdash; PDF, .docx, or even a photo of it.</li>
-    <li><strong>Get your Lease Score</strong> &mdash; a 1&ndash;10 rating plus plain-English red flags and key dates.</li>
-    <li><strong>Review action steps</strong> &mdash; specific things to negotiate before you sign.</li>
-  </ol>
-  <p style="color:#a1a1aa">Your first analysis is free. No credit card needed.</p>
-  <a href="https://declawed.app/#upload"
-     style="display:inline-block;background:#14b8a6;color:#000;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;margin-top:16px">
-    Analyze a lease now &rarr;
-  </a>
-  <p style="margin-top:32px;color:#52525b;font-size:13px">
-    Questions? Reply to this email or visit
-    <a href="https://declawed.app/contact" style="color:#14b8a6">declawed.app/contact</a>
-  </p>
-</div>`,
+        subject: 'Welcome to Declawed — your lease analyzer is ready',
+        html: `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1.0" /></head>
+<body style="margin:0;padding:0;background-color:#0a0a0f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0a0a0f;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="100%" style="max-width:560px;background-color:#111118;border:1px solid rgba(255,255,255,0.08);border-radius:16px;overflow:hidden;">
+        <!-- Header -->
+        <tr>
+          <td style="background:linear-gradient(135deg,#0d9488,#06b6d4);padding:28px 32px;text-align:center;">
+            <table cellpadding="0" cellspacing="0" style="margin:0 auto;"><tr>
+              <td style="width:40px;height:40px;background:rgba(255,255,255,0.15);border-radius:10px;text-align:center;vertical-align:middle;"></td>
+              <td style="padding-left:10px;vertical-align:middle;"><span style="font-size:20px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;">Declawed</span></td>
+            </tr></table>
+          </td>
+        </tr>
+        <!-- Body -->
+        <tr>
+          <td style="padding:36px 32px;">
+            <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;">Welcome aboard &#x1F44B;</h1>
+            <p style="margin:0 0 20px;font-size:15px;color:#a1a1aa;line-height:1.6;">
+              Your free Declawed account is ready. Upload any lease and get a full plain-English breakdown in under 30 seconds — red flags, key dates, and exactly what to negotiate before signing.
+            </p>
+            <table cellpadding="0" cellspacing="0" style="width:100%;margin-bottom:28px;border:1px solid rgba(255,255,255,0.07);border-radius:12px;overflow:hidden;">
+              <tr><td style="padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.05);">
+                <span style="font-size:14px;color:#e4e4e7;"><strong style="color:#0d9488;">1.</strong>&nbsp; Upload your lease — PDF, Word doc, or a photo.</span>
+              </td></tr>
+              <tr><td style="padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.05);">
+                <span style="font-size:14px;color:#e4e4e7;"><strong style="color:#0d9488;">2.</strong>&nbsp; Get your Lease Score (1–10) with a plain-English verdict.</span>
+              </td></tr>
+              <tr><td style="padding:14px 16px;">
+                <span style="font-size:14px;color:#e4e4e7;"><strong style="color:#0d9488;">3.</strong>&nbsp; Review action steps — what to fix before you sign.</span>
+              </td></tr>
+            </table>
+            <table cellpadding="0" cellspacing="0"><tr>
+              <td style="background-color:#0d9488;border-radius:10px;">
+                <a href="https://declawed.app/#upload"
+                   style="display:inline-block;padding:14px 28px;font-size:15px;font-weight:700;color:#000000;text-decoration:none;letter-spacing:-0.1px;">
+                  Analyze your lease now &rarr;
+                </a>
+              </td>
+            </tr></table>
+            <p style="margin:24px 0 0;font-size:13px;color:#52525b;line-height:1.6;">
+              Your first analysis is completely free. No credit card needed.<br />
+              Questions? <a href="https://declawed.app/contact" style="color:#0d9488;text-decoration:none;">Contact us</a> any time.
+            </p>
+          </td>
+        </tr>
+        <!-- Footer -->
+        <tr>
+          <td style="padding:20px 32px;border-top:1px solid rgba(255,255,255,0.06);">
+            <p style="margin:0;font-size:12px;color:#3f3f46;text-align:center;">
+              Declawed &middot; AI-powered lease analysis &middot;
+              <a href="https://declawed.app" style="color:#0d9488;text-decoration:none;">declawed.app</a>
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`,
       }),
     });
   } catch (e) {

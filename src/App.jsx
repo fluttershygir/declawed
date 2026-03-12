@@ -41,6 +41,7 @@ import Contact from './pages/Contact';
 import SharedReport from './pages/SharedReport';
 import AccountSettings from './pages/AccountSettings';
 import Billing from './pages/Billing';
+import ResetPassword from './pages/ResetPassword';
 import './index.css';
 
 const PAID_PLANS = new Set(['one', 'pro', 'unlimited']);
@@ -439,6 +440,7 @@ export default function App() {
             <Route path="/shared/:token" element={<SharedReport />} />
             <Route path="/account" element={<AccountSettings />} />
             <Route path="/billing" element={<Billing />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
           </Routes>
         </AuthProvider>
       </BrowserRouter>
