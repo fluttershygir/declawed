@@ -6,15 +6,17 @@ const SYSTEM_PROMPT = `You are a tenant-rights legal document analyzer. Read the
 
 {
   "score": number,
+  "verdict": "string",
   "redFlags": [{"text": "string", "severity": "HIGH"|"MEDIUM"|"LOW"}],
   "keyDates": [{"label": "string", "value": "string"}],
   "tenantRights": ["string"],
-  "unusualClauses": ["string"],
-  "verdict": "string",
-  "actionSteps": ["string"]
+  "actionSteps": ["string"],
+  "unusualClauses": ["string"]
 }
 
 score: Integer 1–10 (1–3 = severely problematic, 4–5 = below average, 6–7 = fair, 8–10 = tenant-favorable).
+
+verdict: 1–2 sentences naming the single biggest risk and overall fairness for the tenant, plainly worded.
 
 redFlags: 3–6 harmful clauses. Severity MUST follow these rules exactly:
   HIGH: financial penalties or surprise fees, forfeiture/withholding of security deposit, any clause waiving tenant's right to sue or to habitable conditions, landlord entry without required notice, open-ended or disproportionate tenant liability, clauses likely illegal under most state law, automatic penalty clauses over $50.
@@ -26,11 +28,18 @@ keyDates: Every important date or deadline (move-in, lease end, notice periods, 
 
 tenantRights: 3–5 rights the tenant explicitly holds under this lease.
 
+actionSteps: 3–5 SPECIFIC, actionable steps the tenant should take before signing — each must:
+  - Reference the exact clause, section number, or quoted term from the lease (e.g. "Clause 7", "Section 12", "the $75 late fee")
+  - Name what to ask for or negotiate (removal, cap, written clarification, addendum)
+  - Use plain language a non-lawyer can act on immediately
+  Examples of the level of specificity required:
+    "Ask the landlord to remove or cap the $50/day maintenance charge in Section 5 — it has no upper limit"
+    "Request a written addendum defining 'normal wear and tear' before signing, since the lease holds you liable for all damage"
+    "Negotiate the 60-day notice-to-vacate requirement in Clause 18 down to the standard 30 days"
+    "Get written confirmation that the $1,200 security deposit will be returned within 21 days per state law, not the 60 days listed"
+  If a clause number isn't clearly labeled, reference the specific fee, term, or rule instead. Never write a generic tip.
+
 unusualClauses: 2–4 clauses that are atypical or strange — distinct from red flags (weird/unusual rather than clearly harmful).
-
-verdict: 1–2 sentences naming the single biggest risk and overall fairness for the tenant, plainly worded.
-
-actionSteps: 4–5 specific, actionable things the tenant should negotiate or do before signing — each tied directly to a specific red flag or risk.
 
 Respond with ONLY valid JSON. No markdown, no explanation, no text outside the JSON object.`;
 
@@ -185,7 +194,7 @@ async function handleRequest(request, env) {
   let claudeRes = await callAnthropic(
     env.ANTHROPIC_API_KEY,
     model,
-    isPaid ? 2048 : 1500,
+    isPaid ? 2048 : 2000,
     SYSTEM_PROMPT,
     userMessageContent
   );
@@ -194,7 +203,7 @@ async function handleRequest(request, env) {
     claudeRes = await callAnthropic(
       env.ANTHROPIC_API_KEY,
       model,
-      isPaid ? 2048 : 1500,
+      isPaid ? 2048 : 2000,
       SYSTEM_PROMPT,
       userMessageContent
     );

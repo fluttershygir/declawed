@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, LogOut, Zap, ChevronRight, X, AlertCircle, Calendar, ShieldCheck, AlertTriangle, FileCheck, Upload, ArrowLeft, ClipboardList, RefreshCw } from 'lucide-react';
+import { FileText, LogOut, Zap, ChevronRight, X, AlertCircle, Calendar, ShieldCheck, AlertTriangle, FileCheck, Upload, ArrowLeft, ListChecks, RefreshCw } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 
@@ -176,18 +176,19 @@ function AnalysisModal({ analysis, onClose }) {
 
             {/* What to do before signing */}
             {data.actionSteps?.length > 0 && (
-              <section className="rounded-xl border border-teal-500/20 bg-teal-500/[0.05] p-4">
-                <h3 className="flex items-center gap-1.5 text-teal-300 font-semibold mb-3">
-                  <ClipboardList className="w-4 h-4" /> What to do before signing
-                </h3>
-                <ol className="space-y-3">
+              <section className="rounded-xl border border-teal-500/25 bg-teal-500/[0.05] overflow-hidden">
+                <div className="flex items-center gap-2 px-4 py-2.5 border-b border-teal-500/15 bg-teal-500/[0.04]">
+                  <ListChecks className="w-4 h-4 text-teal-400 shrink-0" />
+                  <h3 className="text-teal-300 font-semibold text-sm">What to do before signing</h3>
+                </div>
+                <ul className="divide-y divide-teal-500/[0.08]">
                   {data.actionSteps.map((step, i) => (
-                    <li key={i} className="flex gap-3 text-slate-300 leading-relaxed">
-                      <span className="w-5 h-5 rounded-full bg-teal-500/20 border border-teal-500/30 text-teal-400 text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
-                      {step}
+                    <li key={i} className="flex items-start gap-3 px-4 py-2.5">
+                      <span className="w-4 h-4 rounded border border-teal-500/40 bg-teal-500/10 text-teal-400 text-[8px] font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
+                      <span className="text-slate-300 leading-relaxed text-sm">{step}</span>
                     </li>
                   ))}
-                </ol>
+                </ul>
               </section>
             )}
           </div>
