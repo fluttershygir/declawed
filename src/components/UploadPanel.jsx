@@ -2,11 +2,18 @@ import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Upload, FileText, Loader2, AlertCircle, Lock, Zap } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
+import * as mammoth from 'mammoth';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.mjs',
   import.meta.url
 ).toString();
+
+async function extractTextFromDocx(file) {
+  const arrayBuffer = await file.arrayBuffer();
+  const result = await mammoth.extractRawText({ arrayBuffer });
+  return result.value;
+}
 
 async function extractTextFromPdf(file) {
   const arrayBuffer = await file.arrayBuffer();
@@ -20,7 +27,7 @@ async function extractTextFromPdf(file) {
   return pages.join('\n');
 }
 
-export default function UploadPanel({ onUpload, loading, usage }) {
+export default function UploadPanel({ onUpload, loading, usage, onUpgrade }) {
   const inputRef = useRef(null);
   const [fileName, setFileName] = useState('');
   const [dragActive, setDragActive] = useState(false);
@@ -31,11 +38,15 @@ export default function UploadPanel({ onUpload, loading, usage }) {
     setParseError('');
     const isText = file.type === 'text/plain' || file.name.endsWith('.txt');
     const isPdf = file.type === 'application/pdf' || file.name.endsWith('.pdf');
-    if (!isPdf && !isText) { setParseError('Only PDF and .txt files are supported.'); return; }
+    const isDocx = file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || file.name.endsWith('.docx');
+    if (!isPdf && !isText && !isDocx) { setParseError('Only PDF, .docx, and .txt files are supported.'); return; }
     setFileName(file.name);
     let text = '';
     if (isText) {
       text = await file.text();
+    } else if (isDocx) {
+      try { text = await extractTextFromDocx(file); }
+      catch { setParseError('Could not read this Word document. Ensure it is a valid .docx file.'); return; }
     } else {
       try { text = await extractTextFromPdf(file); }
       catch { setParseError('Could not read this PDF. Try a text-based (not scanned) PDF.'); return; }
@@ -53,7 +64,8 @@ export default function UploadPanel({ onUpload, loading, usage }) {
     handleFile(e.dataTransfer.files[0]);
   };
 
-  const canUpload = !usage || usage.plan !== 'free' || (usage.used < (usage.limit ?? 1));
+  const freeExhausted = usage && usage.plan === 'free' && (usage.used ?? 0) >= (usage.limit ?? 1);
+  const canUpload = !freeExhausted;
 
   return (
     <motion.section
@@ -67,7 +79,7 @@ export default function UploadPanel({ onUpload, loading, usage }) {
         <h2 className="text-lg font-semibold text-slate-100">Upload your lease</h2>
       </div>
       <p className="text-sm text-slate-400 mb-4">
-        PDF or .txt · Text is extracted in your browser — your file is never uploaded.
+        PDF, .docx, or .txt · Text is extracted in your browser — your file is never uploaded.
       </p>
 
       <div
@@ -84,7 +96,7 @@ export default function UploadPanel({ onUpload, loading, usage }) {
         <input
           ref={inputRef}
           type="file"
-          accept="application/pdf,.pdf,text/plain,.txt"
+          accept="application/pdf,.pdf,text/plain,.txt,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx"
           className="hidden"
           onChange={(e) => handleFile(e.target.files?.[0])}
         />
@@ -94,7 +106,7 @@ export default function UploadPanel({ onUpload, loading, usage }) {
           <FileText className="w-12 h-12 text-slate-500 mb-3" />
         )}
         <p className="text-sm font-medium text-slate-300">
-          {loading ? 'Analyzing lease...' : 'Drop PDF or .txt here, or click to browse'}
+          {loading ? 'Analyzing lease...' : 'Drop PDF, .docx, or .txt here, or click to browse'}
         </p>
         {fileName && !loading && (
           <p className="mt-2 text-xs text-slate-500 truncate max-w-full">{fileName}</p>
