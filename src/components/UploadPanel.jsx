@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Upload, FileText, Loader2, AlertCircle, Lock, Zap, Image as ImageIcon, Building2 } from 'lucide-react';
+import { Upload, FileText, Loader2, AlertCircle, Lock, Zap, Image as ImageIcon, Building2, Gift } from 'lucide-react';
+import ShareToUnlockModal from './ShareToUnlockModal';
 import * as pdfjsLib from 'pdfjs-dist';
 import * as mammoth from 'mammoth';
 
@@ -64,6 +65,7 @@ export default function UploadPanel({ onUpload, loading, usage, onUpgrade, landl
   const [parseError, setParseError] = useState('');
   const [isImage, setIsImage] = useState(false);
   const [tooltipVisible, setTooltipVisible] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
 
   const isPaidUser = usage?.plan && ['one', 'pro', 'unlimited'].includes(usage.plan);
   const isUnlimited = usage?.plan === 'unlimited';
@@ -251,29 +253,44 @@ export default function UploadPanel({ onUpload, loading, usage, onUpgrade, landl
         </div>
       )}
 
-      {/* Free tier exhausted banner */}
+      {/* Free tier exhausted — two-option card */}
       {freeExhausted && (
         <motion.div
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/[0.07] p-4"
+          className="mt-4 rounded-xl border border-white/[0.09] bg-white/[0.03] p-4"
         >
-          <div className="flex items-center gap-2 mb-2">
-            <Lock className="w-4 h-4 text-amber-400 shrink-0" />
-            <p className="text-sm font-semibold text-amber-300">You've used your free analysis</p>
+          <div className="flex items-center gap-2 mb-1.5">
+            <Lock className="w-4 h-4 text-zinc-500 shrink-0" />
+            <p className="text-sm font-semibold text-white">You've used your free analysis</p>
           </div>
-          <p className="text-xs text-zinc-400 leading-relaxed mb-3">
-            Upgrade to analyze more leases — unlock Advanced Declawed AI for deeper results, and image scanning for photos or scanned documents.
+          <p className="text-xs text-zinc-500 leading-relaxed mb-4">
+            Share Declawed with a friend to unlock a free analysis, or upgrade to a paid plan.
           </p>
-          <button
-            onClick={onUpgrade}
-            className="w-full flex items-center justify-center gap-2 rounded-lg bg-teal-500 hover:bg-teal-400 active:scale-95 transition-all text-black text-sm font-semibold py-2"
-          >
-            <Zap className="w-4 h-4" />
-            Upgrade to continue
-          </button>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => setShareModalOpen(true)}
+              className="flex items-center justify-center gap-1.5 rounded-xl py-2.5 px-3 text-xs font-semibold bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20 hover:border-emerald-500/50 transition-all"
+            >
+              <Gift className="w-3.5 h-3.5" />
+              Share for +1 free
+            </button>
+            <button
+              onClick={onUpgrade}
+              className="flex items-center justify-center gap-1.5 rounded-xl py-2.5 px-3 text-xs font-semibold bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all text-white"
+            >
+              <Zap className="w-3.5 h-3.5" />
+              Upgrade
+            </button>
+          </div>
         </motion.div>
       )}
+
+      <ShareToUnlockModal
+        open={shareModalOpen}
+        onClose={() => setShareModalOpen(false)}
+        onUpgrade={() => { setShareModalOpen(false); onUpgrade(); }}
+      />
 
       <p className="mt-4 text-[11px] text-slate-500">
         Not legal advice. For binding decisions, consult a licensed attorney.

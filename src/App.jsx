@@ -77,6 +77,15 @@ function MainApp() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
+  // Capture ?ref=UUID from URL on load and store in localStorage for signup attribution
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (ref && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(ref)) {
+      localStorage.setItem('declawed_ref', ref);
+    }
+  }, []);
+
   // Handle Stripe success redirect and upgrade intent from dashboard
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -161,6 +170,14 @@ function MainApp() {
       setModelTier(data.modelTier || null);
       setAnalysisLandlordMode(!!data.landlordMode);
       fetchUsage();
+      // Fire-and-forget: reward referrer if this is the referred user's first analysis
+      supabase.auth.getSession().then(({ data: sd }) => {
+        if (!sd?.session?.access_token) return;
+        fetch('/api/referral-complete', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${sd.session.access_token}` },
+        }).catch(() => {});
+      });
     } catch (e) {
       setError(e.message || 'Something went wrong.');
     } finally {

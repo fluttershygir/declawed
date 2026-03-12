@@ -48,18 +48,29 @@ export default function AuthModal({ open, onClose, defaultTab = 'signin' }) {
         if (err) throw err;
         onClose();
       } else if (tab === 'signup') {
+        // Read referral code stored by App.jsx when user visited via ?ref=UUID
+        const storedRef = localStorage.getItem('declawed_ref');
+        const refId = storedRef && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(storedRef)
+          ? storedRef
+          : undefined;
+
         const { data, error: err } = await supabase.auth.signUp({
           email,
           password,
-          options: { data: { full_name: fullName.trim() } },
+          options: { data: { full_name: fullName.trim(), ...(refId ? { referred_by: refId } : {}) } },
         });
         if (err) throw err;
-        // Persist full_name to profiles table
+        // Persist full_name (and referred_by if present) to profiles table
         if (data?.user?.id) {
           await supabase
             .from('profiles')
-            .upsert({ id: data.user.id, full_name: fullName.trim() }, { onConflict: 'id' });
+            .upsert(
+              { id: data.user.id, full_name: fullName.trim(), ...(refId ? { referred_by: refId } : {}) },
+              { onConflict: 'id' }
+            );
         }
+        // Clear referral code once used
+        if (refId) localStorage.removeItem('declawed_ref');
         setSuccess('Account created! Check your email to confirm, then sign in.');
         // Fire-and-forget welcome email
         fetch('/api/welcome-email', {
