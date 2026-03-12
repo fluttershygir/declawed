@@ -109,8 +109,9 @@ function MainApp() {
     }
   }, []);
 
-  // UploadPanel now calls onUpload(text, filename) — PDF parsed client-side
-  const handleUpload = async (text, filename) => {
+  // UploadPanel calls onUpload({ text, filename }) or onUpload({ imageBase64, imageMediaType, filename })
+  const handleUpload = async (payload) => {
+    const { text, imageBase64, imageMediaType, filename } = payload || {};
     setError('');
     setSummary('');
     setModelTier(null);
@@ -120,10 +121,14 @@ function MainApp() {
       const headers = { 'Content-Type': 'application/json' };
       if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`;
 
+      const bodyPayload = imageBase64
+        ? { imageBase64, imageMediaType, filename }
+        : { text, filename };
+
       const res = await fetch('/api/summarize', {
         method: 'POST',
         headers,
-        body: JSON.stringify({ text, filename }),
+        body: JSON.stringify(bodyPayload),
       });
 
       // Guard against CF returning an HTML error page instead of JSON

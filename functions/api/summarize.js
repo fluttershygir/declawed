@@ -58,8 +58,15 @@ async function handleRequest(request, env) {
   let body;
   try { body = await request.json(); } catch { return json({ error: 'Invalid JSON body.' }, 400); }
 
-  const { text, filename } = body || {};
-  if (!text || text.trim().length < 50) return json({ error: 'Document text is too short or missing.' }, 400);
+  const { text, filename, imageBase64, imageMediaType } = body || {};
+  const isImageRequest = !!imageBase64;
+
+  if (!isImageRequest && (!text || text.trim().length < 50)) {
+    return json({ error: 'Document text is too short or missing.' }, 400);
+  }
+  if (isImageRequest && !imageBase64) {
+    return json({ error: 'Image data is missing.' }, 400);
+  }
 
   // --- Auth & usage check ---
   const authHeader = request.headers.get('Authorization') || '';
@@ -100,8 +107,29 @@ async function handleRequest(request, env) {
 
   // --- Pick model based on plan ---
   const isPaid = userId && ['one', 'pro', 'unlimited'].includes(userPlan);
+
+  // Image analysis requires a paid plan (vision-capable model)
+  if (isImageRequest && !isPaid) {
+    return json({ error: 'Image scanning is available on paid plans. Please upgrade.' }, 402);
+  }
+
   const model = isPaid ? 'claude-sonnet-4-5' : 'claude-haiku-4-5';
   const modelTier = isPaid ? 'advanced' : 'standard';
+
+  // --- Build Anthropic message content ---
+  const userMessageContent = isImageRequest
+    ? [
+        {
+          type: 'image',
+          source: {
+            type: 'base64',
+            media_type: imageMediaType || 'image/jpeg',
+            data: imageBase64,
+          },
+        },
+        { type: 'text', text: 'Analyze this lease document shown in the image:' },
+      ]
+    : `Analyze this lease:\n\n${text.slice(0, isPaid ? 40000 : 20000)}`;
 
   // --- AI call ---
   const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
@@ -115,7 +143,7 @@ async function handleRequest(request, env) {
       model,
       max_tokens: isPaid ? 2048 : 1500,
       system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: `Analyze this lease:\n\n${text.slice(0, isPaid ? 40000 : 20000)}` }],
+      messages: [{ role: 'user', content: userMessageContent }],
     }),
   });
 

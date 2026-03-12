@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Upload, FileText, Loader2, AlertCircle, Lock, Zap } from 'lucide-react';
+import { Upload, FileText, Loader2, AlertCircle, Lock, Zap, Image as ImageIcon } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
 import * as mammoth from 'mammoth';
 
@@ -8,6 +8,18 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.mjs',
   import.meta.url
 ).toString();
+
+const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+const IMAGE_EXTS = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+
+async function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
 
 async function extractTextFromDocx(file) {
   const arrayBuffer = await file.arrayBuffer();
@@ -32,14 +44,38 @@ export default function UploadPanel({ onUpload, loading, usage, onUpgrade }) {
   const [fileName, setFileName] = useState('');
   const [dragActive, setDragActive] = useState(false);
   const [parseError, setParseError] = useState('');
+  const [isImage, setIsImage] = useState(false);
+
+  const isPaidUser = usage?.plan && ['one', 'pro', 'unlimited'].includes(usage.plan);
 
   const handleFile = async (file) => {
     if (!file) return;
     setParseError('');
+    setIsImage(false);
     const isText = file.type === 'text/plain' || file.name.endsWith('.txt');
     const isPdf = file.type === 'application/pdf' || file.name.endsWith('.pdf');
     const isDocx = file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || file.name.endsWith('.docx');
-    if (!isPdf && !isText && !isDocx) { setParseError('Only PDF, .docx, and .txt files are supported.'); return; }
+    const isImg = IMAGE_MIME_TYPES.includes(file.type) || IMAGE_EXTS.some(ext => file.name.toLowerCase().endsWith(ext));
+    if (!isPdf && !isText && !isDocx && !isImg) {
+      setParseError('Supported formats: PDF, .docx, .txt, JPG, PNG, WebP.');
+      return;
+    }
+    if (isImg) {
+      if (!isPaidUser) {
+        setParseError('Image scanning is a paid feature. Upgrade to analyze scanned or photographed leases.');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        setParseError('Image must be under 5 MB.');
+        return;
+      }
+      setFileName(file.name);
+      setIsImage(true);
+      const imageBase64 = await fileToBase64(file);
+      const imageMediaType = IMAGE_MIME_TYPES.includes(file.type) ? file.type : 'image/jpeg';
+      onUpload({ imageBase64, imageMediaType, filename: file.name });
+      return;
+    }
     setFileName(file.name);
     let text = '';
     if (isText) {
@@ -55,7 +91,7 @@ export default function UploadPanel({ onUpload, loading, usage, onUpgrade }) {
       setParseError('Could not extract text. Ensure the file is not a scanned image.');
       return;
     }
-    onUpload(text, file.name);
+    onUpload({ text, filename: file.name });
   };
 
   const handleDrop = (e) => {
@@ -79,7 +115,7 @@ export default function UploadPanel({ onUpload, loading, usage, onUpgrade }) {
         <h2 className="text-lg font-semibold text-slate-100">Upload your lease</h2>
       </div>
       <p className="text-sm text-slate-400 mb-4">
-        PDF, .docx, or .txt · Text is extracted in your browser — your file is never uploaded.
+        PDF, .docx, .txt{isPaidUser ? ', or image (JPG/PNG/WebP)' : ''} · Processed in your browser — your file is never stored.
       </p>
 
       <div
@@ -96,17 +132,23 @@ export default function UploadPanel({ onUpload, loading, usage, onUpgrade }) {
         <input
           ref={inputRef}
           type="file"
-          accept="application/pdf,.pdf,text/plain,.txt,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx"
+          accept={`application/pdf,.pdf,text/plain,.txt,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx${isPaidUser ? ',image/jpeg,image/png,image/gif,image/webp,.jpg,.jpeg,.png,.gif,.webp' : ''}`}
           className="hidden"
           onChange={(e) => handleFile(e.target.files?.[0])}
         />
         {loading ? (
           <Loader2 className="w-12 h-12 text-cyan-400 animate-spin mb-3" />
+        ) : isImage ? (
+          <ImageIcon className="w-12 h-12 text-cyan-400 mb-3" />
         ) : (
           <FileText className="w-12 h-12 text-slate-500 mb-3" />
         )}
         <p className="text-sm font-medium text-slate-300">
-          {loading ? 'Analyzing lease...' : 'Drop PDF, .docx, or .txt here, or click to browse'}
+          {loading
+            ? (isImage ? 'Scanning image...' : 'Analyzing lease...')
+            : isPaidUser
+            ? 'Drop PDF, .docx, .txt, or image here, or click to browse'
+            : 'Drop PDF, .docx, or .txt here, or click to browse'}
         </p>
         {fileName && !loading && (
           <p className="mt-2 text-xs text-slate-500 truncate max-w-full">{fileName}</p>
@@ -121,6 +163,14 @@ export default function UploadPanel({ onUpload, loading, usage, onUpgrade }) {
       )}
 
       {/* Free tier exhausted banner */}
+      {/* Image scanning badge for paid users */}
+      {isPaidUser && !freeExhausted && (
+        <div className="mt-3 flex items-center gap-1.5 text-[11px] text-teal-400/80">
+          <ImageIcon className="w-3 h-3" />
+          <span>Image scanning unlocked — upload photos of leases or scanned documents</span>
+        </div>
+      )}
+
       {freeExhausted && (
         <motion.div
           initial={{ opacity: 0, y: 6 }}
