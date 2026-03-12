@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FileCheck, AlertCircle, Calendar, ShieldCheck, AlertTriangle, ListChecks, Download, Lock } from 'lucide-react';
+import { FileCheck, AlertCircle, Calendar, ShieldCheck, AlertTriangle, ListChecks, Download, Lock, Mail } from 'lucide-react';
+import EmailReportModal from './EmailReportModal';
 
 const SEVERITY_STYLES = {
   HIGH:   { bg: 'bg-rose-500/15',   text: 'text-rose-400',   border: 'border-rose-500/30'   },
@@ -147,9 +148,11 @@ function StructuredSummary({ data }) {
 }
 
 const PAID_PLANS = new Set(['one', 'pro', 'unlimited']);
+const EMAIL_PLANS = new Set(['pro', 'unlimited']);
 
 export default function SummaryPanel({ summary, loading, error, modelTier, usage, filename, onUpgrade }) {
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
 
   const handleDownloadPDF = async () => {
     const isPaid = PAID_PLANS.has(usage?.plan);
@@ -242,7 +245,7 @@ export default function SummaryPanel({ summary, loading, error, modelTier, usage
             <StructuredSummary data={summary} />
 
             {/* Download PDF Report button */}
-            <div className="mt-4 pt-3 border-t border-slate-800/60">
+            <div className="mt-4 pt-3 border-t border-slate-800/60 flex flex-col gap-2">
               <button
                 onClick={handleDownloadPDF}
                 disabled={pdfLoading}
@@ -266,6 +269,28 @@ export default function SummaryPanel({ summary, loading, error, modelTier, usage
                   </>
                 )}
               </button>
+
+              {/* Email report button */}
+              <button
+                onClick={() => {
+                  if (!EMAIL_PLANS.has(usage?.plan)) { onUpgrade?.(); return; }
+                  setEmailModalOpen(true);
+                }}
+                className="group w-full flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-200 bg-cyan-500/[0.08] border border-cyan-500/20 text-cyan-300 hover:bg-cyan-500/15 hover:border-cyan-400/35 hover:text-cyan-200"
+              >
+                {EMAIL_PLANS.has(usage?.plan) ? (
+                  <>
+                    <Mail className="w-3.5 h-3.5" />
+                    Email this report
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-3.5 h-3.5 text-zinc-500 group-hover:text-zinc-400 transition-colors" />
+                    <span className="text-zinc-400 group-hover:text-zinc-300 transition-colors">Email this report</span>
+                    <span className="ml-auto text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded bg-cyan-500/15 text-cyan-400 border border-cyan-500/25">Pro</span>
+                  </>
+                )}
+              </button>
             </div>
 
             <p className="mt-3 text-[11px] text-zinc-600 flex items-center gap-1.5">
@@ -284,6 +309,14 @@ export default function SummaryPanel({ summary, loading, error, modelTier, usage
           </>
         )}
       </div>
+
+      <EmailReportModal
+        open={emailModalOpen}
+        onClose={() => setEmailModalOpen(false)}
+        analysisData={summary}
+        filename={filename}
+        usage={usage}
+      />
     </motion.section>
   );
 }
