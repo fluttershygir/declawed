@@ -12,12 +12,30 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
 const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 const IMAGE_EXTS = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
 
-async function fileToBase64(file) {
+// Resize image to max 1568x1568 (Anthropic's internal cap) and encode as JPEG.
+// This keeps API token cost identical regardless of original file size.
+const MAX_IMG_PX = 1568;
+async function resizeAndEncodeImage(file) {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result.split(',')[1]);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { width, height } = img;
+      if (width > MAX_IMG_PX || height > MAX_IMG_PX) {
+        const scale = Math.min(MAX_IMG_PX / width, MAX_IMG_PX / height);
+        width = Math.round(width * scale);
+        height = Math.round(height * scale);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      const base64 = canvas.toDataURL('image/jpeg', 0.88).split(',')[1];
+      resolve(base64);
+    };
+    img.onerror = reject;
+    img.src = url;
   });
 }
 
@@ -65,15 +83,14 @@ export default function UploadPanel({ onUpload, loading, usage, onUpgrade }) {
         setParseError('Image scanning is a paid feature. Upgrade to analyze scanned or photographed leases.');
         return;
       }
-      if (file.size > 5 * 1024 * 1024) {
-        setParseError('Image must be under 5 MB.');
+      if (file.size > 20 * 1024 * 1024) {
+        setParseError('Image must be under 20 MB.');
         return;
       }
       setFileName(file.name);
       setIsImage(true);
-      const imageBase64 = await fileToBase64(file);
-      const imageMediaType = IMAGE_MIME_TYPES.includes(file.type) ? file.type : 'image/jpeg';
-      onUpload({ imageBase64, imageMediaType, filename: file.name });
+      const imageBase64 = await resizeAndEncodeImage(file);
+      onUpload({ imageBase64, imageMediaType: 'image/jpeg', filename: file.name });
       return;
     }
     setFileName(file.name);
