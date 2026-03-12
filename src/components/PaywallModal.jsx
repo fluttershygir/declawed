@@ -13,7 +13,7 @@ const TIERS = [
     price: '$4.99',
     period: 'one-time',
     note: 'No subscription. Ever.',
-    perks: ['1 full lease analysis', 'All red flags & key dates', 'PDF or .txt'],
+    perks: ['1 full lease analysis', 'All red flags & key dates', 'Image scanning', 'PDF, .docx, or image'],
     icon: FileText,
     iconColor: 'text-cyan-400',
     borderClass: 'border-cyan-500/30',
@@ -26,7 +26,7 @@ const TIERS = [
     price: '$12',
     period: '/mo',
     note: 'Perfect for small landlords',
-    perks: ['10 analyses per month', 'All red flags & key dates', 'Cancel anytime'],
+    perks: ['10 analyses per month', 'All red flags & key dates', 'Image scanning', 'Advanced Declawed AI'],
     icon: Zap,
     iconColor: 'text-teal-300',
     borderClass: 'border-teal-400/50',
@@ -40,7 +40,7 @@ const TIERS = [
     price: '$29',
     period: '/mo',
     note: 'For property managers & realtors',
-    perks: ['Unlimited analyses', 'All red flags & key dates', 'Cancel anytime'],
+    perks: ['Unlimited analyses', 'All red flags & key dates', 'Image scanning', 'Advanced Declawed AI'],
     icon: Infinity,
     iconColor: 'text-emerald-400',
     borderClass: 'border-emerald-500/30',
@@ -122,11 +122,15 @@ export default function PaywallModal({ open, onClose }) {
                   key={key}
                   className={`relative rounded-xl border ${borderClass} ${bgClass} p-4 flex flex-col`}
                 >
-                  {popular && (
-                    <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-[0.12em] bg-teal-500 text-black">
-                      Most Popular
-                    </div>
-                  )}
+                  {/* Most Popular badge row — reserves same height on all cards for alignment */}
+                  <div className="h-6 flex items-center justify-center mb-2.5">
+                    {popular && (
+                      <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-[0.14em] bg-teal-500 text-black px-2.5 py-1 rounded-full shadow-md shadow-teal-500/30">
+                        <Zap className="w-2.5 h-2.5" />
+                        Most Popular
+                      </span>
+                    )}
+                  </div>
 
                   <div className="flex items-center gap-1.5 mb-3">
                     <Icon className={`w-3.5 h-3.5 ${iconColor}`} />
