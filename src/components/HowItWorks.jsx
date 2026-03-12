@@ -16,7 +16,7 @@ const STEPS = [
     number: '02',
     icon: ScanText,
     title: 'AI scans every clause',
-    desc: 'Claude 3 reads every line with tenant-advocate instructions — trained to surface what landlords hope you miss.',
+    desc: 'Our AI reads every line with tenant-advocate instructions — trained to surface what landlords hope you miss.',
     color: 'text-cyan-400',
     ring: 'border-cyan-500/30',
     glow: 'bg-cyan-500/[0.07]',

@@ -9,12 +9,13 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async (userId) => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('profiles')
       .select('id, plan, analyses_used, analyses_limit, full_name')
       .eq('id', userId)
       .single();
-    setProfile(data);
+    if (error) console.error('[Declawed] profile fetch error:', error.message, error.code);
+    setProfile(data ?? null);
   };
 
   useEffect(() => {

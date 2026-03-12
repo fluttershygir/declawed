@@ -9,7 +9,7 @@ const FAQS = [
   },
   {
     q: 'How does it work?',
-    a: "You upload a PDF or .txt lease. Declawed extracts the text and sends it to Claude — Anthropic's AI — with tenant-advocate instructions trained to surface what can harm you. The response is structured into red flags, key dates, your rights, and unusual clauses.",
+    a: "You upload a PDF or .txt lease. Declawed extracts the text and sends it to Declawed AI with tenant-advocate instructions trained to surface what can harm you. The response is structured into red flags, key dates, your rights, and unusual clauses.",
   },
   {
     q: 'Is my document stored anywhere?',

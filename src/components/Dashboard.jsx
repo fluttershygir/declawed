@@ -13,10 +13,10 @@ const PLAN_LABELS = {
 };
 
 const PLAN_FEATURES = {
-  free:      ['1 free analysis', 'PDF & .docx upload', 'Red flags & key dates'],
-  one:       ['1 full analysis', 'PDF, .docx & image', 'Advanced AI model', '7-day money-back guarantee'],
-  pro:       ['10 analyses / month', 'PDF, .docx & image', 'Advanced AI model', '7-day money-back guarantee'],
-  unlimited: ['Unlimited analyses', 'PDF, .docx & image', 'Advanced AI model', 'All red flags, dates & rights'],
+  free:      ['1 free analysis', 'Standard Declawed AI', 'Red flags & key dates'],
+  one:       ['1 full analysis', 'Advanced Declawed AI', 'PDF report download', '7-day money-back guarantee'],
+  pro:       ['10 analyses / month', 'Advanced Declawed AI', 'PDF report download', 'Email report to yourself', 'Full analysis history', 'Priority processing'],
+  unlimited: ['Unlimited analyses', 'Advanced Declawed AI', 'Everything in Pro', 'Landlord Mode', 'Priority support'],
 };
 
 const SEVERITY_STYLES = {
@@ -436,7 +436,7 @@ export default function Dashboard({ onClose, onUpgrade }) {
       });
   }, [user]);
 
-  const plan = profile?.plan || 'free';
+  const plan = (profile?.plan || 'free').toLowerCase();
   const planInfo = PLAN_LABELS[plan] || PLAN_LABELS.free;
   const used = profile?.analyses_used ?? 0;
   const limit = profile?.analyses_limit ?? 1;

@@ -83,7 +83,7 @@ export default function PrivacyPolicy() {
 
           <Section number="4" title="AI Processing">
             <p>
-              Document text you submit is sent to Anthropic's Claude API for analysis. Anthropic processes this data under their own privacy policy and API usage policies. By using Declawed, you acknowledge that your document text will be processed by Anthropic's systems. We strongly recommend removing personally identifiable information (names, Social Security numbers, bank details) from documents before uploading.
+              Document text you submit is processed by third-party machine learning services for analysis. These providers process document text in memory solely to generate the analysis — they do not permanently store your documents or use them for training. By using Declawed, you acknowledge that your document text will be processed by third-party AI service providers. We strongly recommend removing personally identifiable information (names, Social Security numbers, bank details) from documents before uploading.
             </p>
           </Section>
 
@@ -91,7 +91,7 @@ export default function PrivacyPolicy() {
             <p>Declawed uses the following third-party services:</p>
             <ul className="list-disc list-inside space-y-1.5 pl-2">
               <li><span className="text-zinc-200">Supabase</span> — authentication, database hosting, and user profile storage (supabase.com)</li>
-              <li><span className="text-zinc-200">Anthropic</span> — AI analysis via Claude API (anthropic.com)</li>
+              <li><span className="text-zinc-200">Third-party AI service providers</span> — machine learning analysis of uploaded document text (processed in memory, not stored)</li>
               <li><span className="text-zinc-200">Cloudflare Pages</span> — web hosting and CDN (cloudflare.com)</li>
               <li><span className="text-zinc-200">Stripe</span> — payment processing (stripe.com)</li>
             </ul>

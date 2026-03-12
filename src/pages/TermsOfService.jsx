@@ -78,7 +78,7 @@ export default function TermsOfService() {
 
           <Section number="2" title="Description of Service">
             <p>
-              Declawed is an AI-powered tool that analyzes residential lease and rental agreements to help tenants understand their rights, identify red flags, and navigate key terms. The Service uses Anthropic's Claude AI to generate summaries and analysis.
+              Declawed is an AI-powered tool that analyzes residential lease and rental agreements to help tenants understand their rights, identify red flags, and navigate key terms. The Service uses third-party AI service providers to generate summaries and analysis.
             </p>
             <p>
               The Service is intended primarily for US and Canadian residential leases. Analysis accuracy may vary for other jurisdictions or document types.

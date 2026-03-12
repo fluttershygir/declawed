@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Gift, FileText, Zap, Infinity } from 'lucide-react';
+import { Check, Gift, FileText, Zap, Infinity } from 'lucide-react';
 
 const TIERS = [
   {
@@ -10,13 +10,19 @@ const TIERS = [
     price: '$0',
     period: null,
     desc: 'Try your first analysis free. No credit card needed.',
-    aiTier: 'standard',
-    note: null,
+    features: [
+      '1 free analysis',
+      'Standard Declawed AI',
+      'Red flags & key dates',
+      'No credit card required',
+    ],
     cta: 'Try free',
     guarantee: null,
     popular: false,
+    landlordMode: false,
     cardClass: 'border-white/[0.08] bg-white/[0.02]',
     ctaClass: 'border border-white/20 text-zinc-300 hover:border-white/30 hover:text-white',
+    checkColor: 'text-zinc-500',
   },
   {
     key: 'one',
@@ -26,13 +32,15 @@ const TIERS = [
     price: '$4.99',
     period: 'one-time',
     desc: 'Single lease analysis. Pay once, no subscription.',
-    aiTier: 'advanced',
+    features: null,
     note: 'No subscription ever.',
     cta: 'Analyze my lease',
     guarantee: '7-day money-back guarantee',
     popular: false,
+    landlordMode: false,
     cardClass: 'border-cyan-500/20 bg-cyan-500/[0.04]',
     ctaClass: 'border border-cyan-500/50 text-cyan-300 hover:bg-cyan-500/10 hover:border-cyan-400',
+    checkColor: 'text-cyan-500',
   },
   {
     key: 'pro',
@@ -42,13 +50,21 @@ const TIERS = [
     price: '$12',
     period: '/mo',
     desc: '10 lease analyses per month. Perfect for small landlords.',
-    aiTier: 'advanced',
-    note: null,
+    features: [
+      '10 analyses / month',
+      'Advanced Declawed AI',
+      'PDF report download',
+      'Email report to yourself',
+      'Full analysis history',
+      'Priority processing',
+    ],
     cta: 'Get Pro',
     guarantee: '7-day money-back guarantee',
     popular: true,
+    landlordMode: false,
     cardClass: 'border-teal-400/40 bg-teal-500/[0.07] shadow-[0_0_48px_rgba(20,184,166,0.12)]',
     ctaClass: 'bg-teal-500 text-black font-semibold hover:bg-teal-400 shadow-lg shadow-teal-500/20',
+    checkColor: 'text-teal-400',
   },
   {
     key: 'unlimited',
@@ -58,13 +74,20 @@ const TIERS = [
     price: '$29',
     period: '/mo',
     desc: 'Unlimited analyses. Built for property managers and realtors.',
-    aiTier: 'advanced',
-    note: null,
+    features: [
+      'Unlimited analyses',
+      'Advanced Declawed AI',
+      'Everything in Pro',
+      'Landlord Mode',
+      'Priority support',
+    ],
     cta: 'Go unlimited',
-    guarantee: null,
+    guarantee: '7-day money-back guarantee',
     popular: false,
-    cardClass: 'border-emerald-500/20 bg-emerald-500/[0.04]',
+    landlordMode: true,
+    cardClass: 'border-emerald-500/30 bg-emerald-500/[0.06] shadow-[0_0_40px_rgba(16,185,129,0.10)]',
     ctaClass: 'border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 hover:border-emerald-400',
+    checkColor: 'text-emerald-400',
   },
 ];
 
@@ -84,7 +107,7 @@ export default function PricingSection({ onSelectTier }) {
         </motion.div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {TIERS.map(({ key, label, icon: Icon, iconColor, price, period, desc, aiTier, note, cta, guarantee, popular, cardClass, ctaClass }, i) => (
+          {TIERS.map(({ key, label, icon: Icon, iconColor, price, period, desc, features, note, cta, guarantee, popular, landlordMode, cardClass, ctaClass, checkColor }, i) => (
             <motion.div
               key={key}
               initial={{ opacity: 0, y: 20 }}
@@ -94,8 +117,14 @@ export default function PricingSection({ onSelectTier }) {
               className={`relative rounded-2xl border p-6 flex flex-col ${cardClass}`}
             >
               {popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.12em] bg-teal-500 text-black shadow-lg shadow-teal-500/30">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.12em] bg-teal-500 text-black shadow-lg shadow-teal-500/30 whitespace-nowrap">
                   Most Popular
+                </div>
+              )}
+
+              {landlordMode && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.12em] bg-emerald-500 text-black shadow-lg shadow-emerald-500/30 whitespace-nowrap">
+                  Landlord Mode
                 </div>
               )}
 
@@ -114,44 +143,51 @@ export default function PricingSection({ onSelectTier }) {
                 <p className="text-[11px] text-zinc-600 mt-0.5">A lawyer charges $200+/hr for this</p>
               )}
 
-              <p className="text-sm text-zinc-400 leading-relaxed mt-2">{desc}</p>
+              <p className="text-sm text-zinc-400 leading-relaxed mt-2 mb-4">{desc}</p>
 
-              {/* AI tier label */}
-              <div className={`mt-3 flex items-center gap-1.5 ${
-                aiTier === 'advanced' ? 'text-teal-400' : 'text-zinc-500'
-              }`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${
-                  aiTier === 'advanced' ? 'bg-teal-400' : 'bg-zinc-600'
-                }`} />
-                <span className="text-[11px] font-medium">
-                  {aiTier === 'advanced' ? 'Advanced Declawed AI' : 'Standard Declawed AI'}
-                </span>
-              </div>
-
-              {aiTier === 'advanced' && (
-                <p className="text-[10px] text-teal-500/70 mt-1 flex-1">Deeper analysis · longer documents</p>
-              )}
-              {aiTier !== 'advanced' && <div className="flex-1" />}
-
-              {note && (
-                <p className="text-[11px] text-zinc-600 mt-2">{note}</p>
+              {/* Feature checklist */}
+              {features ? (
+                <ul className="space-y-2 grow mb-4">
+                  {features.map((feat) => (
+                    <li key={feat} className="flex items-center gap-2 text-[12.5px]">
+                      <Check className={`w-3.5 h-3.5 shrink-0 ${checkColor}`} />
+                      {feat === 'Landlord Mode' ? (
+                        <span className="text-zinc-200 font-medium">
+                          Landlord Mode{' '}
+                          <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded-full align-middle">
+                            New
+                          </span>
+                        </span>
+                      ) : (
+                        <span className="text-zinc-400">{feat}</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                /* One Lease: legacy AI tier + note display */
+                <div className="grow">
+                  <div className="flex items-center gap-1.5 text-teal-400 mb-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-teal-400" />
+                    <span className="text-[11px] font-medium">Advanced Declawed AI</span>
+                  </div>
+                  <p className="text-[10px] text-teal-500/70 mb-2">Deeper analysis · longer documents</p>
+                  {note && <p className="text-[11px] text-zinc-600">{note}</p>}
+                </div>
               )}
 
               {key === 'starter' ? (
-                <>
-                  <a
-                    href="/#upload"
-                    className={`mt-6 w-full rounded-xl py-2.5 text-sm transition-all active:scale-95 text-center block ${ctaClass}`}
-                  >
-                    {cta}
-                  </a>
-                  <p className="mt-2 text-center text-[11px] text-zinc-600">No credit card required</p>
-                </>
+                <a
+                  href="/#upload"
+                  className={`mt-auto w-full rounded-xl py-2.5 text-sm transition-all active:scale-95 text-center block ${ctaClass}`}
+                >
+                  {cta}
+                </a>
               ) : (
                 <>
                   <button
                     onClick={onSelectTier}
-                    className={`mt-6 w-full rounded-xl py-2.5 text-sm transition-all active:scale-95 ${ctaClass}`}
+                    className={`mt-auto w-full rounded-xl py-2.5 text-sm transition-all active:scale-95 ${ctaClass}`}
                   >
                     {cta}
                   </button>
