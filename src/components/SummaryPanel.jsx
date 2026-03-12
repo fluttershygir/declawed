@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FileCheck, AlertCircle, Calendar, ShieldCheck, AlertTriangle, ClipboardList } from 'lucide-react';
+import { FileCheck, AlertCircle, Calendar, ShieldCheck, AlertTriangle, ClipboardList, Download, Lock } from 'lucide-react';
 
 const SEVERITY_STYLES = {
   HIGH:   { bg: 'bg-rose-500/15',   text: 'text-rose-400',   border: 'border-rose-500/30'   },
@@ -142,7 +143,27 @@ function StructuredSummary({ data }) {
   );
 }
 
-export default function SummaryPanel({ summary, loading, error, modelTier }) {
+const PAID_PLANS = new Set(['one', 'pro', 'unlimited']);
+
+export default function SummaryPanel({ summary, loading, error, modelTier, usage, filename, onUpgrade }) {
+  const [pdfLoading, setPdfLoading] = useState(false);
+
+  const handleDownloadPDF = async () => {
+    const isPaid = PAID_PLANS.has(usage?.plan);
+    if (!isPaid) {
+      onUpgrade?.();
+      return;
+    }
+    setPdfLoading(true);
+    try {
+      await new Promise(r => setTimeout(r, 50));
+      const { generatePDF } = await import('../lib/generatePDF');
+      generatePDF({ data: summary, filename, analysisDate: new Date() });
+    } finally {
+      setPdfLoading(false);
+    }
+  };
+
   return (
     <motion.section
       initial={{ opacity: 0, x: 20 }}
@@ -216,7 +237,35 @@ export default function SummaryPanel({ summary, loading, error, modelTier }) {
         {!loading && !error && summary && (
           <>
             <StructuredSummary data={summary} />
-            <p className="mt-4 pt-3 border-t border-slate-800/60 text-[11px] text-zinc-600 flex items-center gap-1.5">
+
+            {/* Download PDF Report button */}
+            <div className="mt-4 pt-3 border-t border-slate-800/60">
+              <button
+                onClick={handleDownloadPDF}
+                disabled={pdfLoading}
+                className="group w-full flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-200 bg-teal-500/10 border border-teal-500/25 text-teal-300 hover:bg-teal-500/20 hover:border-teal-400/40 hover:text-teal-200 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {pdfLoading ? (
+                  <>
+                    <div className="w-3.5 h-3.5 border-2 border-teal-400/40 border-t-teal-400 rounded-full animate-spin" />
+                    Generating PDF…
+                  </>
+                ) : PAID_PLANS.has(usage?.plan) ? (
+                  <>
+                    <Download className="w-3.5 h-3.5" />
+                    Download PDF Report
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-3.5 h-3.5 text-zinc-500 group-hover:text-zinc-400 transition-colors" />
+                    <span className="text-zinc-400 group-hover:text-zinc-300 transition-colors">Download PDF Report</span>
+                    <span className="ml-auto text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded bg-teal-500/15 text-teal-400 border border-teal-500/25">Paid</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            <p className="mt-3 text-[11px] text-zinc-600 flex items-center gap-1.5">
               <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
                 modelTier === 'advanced' ? 'bg-teal-500' : 'bg-zinc-600'
               }`} />

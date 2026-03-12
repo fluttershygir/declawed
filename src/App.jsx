@@ -52,6 +52,7 @@ function MainApp() {
   const [usage, setUsage] = useState(null);
   const [successToast, setSuccessToast] = useState(null);
   const [modelTier, setModelTier] = useState(null);
+  const [uploadedFilename, setUploadedFilename] = useState('');
 
   const fetchUsage = async () => {
     try {
@@ -116,6 +117,7 @@ function MainApp() {
     setError('');
     setSummary('');
     setModelTier(null);
+    setUploadedFilename(filename || '');
     setLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -169,7 +171,7 @@ function MainApp() {
       <section id="upload" className="w-full flex flex-col items-center px-4 py-16 border-t border-white/[0.05]">
         <div className="w-full max-w-5xl grid md:grid-cols-[1fr_1.2fr] gap-6">
           <UploadPanel onUpload={handleUpload} loading={loading} usage={usage} onUpgrade={() => setPaywallOpen(true)} />
-          <SummaryPanel summary={summary} loading={loading} error={error} modelTier={modelTier} />
+          <SummaryPanel summary={summary} loading={loading} error={error} modelTier={modelTier} usage={usage} filename={uploadedFilename} onUpgrade={() => setPaywallOpen(true)} />
         </div>
       </section>
 
