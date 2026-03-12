@@ -1,7 +1,21 @@
 -- Migration v6: schema cache refresh + helpers
 -- Run in Supabase SQL editor (Dashboard → SQL Editor → Run)
 
--- Force PostgREST to reload the schema cache so full_name column is visible
+-- =========================================================
+-- Profiles: add full_name column if it was never added
+-- (migration_v3 may not have been run on all environments)
+-- =========================================================
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS full_name TEXT;
+
+-- Index for lookup by name
+CREATE INDEX IF NOT EXISTS profiles_full_name_idx ON public.profiles(full_name);
+
+-- Ensure user_preferences JSONB column exists (needed for notification prefs)
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS user_preferences JSONB NOT NULL DEFAULT '{}';
+
+-- Force PostgREST to reload the schema cache so new columns are visible
 NOTIFY pgrst, 'reload schema';
 
 -- =========================================================
@@ -18,7 +32,3 @@ AS $$
   SET full_name = new_name
   WHERE id = user_id;
 $$;
-
--- Ensure user_preferences JSONB column exists (needed for notification prefs)
-ALTER TABLE public.profiles
-  ADD COLUMN IF NOT EXISTS user_preferences JSONB NOT NULL DEFAULT '{}';

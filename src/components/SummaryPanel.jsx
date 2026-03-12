@@ -260,6 +260,16 @@ export default function SummaryPanel({ summary, loading, error, modelTier, usage
   const [pdfLoading, setPdfLoading] = useState(false);
   const [emailModalOpen, setEmailModalOpen] = useState(false);
 
+  // Normalize summary: handle string (double-encoded), object, or null
+  const parsedSummary = (() => {
+    if (!summary) return null;
+    if (typeof summary === 'string') {
+      try { return JSON.parse(summary); } catch { return { _parseError: true }; }
+    }
+    return summary;
+  })();
+  const summaryParseError = parsedSummary?._parseError === true;
+
   const handleDownloadPDF = async () => {
     const isPaid = PAID_PLANS.has(usage?.plan);
     if (!isPaid) {
@@ -270,7 +280,7 @@ export default function SummaryPanel({ summary, loading, error, modelTier, usage
     try {
       await new Promise(r => setTimeout(r, 50));
       const { generatePDF } = await import('../lib/generatePDF');
-      generatePDF({ data: summary, filename, analysisDate: new Date() });
+      generatePDF({ data: parsedSummary, filename, analysisDate: new Date() });
     } finally {
       setPdfLoading(false);
     }
@@ -326,7 +336,7 @@ export default function SummaryPanel({ summary, loading, error, modelTier, usage
             <p>{error}</p>
           </div>
         )}
-        {!loading && !error && !summary && (
+        {!loading && !error && !parsedSummary && (
           <div className="relative h-full min-h-[320px]">
             {/* Sample output — top section crisp, fades into blur */}
             <article className="summary-content text-sm space-y-1 select-none pointer-events-none">
@@ -359,10 +369,20 @@ export default function SummaryPanel({ summary, loading, error, modelTier, usage
             </div>
           </div>
         )}
-        {!loading && !error && summary && (
+        {!loading && !error && summaryParseError && (
+          <div className="flex flex-col items-center justify-center h-full text-center px-6 py-10 space-y-3">
+            <AlertCircle className="w-8 h-8 text-rose-400" />
+            <p className="text-sm font-semibold text-rose-300">Couldn&rsquo;t display the analysis</p>
+            <p className="text-xs text-zinc-500 leading-relaxed">
+              The AI returned an unexpected format. Please try uploading the lease again.
+              If the problem persists, try a different file format (PDF &rarr; text or vice versa).
+            </p>
+          </div>
+        )}
+        {!loading && !error && parsedSummary && !summaryParseError && (
           user ? (
             <>
-            <StructuredSummary data={summary} landlordMode={landlordMode} />
+            <StructuredSummary data={parsedSummary} landlordMode={landlordMode} />
 
             {/* Download PDF Report button */}
             <div className="mt-4 pt-3 border-t border-slate-800/60 flex flex-col gap-2">
@@ -428,7 +448,7 @@ export default function SummaryPanel({ summary, loading, error, modelTier, usage
             </p>
             </>
           ) : (
-            <AnonTeaser data={summary} onSignUp={onSignUp} />
+            <AnonTeaser data={parsedSummary} onSignUp={onSignUp} />
           )
         )}
         </div>
@@ -439,7 +459,7 @@ export default function SummaryPanel({ summary, loading, error, modelTier, usage
       <EmailReportModal
         open={emailModalOpen}
         onClose={() => setEmailModalOpen(false)}
-        analysisData={summary}
+        analysisData={parsedSummary}
         filename={filename}
         usage={usage}
       />

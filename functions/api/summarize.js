@@ -266,10 +266,37 @@ async function handleRequest(request, env) {
 
   let analysis;
   try {
-    const match = raw.match(/\{[\s\S]*\}/);
-    analysis = JSON.parse(match ? match[0] : raw);
+    // Strip markdown code fences (Claude sometimes wraps response in ```json ... ```)
+    const stripped = raw
+      .replace(/^```(?:json)?\s*/i, '')
+      .replace(/\s*```\s*$/, '')
+      .trim();
+    // Extract the outermost JSON object from the cleaned string
+    const match = stripped.match(/\{[\s\S]*\}/);
+    analysis = JSON.parse(match ? match[0] : stripped);
+    // Guarantee required fields exist so the frontend always has a valid shape
+    if (typeof analysis !== 'object' || analysis === null) throw new Error('Not an object');
+    analysis.score = typeof analysis.score === 'number' ? analysis.score : null;
+    analysis.verdict = analysis.verdict || '';
+    analysis.redFlags = Array.isArray(analysis.redFlags)
+      ? analysis.redFlags.map(f => typeof f === 'string' ? { text: f, severity: 'MEDIUM' } : f)
+      : [];
+    analysis.keyDates = Array.isArray(analysis.keyDates) ? analysis.keyDates : [];
+    analysis.tenantRights = Array.isArray(analysis.tenantRights) ? analysis.tenantRights : [];
+    analysis.unusualClauses = Array.isArray(analysis.unusualClauses) ? analysis.unusualClauses : [];
+    analysis.actionSteps = Array.isArray(analysis.actionSteps) ? analysis.actionSteps : [];
   } catch {
-    analysis = { verdict: raw, redFlags: [], keyDates: [], tenantRights: [], unusualClauses: [] };
+    // Last-resort fallback: show a parse-error verdict
+    analysis = {
+      score: null,
+      verdict: '',
+      redFlags: [],
+      keyDates: [],
+      tenantRights: [],
+      unusualClauses: [],
+      actionSteps: [],
+      _parseError: true,
+    };
   }
 
   // --- Record usage ---

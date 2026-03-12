@@ -190,7 +190,14 @@ function MainApp() {
       }
 
       if (!res.ok || data.error) throw new Error(data.error || 'Something went wrong.');
-      setSummary(data.summary);
+      // Normalize: if the server ever returns summary as a JSON string, parse it
+      const rawSummary = data.summary;
+      const parsedSummary = (() => {
+        if (!rawSummary) return null;
+        if (typeof rawSummary === 'object') return rawSummary;
+        try { return JSON.parse(rawSummary); } catch { return { _parseError: true }; }
+      })();
+      setSummary(parsedSummary);
       setModelTier(data.modelTier || null);
       setAnalysisLandlordMode(!!data.landlordMode);
       fetchUsage();
@@ -341,7 +348,14 @@ function AppPage() {
       const data = await res.json();
       if (res.status === 402) { setPaywallOpen(true); return; }
       if (!res.ok || data.error) throw new Error(data.error || 'Something went wrong.');
-      setSummary(data.summary);
+      // Normalize: if the server ever returns summary as a JSON string, parse it
+      const rawSummary2 = data.summary;
+      const parsedSummary2 = (() => {
+        if (!rawSummary2) return null;
+        if (typeof rawSummary2 === 'object') return rawSummary2;
+        try { return JSON.parse(rawSummary2); } catch { return { _parseError: true }; }
+      })();
+      setSummary(parsedSummary2);
       setModelTier(data.modelTier || null);
       setAnalysisLandlordMode(!!data.landlordMode);
       fetchUsage();
