@@ -139,7 +139,8 @@ export default function UploadPanel({ onUpload, loading, usage, onUpgrade, landl
         PDF, .docx, .txt{isPaidUser ? ', or image (JPG/PNG/WebP)' : ''} · Processed in your browser — your file is never stored.
       </p>
 
-      {/* Landlord Mode toggle */}
+      {/* Landlord Mode toggle — Unlimited plan only */}
+      {isUnlimited && (
       <div className="flex items-center justify-between mb-4 rounded-xl border px-3.5 py-2.5 transition-all duration-200"
         style={{
           borderColor: landlordMode ? 'rgba(245,158,11,0.35)' : 'rgba(51,65,85,0.6)',
@@ -168,7 +169,7 @@ export default function UploadPanel({ onUpload, loading, usage, onUpgrade, landl
               <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-56 rounded-lg bg-zinc-800 border border-zinc-700 shadow-xl p-2.5 text-[11px] text-zinc-300 leading-relaxed z-30 pointer-events-none">
                 <p className="font-semibold text-amber-300 mb-1">Landlord Mode</p>
                 Analyzes the lease from a landlord&rsquo;s perspective — highlighting tenant obligations, liability gaps, unenforceable clauses, and recommended additions to better protect you as the landlord.
-                {!isUnlimited && <p className="mt-1.5 text-amber-400 font-semibold">Requires Unlimited plan.</p>}
+          {!isUnlimited && <p className="mt-1.5 text-amber-400 font-semibold">Requires Unlimited plan.</p>}
                 <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-zinc-800" />
               </div>
             )}
@@ -197,17 +198,9 @@ export default function UploadPanel({ onUpload, loading, usage, onUpgrade, landl
               }`}
             />
           </button>
-        ) : (
-          <button
-            type="button"
-            onClick={onUpgrade}
-            className="relative w-9 h-5 rounded-full border bg-zinc-800 border-zinc-700 opacity-50 cursor-pointer"
-            aria-label="Upgrade to unlock Landlord Mode"
-          >
-            <span className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-zinc-600 shadow" />
-          </button>
-        )}
+        ) : null}
       </div>
+      )}
 
       <div
         onDrop={handleDrop}
