@@ -90,7 +90,8 @@ export default function PricingSection({ onSelectTier }) {
               className={`relative rounded-2xl border p-6 flex flex-col ${cardClass}`}
             >
               {popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.12em] bg-teal-500 text-black shadow-lg shadow-teal-500/30">
+                <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-[0.14em] bg-teal-500/15 text-teal-300 border border-teal-500/30">
+                  <span className="w-1 h-1 rounded-full bg-teal-400 animate-pulse" />
                   Most Popular
                 </div>
               )}
