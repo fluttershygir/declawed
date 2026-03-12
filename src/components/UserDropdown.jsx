@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogOut } from 'lucide-react';
+import { LogOut, LayoutGrid, CreditCard, Settings } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 /**
@@ -65,6 +65,34 @@ export default function UserDropdown({ size = 'md', align = 'right' }) {
                 ) : null}
                 <p className={`text-[12px] truncate leading-tight ${fullName ? 'text-zinc-500' : 'text-zinc-300 font-medium'}`}>{email}</p>
               </div>
+            </div>
+
+            {/* Nav links */}
+            <div className="py-1.5 border-b border-white/[0.07]">
+              <a
+                href="/dashboard"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 w-full px-4 py-2.5 text-[13px] text-zinc-400 hover:text-white hover:bg-white/[0.05] transition-colors"
+              >
+                <LayoutGrid className="w-4 h-4 shrink-0" />
+                Dashboard
+              </a>
+              <a
+                href="/account"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 w-full px-4 py-2.5 text-[13px] text-zinc-400 hover:text-white hover:bg-white/[0.05] transition-colors"
+              >
+                <Settings className="w-4 h-4 shrink-0" />
+                Account Settings
+              </a>
+              <a
+                href="/billing"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 w-full px-4 py-2.5 text-[13px] text-zinc-400 hover:text-white hover:bg-white/[0.05] transition-colors"
+              >
+                <CreditCard className="w-4 h-4 shrink-0" />
+                Billing &amp; Plan
+              </a>
             </div>
 
             {/* Sign out */}

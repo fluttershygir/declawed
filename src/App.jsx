@@ -32,6 +32,8 @@ import Testimonials from './components/Testimonials';
 import FAQ from './components/FAQ';
 import Footer from './components/Footer';
 import Dashboard from './components/Dashboard';
+import AuthModal from './components/AuthModal';
+import UserDropdown from './components/UserDropdown';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import CookiePolicy from './pages/CookiePolicy';
@@ -41,13 +43,23 @@ import AccountSettings from './pages/AccountSettings';
 import Billing from './pages/Billing';
 import './index.css';
 
+const PAID_PLANS = new Set(['one', 'pro', 'unlimited']);
+
 function DashboardPage() {
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && !user) navigate('/');
+  }, [user, loading, navigate]);
+
+  if (loading || !user) return null;
   return <Dashboard onClose={() => navigate('/')} onUpgrade={() => navigate('/?upgrade=1')} />;
 }
 
 function MainApp() {
-  const { user, refreshProfile } = useAuth();
+  const { user, profile, loading: authLoading, refreshProfile } = useAuth();
+  const navigate = useNavigate();
   const [summary, setSummary] = useState('');
   const [loading, setLoading] = useState(false);
   const [paywallOpen, setPaywallOpen] = useState(false);
@@ -58,6 +70,8 @@ function MainApp() {
   const [uploadedFilename, setUploadedFilename] = useState('');
   const [landlordMode, setLandlordMode] = useState(false);
   const [analysisLandlordMode, setAnalysisLandlordMode] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authTab, setAuthTab] = useState('signin');
 
   const fetchUsage = async () => {
     try {
@@ -76,6 +90,15 @@ function MainApp() {
     fetchUsage();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
+
+  // Redirect paid users to /app (skip when returning from Stripe or opening upgrade modal)
+  useEffect(() => {
+    if (authLoading) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('checkout') === 'success' || params.get('upgrade') === '1') return;
+    if (user && profile && PAID_PLANS.has(profile.plan)) navigate('/app');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, profile, authLoading]);
 
   // Capture ?ref=UUID from URL on load and store in localStorage for signup attribution
   useEffect(() => {
@@ -202,7 +225,7 @@ function MainApp() {
           </div>
           <div className="grid md:grid-cols-2 gap-6 items-stretch">
             <UploadPanel onUpload={handleUpload} loading={loading} usage={usage} onUpgrade={() => setPaywallOpen(true)} landlordMode={landlordMode} onLandlordModeChange={setLandlordMode} />
-            <SummaryPanel summary={summary} loading={loading} error={error} modelTier={modelTier} usage={usage} filename={uploadedFilename} onUpgrade={() => setPaywallOpen(true)} landlordMode={analysisLandlordMode} />
+            <SummaryPanel summary={summary} loading={loading} error={error} modelTier={modelTier} usage={usage} filename={uploadedFilename} onUpgrade={() => setPaywallOpen(true)} landlordMode={analysisLandlordMode} user={user} onSignUp={(tab) => { setAuthTab(tab); setAuthOpen(true); }} />
           </div>
         </div>
       </section>
@@ -213,12 +236,187 @@ function MainApp() {
       <Footer />
 
       <PaywallModal open={paywallOpen} onClose={() => setPaywallOpen(false)} />
+      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} defaultTab={authTab} />
       <AnimatePresence>
         {successToast && (
           <SuccessToast
             message={successToast}
             onClose={() => setSuccessToast(null)}
           />
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function AppPage() {
+  const { user, profile, loading: authLoading, refreshProfile } = useAuth();
+  const navigate = useNavigate();
+
+  // Guard: not logged in or free plan → homepage
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) { navigate('/'); return; }
+    if (profile && !PAID_PLANS.has(profile.plan)) { navigate('/'); return; }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, profile, authLoading]);
+
+  const [summary, setSummary] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [paywallOpen, setPaywallOpen] = useState(false);
+  const [error, setError] = useState('');
+  const [usage, setUsage] = useState(null);
+  const [successToast, setSuccessToast] = useState(null);
+  const [modelTier, setModelTier] = useState(null);
+  const [uploadedFilename, setUploadedFilename] = useState('');
+  const [landlordMode, setLandlordMode] = useState(false);
+  const [analysisLandlordMode, setAnalysisLandlordMode] = useState(false);
+
+  const fetchUsage = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers = {};
+      if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`;
+      const res = await fetch('/api/usage', { headers });
+      if (res.ok) setUsage(await res.json());
+    } catch { /* ignore */ }
+  };
+
+  useEffect(() => { fetchUsage(); }, [user]);
+
+  // Handle Stripe success redirect back to /app
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const checkout = params.get('checkout');
+    const sessionId = params.get('session_id');
+    const tier = params.get('tier');
+    if (checkout === 'success' && sessionId && tier) {
+      (async () => {
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          const headers = { 'Content-Type': 'application/json' };
+          if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`;
+          const res = await fetch('/api/verify-payment', {
+            method: 'POST', headers,
+            body: JSON.stringify({ session_id: sessionId }),
+          });
+          if (res.ok) {
+            const labels = { one: 'One Lease unlocked!', pro: 'Pro access activated!', unlimited: 'Unlimited access activated!' };
+            setSuccessToast(labels[tier] || 'Access unlocked!');
+            fetchUsage();
+            refreshProfile();
+          }
+        } catch { /* ignore */ }
+        window.history.replaceState({}, '', window.location.pathname);
+      })();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleUpload = async (payload) => {
+    const { text, imageBase64, imageMediaType, filename } = payload || {};
+    setError('');
+    setSummary('');
+    setModelTier(null);
+    setAnalysisLandlordMode(false);
+    setUploadedFilename(filename || '');
+    setUploading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers = { 'Content-Type': 'application/json' };
+      if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`;
+      const bodyPayload = imageBase64
+        ? { imageBase64, imageMediaType, filename, landlordMode: payload?.landlordMode }
+        : { text, filename, landlordMode: payload?.landlordMode };
+      const res = await fetch('/api/summarize', {
+        method: 'POST', headers,
+        body: JSON.stringify(bodyPayload),
+      });
+      const contentType = res.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        const raw = await res.text();
+        throw new Error(`CF error (HTTP ${res.status}): ${raw.replace(/<[^>]+>/g, '').trim().slice(0, 200)}`);
+      }
+      const data = await res.json();
+      if (res.status === 402) { setPaywallOpen(true); return; }
+      if (!res.ok || data.error) throw new Error(data.error || 'Something went wrong.');
+      setSummary(data.summary);
+      setModelTier(data.modelTier || null);
+      setAnalysisLandlordMode(!!data.landlordMode);
+      fetchUsage();
+      supabase.auth.getSession().then(({ data: sd }) => {
+        if (!sd?.session?.access_token) return;
+        fetch('/api/referral-complete', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${sd.session.access_token}` },
+        }).catch(() => {});
+      });
+    } catch (e) {
+      setError(e.message || 'Something went wrong.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  if (authLoading || !user) return null;
+
+  return (
+    <div className="min-h-screen bg-[#07070d] text-slate-100 flex flex-col">
+      {/* App-focused navbar */}
+      <header className="sticky top-0 z-50 w-full border-b border-white/[0.06] bg-[#07070d]/95 backdrop-blur-xl">
+        <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
+          <a href="/app" className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/30 shrink-0">
+              <svg viewBox="0 0 20 20" fill="none" className="w-[14px] h-[14px]">
+                <path d="M6 10V7a4 4 0 0 1 8 0v3" stroke="white" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+                <rect x="3.5" y="10" width="13" height="9" rx="2.5" fill="white" fillOpacity="0.95" />
+                <circle cx="10" cy="14.5" r="1.4" fill="#1e40af" />
+              </svg>
+            </div>
+            <span className="text-[15px] font-bold tracking-tight text-white">Declawed</span>
+          </a>
+          <nav className="hidden md:flex items-center gap-6">
+            <a href="/dashboard" className="text-[13px] font-medium text-zinc-400 hover:text-white transition-colors">Dashboard</a>
+            <a href="/billing" className="text-[13px] font-medium text-zinc-400 hover:text-white transition-colors">Billing</a>
+            <a href="/account" className="text-[13px] font-medium text-zinc-400 hover:text-white transition-colors">Account Settings</a>
+          </nav>
+          <UserDropdown size="sm" />
+        </div>
+      </header>
+
+      {/* Main content */}
+      <main className="flex-1 w-full max-w-5xl mx-auto px-4 py-12">
+        <div className="text-center mb-10">
+          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">Analyze Your Lease</h1>
+          <p className="text-zinc-500 mt-2 text-sm sm:text-base">Upload your lease and get a full breakdown in under 30 seconds.</p>
+        </div>
+        <div className="grid md:grid-cols-2 gap-6 items-stretch">
+          <UploadPanel
+            onUpload={handleUpload}
+            loading={uploading}
+            usage={usage}
+            onUpgrade={() => setPaywallOpen(true)}
+            landlordMode={landlordMode}
+            onLandlordModeChange={setLandlordMode}
+          />
+          <SummaryPanel
+            summary={summary}
+            loading={uploading}
+            error={error}
+            modelTier={modelTier}
+            usage={usage}
+            filename={uploadedFilename}
+            onUpgrade={() => setPaywallOpen(true)}
+            landlordMode={analysisLandlordMode}
+            user={user}
+          />
+        </div>
+      </main>
+
+      <PaywallModal open={paywallOpen} onClose={() => setPaywallOpen(false)} />
+      <AnimatePresence>
+        {successToast && (
+          <SuccessToast message={successToast} onClose={() => setSuccessToast(null)} />
         )}
       </AnimatePresence>
     </div>
@@ -232,6 +430,7 @@ export default function App() {
         <AuthProvider>
           <Routes>
             <Route path="/" element={<MainApp />} />
+            <Route path="/app" element={<AppPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />

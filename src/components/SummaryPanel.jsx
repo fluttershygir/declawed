@@ -154,7 +154,109 @@ function StructuredSummary({ data, landlordMode }) {
 const PAID_PLANS = new Set(['one', 'pro', 'unlimited']);
 const EMAIL_PLANS = new Set(['pro', 'unlimited']);
 
-export default function SummaryPanel({ summary, loading, error, modelTier, usage, filename, onUpgrade, landlordMode }) {
+function AnonTeaser({ data, onSignUp }) {
+  const score = data?.score ?? null;
+  const isRed = score !== null && score <= 4;
+  const isYellow = score !== null && score >= 5 && score <= 7;
+  const isGreen = score !== null && score >= 8;
+  const scoreColor = isRed ? 'text-rose-400' : isYellow ? 'text-amber-400' : isGreen ? 'text-emerald-400' : 'text-zinc-400';
+  const scoreBg = isRed ? 'bg-rose-500/[0.07] border-rose-500/25' : isYellow ? 'bg-amber-500/[0.07] border-amber-500/25' : isGreen ? 'bg-emerald-500/[0.07] border-emerald-500/25' : 'bg-white/[0.03] border-white/[0.07]';
+  const scoreLabel = isRed ? 'Heavily favors landlord' : isYellow ? 'Somewhat unfavorable' : isGreen ? 'Tenant-friendly' : '';
+  const previewFlags = (data?.redFlags || []).slice(0, 2);
+
+  return (
+    <div className="relative">
+      <article className="space-y-5 text-[13px]">
+        {/* Score hero — fully visible */}
+        {score !== null && (
+          <div className={`rounded-xl border ${scoreBg} px-5 py-4`}>
+            <div className="flex items-center gap-4">
+              <div className="flex flex-col items-center shrink-0">
+                <span className={`text-[56px] font-black leading-none tabular-nums ${scoreColor}`}>{Math.max(1, Math.min(10, score))}</span>
+                <span className="text-[10px] text-zinc-600 font-semibold">/ 10</span>
+              </div>
+              <div className="min-w-0">
+                <p className={`font-bold ${scoreColor}`}>{scoreLabel}</p>
+                {data.verdict && <p className="text-slate-400 mt-1 leading-relaxed">{data.verdict}</p>}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Up to 2 red flags — visible */}
+        {previewFlags.length > 0 && (
+          <section>
+            <h2 className="flex items-center gap-2 text-rose-400 text-sm font-bold uppercase tracking-widest mb-3">
+              <AlertCircle className="w-4 h-4" /> Red Flags
+            </h2>
+            <ul className="space-y-2">
+              {previewFlags.map((flag, i) => {
+                const text = typeof flag === 'string' ? flag : flag.text;
+                const severity = typeof flag === 'string' ? 'MEDIUM' : (flag.severity ?? 'MEDIUM');
+                const bar = severity === 'HIGH' ? 'border-l-rose-500 bg-rose-500/[0.04]' : severity === 'MEDIUM' ? 'border-l-amber-400 bg-amber-500/[0.03]' : 'border-l-zinc-600';
+                return (
+                  <li key={i} className={`flex items-start gap-3 border-l-[3px] ${bar} pl-3 py-1.5 rounded-r`}>
+                    <span className="flex-1 text-slate-300 leading-relaxed text-sm">{text}</span>
+                    <SeverityBadge severity={severity} />
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )}
+
+        {/* Blurred mock of remaining content */}
+        <div className="pointer-events-none select-none blur-[5px] opacity-25 space-y-4">
+          <div className="rounded-lg bg-cyan-500/[0.08] border border-cyan-500/[0.12] h-8" />
+          <div className="grid grid-cols-2 gap-1.5">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="rounded-lg bg-cyan-500/[0.05] border border-cyan-500/[0.10] h-12" />
+            ))}
+          </div>
+          <div className="rounded-lg bg-emerald-500/[0.08] border border-emerald-500/[0.12] h-8" />
+          <div className="space-y-1">
+            {[1, 2].map(i => (
+              <div key={i} className="rounded-lg bg-emerald-500/[0.05] border border-emerald-500/[0.10] h-10" />
+            ))}
+          </div>
+          <div className="rounded-xl border border-teal-500/15 bg-teal-500/[0.04] h-24" />
+        </div>
+      </article>
+
+      {/* Gradient fade */}
+      <div className="absolute bottom-0 left-0 right-0 h-[58%] bg-gradient-to-t from-slate-900/98 via-slate-900/75 to-transparent pointer-events-none rounded-b-xl" />
+
+      {/* Signup gate */}
+      <div className="absolute bottom-0 left-0 right-0 px-2 pb-1">
+        <div className="w-full rounded-2xl border border-white/[0.09] bg-slate-900/95 backdrop-blur-sm p-5 shadow-2xl">
+          <div className="flex items-center gap-2 mb-1.5">
+            <Lock className="w-4 h-4 text-teal-400 shrink-0" />
+            <p className="text-white font-semibold text-[14px]">See your full analysis</p>
+          </div>
+          <p className="text-zinc-400 text-[12px] mb-4 leading-relaxed">
+            Create a free account to unlock red flags, key dates, and your plain English summary.
+          </p>
+          <div className="flex gap-2.5">
+            <button
+              onClick={() => onSignUp?.('signup')}
+              className="flex-1 py-2.5 rounded-lg bg-teal-500 text-black text-[13px] font-bold hover:bg-teal-400 active:scale-95 transition-all"
+            >
+              Sign up free
+            </button>
+            <button
+              onClick={() => onSignUp?.('signin')}
+              className="flex-1 py-2.5 rounded-lg border border-white/[0.15] text-white text-[13px] font-semibold hover:bg-white/[0.06] active:scale-95 transition-all"
+            >
+              Sign in
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function SummaryPanel({ summary, loading, error, modelTier, usage, filename, onUpgrade, landlordMode, user, onSignUp }) {
   const [pdfLoading, setPdfLoading] = useState(false);
   const [emailModalOpen, setEmailModalOpen] = useState(false);
 
@@ -258,7 +360,8 @@ export default function SummaryPanel({ summary, loading, error, modelTier, usage
           </div>
         )}
         {!loading && !error && summary && (
-          <>
+          user ? (
+            <>
             <StructuredSummary data={summary} landlordMode={landlordMode} />
 
             {/* Download PDF Report button */}
@@ -323,7 +426,10 @@ export default function SummaryPanel({ summary, loading, error, modelTier, usage
                 </span>
               )}
             </p>
-          </>
+            </>
+          ) : (
+            <AnonTeaser data={summary} onSignUp={onSignUp} />
+          )
         )}
         </div>
         {/* Scroll fade indicator */}
