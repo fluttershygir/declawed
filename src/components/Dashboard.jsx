@@ -43,7 +43,7 @@ const LogoMark = () => (
   </div>
 );
 
-function AnalysisModal({ analysis, onClose, onNoteUpdate, onReanalyzeComplete, onUpgrade }) {
+function AnalysisModal({ analysis, onClose, onNoteUpdate, onReanalyzeComplete, onUpgrade, userName }) {
   const data = analysis?.result || {};
   const cardRef = useRef(null);
   const [downloading, setDownloading] = useState('');
@@ -65,7 +65,7 @@ function AnalysisModal({ analysis, onClose, onNoteUpdate, onReanalyzeComplete, o
       const baseFilename = filename.replace(/\.[^.]+$/, '');
       if (type === 'pdf') {
         const { generatePDF } = await import('../lib/generatePDF');
-        generatePDF({ data, filename, analysisDate: new Date(analysis.created_at) });
+        generatePDF({ data, filename, analysisDate: new Date(analysis.created_at), userName });
       } else if (type === 'doc') {
         const { generateDOCX } = await import('../lib/generateDOCX');
         generateDOCX({ data, filename, analysisDate: new Date(analysis.created_at) });
@@ -453,14 +453,15 @@ export default function Dashboard({ onClose, onUpgrade }) {
   const used = profile?.analyses_used ?? 0;
   const limit = profile?.analyses_limit ?? 1;
   const isUnlimited = plan === 'unlimited';
-  const displayName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'there';
+  const fullDisplayName = user?.user_metadata?.full_name || profile?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'there';
+  const displayName = fullDisplayName.split(' ')[0];
 
   // Computed stats from analysis history
   const totalRedFlags = analyses.reduce((s, a) => s + (a.result?.redFlags?.length ?? 0), 0);
   const riskiest = analyses.length
     ? analyses.reduce((m, a) => ((a.result?.score ?? 11) < (m.result?.score ?? 11)) ? a : m)
     : null;
-  const avatarInitials = displayName.slice(0, 2).toUpperCase();
+  const avatarInitials = fullDisplayName.slice(0, 2).toUpperCase();
 
   const handleSignOut = async () => {
     await signOut();
@@ -567,7 +568,10 @@ export default function Dashboard({ onClose, onUpgrade }) {
             {userMenuOpen && (
               <div className="absolute right-0 top-10 w-52 rounded-xl bg-zinc-950 border border-white/[0.08] shadow-2xl py-1 z-50">
                 <div className="px-3.5 py-2.5 border-b border-white/[0.06]">
-                  <p className="text-xs text-zinc-400 truncate">{user?.email}</p>
+                  {fullDisplayName !== user?.email?.split('@')[0] && (
+                    <p className="text-xs font-medium text-zinc-300 truncate">{fullDisplayName}</p>
+                  )}
+                  <p className="text-xs text-zinc-500 truncate">{user?.email}</p>
                 </div>
                 <button
                   onClick={handleSignOut}
@@ -885,6 +889,7 @@ export default function Dashboard({ onClose, onUpgrade }) {
         onNoteUpdate={handleNoteUpdate}
         onReanalyzeComplete={handleReanalyzeComplete}
         onUpgrade={onUpgrade}
+        userName={fullDisplayName}
       />
     )}
 

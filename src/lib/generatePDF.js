@@ -2,9 +2,9 @@ import { jsPDF } from 'jspdf';
 
 /**
  * Generates and saves a Declawed lease analysis PDF report.
- * @param {{ data: object, filename: string, analysisDate?: Date|string }} opts
+ * @param {{ data: object, filename: string, analysisDate?: Date|string, userName?: string }} opts
  */
-export function generatePDF({ data, filename, analysisDate }) {
+export function generatePDF({ data, filename, analysisDate, userName }) {
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
 
   const PW = 210;
@@ -119,10 +119,13 @@ export function generatePDF({ data, filename, analysisDate }) {
     ? new Date(analysisDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
     : new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
+  const hasUserName = userName && userName.trim() && !userName.includes('@');
+  const infoBoxH = hasUserName ? 22 : 16;
+
   doc.setFillColor(...slate50);
   doc.setDrawColor(...slate300);
   doc.setLineWidth(0.3);
-  doc.roundedRect(M, y, CW, 16, 2, 2, 'FD');
+  doc.roundedRect(M, y, CW, infoBoxH, 2, 2, 'FD');
 
   doc.setFontSize(7.5);
   doc.setFont('helvetica', 'bold');
@@ -141,7 +144,16 @@ export function generatePDF({ data, filename, analysisDate }) {
   doc.setTextColor(...slate700);
   doc.text(dateStr, M + 18, y + 12);
 
-  y += 22;
+  if (hasUserName) {
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...slate500);
+    doc.text('FOR:', M + 4, y + 18);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...slate700);
+    doc.text(userName.trim(), M + 18, y + 18);
+  }
+
+  y += infoBoxH + 6;
 
   // ── SCORE HERO ────────────────────────────────────────────────────────
   const score = data.score ?? null;

@@ -76,7 +76,7 @@ export default function Navbar() {
                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-white/[0.08] text-[13px] text-zinc-400 hover:text-white hover:border-white/20 transition"
                 >
                   <div className="w-5 h-5 rounded-full bg-teal-500/20 border border-teal-500/40 flex items-center justify-center text-[10px] font-bold text-teal-400">
-                    {user.email?.[0]?.toUpperCase() ?? 'U'}
+                    {(user.user_metadata?.full_name?.[0] || user.email?.[0] || 'U').toUpperCase()}
                   </div>
                   <LogOut className="w-3 h-3" />
                 </button>
