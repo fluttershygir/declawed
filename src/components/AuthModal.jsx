@@ -86,17 +86,35 @@ export default function AuthModal({ open, onClose, defaultTab = 'signin' }) {
         setSuccess('Password reset email sent. Check your inbox.');
       }
     } catch (err) {
-      setError(err.message || 'Something went wrong.');
+      console.error('[AuthModal] Auth error:', { tab, error: err });
+      if (tab === 'signin') {
+        setError(err.message || 'Sign in failed. Please check your credentials.');
+      } else if (tab === 'signup') {
+        setError(err.message || 'Sign up failed. Please try again.');
+      } else {
+        setError(err.message || 'Password reset failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogle = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: window.location.origin },
-    });
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { 
+          redirectTo: `${window.location.origin}/app`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent'
+          }
+        },
+      });
+      if (error) throw error;
+    } catch (err) {
+      setError(err.message || 'Google sign in failed.');
+    }
   };
 
   const headerTitle = tab === 'forgot' ? 'Reset your password' : 'Welcome to Declawed';
