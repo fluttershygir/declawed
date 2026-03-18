@@ -187,7 +187,7 @@ export default function Dashboard({ onClose, onUpgrade }) {
             <p className="text-sm text-zinc-500 mt-0.5 truncate max-w-[180px] sm:max-w-none">{user?.email}</p>
           </div>
           <a
-            href="/"
+            href="/analyze"
             className="flex items-center gap-2 px-3 py-2 rounded-lg border border-white/[0.08] bg-white/[0.02] text-sm font-medium text-zinc-400 hover:text-white hover:border-white/[0.15] transition shrink-0"
           >
             <Upload className="w-3.5 h-3.5" />

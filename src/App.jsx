@@ -47,6 +47,7 @@ import ResetPassword from './pages/ResetPassword';
 import AnalysisHistory from './pages/AnalysisHistory';
 import LeaseReview from './pages/LeaseReview';
 import TenantRights from './pages/TenantRights';
+import Analyze from './pages/Analyze';
 import './index.css';
 
 const PAID_PLANS = new Set(['one', 'pro', 'unlimited']);
@@ -533,7 +534,7 @@ export default function App() {
             <Route path="/account" element={<AccountSettings />} />
             <Route path="/billing" element={<Billing />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/lease-review" element={<LeaseReview />} />
+            <Route path="/analyze" element={<Analyze />} />
             <Route path="/tenant-rights" element={<TenantRights />} />
           </Routes>
         </AuthProvider>
