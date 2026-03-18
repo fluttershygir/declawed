@@ -38,6 +38,7 @@ export default function Dashboard({ onClose, onUpgrade }) {
   const [refCopied, setRefCopied] = useState(false);
   const [toast, setToast] = useState(null);
   const [shareLoadingIds, setShareLoadingIds] = useState(new Set());
+  const [usage, setUsage] = useState(null);
 
   useEffect(() => {
     if (!user) return;
@@ -53,16 +54,31 @@ export default function Dashboard({ onClose, onUpgrade }) {
       });
   }, [user]);
 
-  // Always fetch the latest profile on mount so plan changes (webhook, manual update) reflect immediately
+  useEffect(() => {
+    if (!user) return;
+    const fetchUsage = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const headers = {};
+        if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`;
+        const res = await fetch('/api/usage', { headers });
+        if (res.ok) setUsage(await res.json());
+      } catch {
+        // ignore
+      }
+    };
+    fetchUsage();
+  }, [user]);
+
   useEffect(() => {
     if (user) refreshProfile();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  const plan = (profile?.plan || 'free').toLowerCase();
+  const plan = (usage?.plan || 'free').toLowerCase();
   const planInfo = PLAN_LABELS[plan] || PLAN_LABELS.free;
-  const used = profile?.analyses_used ?? 0;
-  const limit = profile?.analyses_limit ?? 1;
+  const used = usage?.analyses_used ?? 0;
+  const limit = usage?.analyses_limit ?? 1;
   const isUnlimited = plan === 'unlimited';
   const fullDisplayName = user?.user_metadata?.full_name || profile?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'there';
   const displayName = fullDisplayName.split(' ')[0];
