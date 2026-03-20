@@ -33,8 +33,6 @@ export default function Dashboard({ onClose, onUpgrade }) {
   const [analyses, setAnalyses] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [selectedAnalysis, setSelectedAnalysis] = useState(null);
-  const [refundLoading, setRefundLoading] = useState(false);
-  const [refundResult, setRefundResult] = useState(null);
   const [refCopied, setRefCopied] = useState(false);
   const [toast, setToast] = useState(null);
   const [shareLoadingIds, setShareLoadingIds] = useState(new Set());
@@ -149,32 +147,6 @@ export default function Dashboard({ onClose, onUpgrade }) {
     setTimeout(() => setRefCopied(false), 2500);
   }
 
-  const handleRefund = async () => {
-    setRefundLoading(true);
-    setRefundResult(null);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const res = await fetch('/api/refund', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.access_token}`,
-        },
-      });
-      const data = await res.json();
-      if (data.ok) {
-        await refreshProfile();
-        setRefundResult({ ok: true, message: 'Refund processed. Your plan has been reverted to Free.' });
-      } else {
-        setRefundResult({ ok: false, message: data.message || 'Refund could not be processed.' });
-      }
-    } catch {
-      setRefundResult({ ok: false, message: 'Something went wrong. Please try again.' });
-    } finally {
-      setRefundLoading(false);
-    }
-  };
-
   return (
     <>
     <AppShell>
@@ -252,36 +224,6 @@ export default function Dashboard({ onClose, onUpgrade }) {
             )}
           </div>
 
-          {/* Refund section — only for paid plans within 7-day window */}
-          {plan !== 'free' && !refundResult?.ok && (() => {
-            const isSubscription = ['pro', 'unlimited'].includes(plan);
-            const eligible = plan === 'one' ? used === 0 : used < 3;
-            return (
-              <div className="mt-5 pt-5 border-t border-white/[0.05]">
-                <p className="text-[11px] text-zinc-600 mb-3 uppercase tracking-widest font-semibold">7-day Guarantee</p>
-                {eligible ? (
-                  <button
-                    onClick={handleRefund}
-                    disabled={refundLoading}
-                    className="flex items-center gap-2 text-xs text-zinc-400 hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <RefreshCw className={`w-3.5 h-3.5 ${refundLoading ? 'animate-spin' : ''}`} />
-                    {refundLoading ? 'Processing…' : 'Request refund'}
-                  </button>
-                ) : (
-                  <p className="text-xs text-zinc-600">
-                    {isSubscription ? 'Analysis limit reached — ' : 'Analysis already used — '}
-                    <a href="/contact" className="text-blue-500 hover:text-blue-400 transition">contact support</a> for disputes.
-                  </p>
-                )}
-              </div>
-            );
-          })()}
-          {refundResult && (
-            <p className={`mt-4 text-xs ${refundResult.ok ? 'text-emerald-400' : 'text-rose-400'}`}>
-              {refundResult.message}
-            </p>
-          )}
         </motion.div>
 
         {/* Quick Stats row */}

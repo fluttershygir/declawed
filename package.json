@@ -1,5 +1,6 @@
 {
-  "name": "lease-summary",
+  "name": "declawed",
+  "description": "Declawed — AI-powered lease analysis",
   "private": true,
   "version": "0.0.0",
   "type": "module",

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Loader2, ExternalLink, Zap, Gift, Infinity } from 'lucide-react';
+import { Check, Loader2, ExternalLink, Zap, Gift, Infinity, ShieldCheck } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import AppShell from '../components/AppShell';
@@ -88,8 +88,12 @@ export default function Billing() {
   const { user, profile, loading: authLoading, refreshProfile } = useAuth();
   const [portalLoading, setPortalLoading] = useState(false);
   const [portalError,   setPortalError]   = useState('');
+  const [usage,         setUsage]         = useState(null);
+  const [refundLoading, setRefundLoading] = useState(false);
+  const [refundResult,  setRefundResult]  = useState(null);
 
-  const plan     = (profile?.plan || 'free').toLowerCase();
+  // Use the usage API for the authoritative plan — same as Dashboard
+  const plan     = (usage?.plan || profile?.plan || 'free').toLowerCase();
   const planInfo = PLAN_INFO[plan] || PLAN_INFO.free;
 
   // Always fetch the latest profile on mount so plan changes (webhook, manual update) reflect immediately
@@ -99,8 +103,51 @@ export default function Billing() {
   }, [user]);
 
   useEffect(() => {
+    if (!user) return;
+    const fetchUsage = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const headers = {};
+        if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`;
+        const res = await fetch('/api/usage', { headers });
+        if (res.ok) setUsage(await res.json());
+      } catch {
+        // ignore
+      }
+    };
+    fetchUsage();
+  }, [user]);
+
+  useEffect(() => {
     if (!authLoading && !user) window.location.href = '/';
   }, [authLoading, user]);
+
+  const handleRefund = async () => {
+    setRefundLoading(true);
+    setRefundResult(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/refund', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+      });
+      const data = await res.json();
+      if (data.ok) {
+        await refreshProfile();
+        setUsage(null); // will re-fetch on next render
+        setRefundResult({ ok: true, message: 'Refund processed. Your plan has been reverted to Free.' });
+      } else {
+        setRefundResult({ ok: false, message: data.message || 'Refund could not be processed.' });
+      }
+    } catch {
+      setRefundResult({ ok: false, message: 'Something went wrong. Please try again.' });
+    } finally {
+      setRefundLoading(false);
+    }
+  };
 
   async function handleOpenPortal() {
     setPortalLoading(true);
@@ -119,8 +166,8 @@ export default function Billing() {
     }
   }
 
-  const used  = profile?.analyses_used  ?? 0;
-  const limit = profile?.analyses_limit ?? 1;
+  const used  = usage?.analyses_used  ?? profile?.analyses_used  ?? 0;
+  const limit = usage?.analyses_limit ?? profile?.analyses_limit ?? 1;
   const limitIsUnlimited = limit >= 9999;
   const usagePct = limitIsUnlimited ? 0 : Math.min(100, (used / limit) * 100);
 
@@ -185,6 +232,39 @@ export default function Billing() {
             </div>
           )}
         </motion.div>
+
+        {/* ─── 7-day guarantee / refund ────────────────── */}
+        {planInfo.isPaid && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.08 }}
+            className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6 mb-5"
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <ShieldCheck className="w-4 h-4 text-teal-400" />
+              <p className="text-sm font-semibold text-white">7-day money-back guarantee</p>
+            </div>
+            <p className="text-sm text-zinc-500 leading-relaxed mb-4">
+              Not satisfied? Request a full refund within 7 days of your purchase — no questions asked.
+            </p>
+
+            {refundResult ? (
+              <p className={`text-sm font-medium ${refundResult.ok ? 'text-emerald-400' : 'text-rose-400'}`}>
+                {refundResult.message}
+              </p>
+            ) : (
+              <button
+                onClick={handleRefund}
+                disabled={refundLoading}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-white/[0.08] text-sm text-zinc-400 hover:text-white hover:border-white/20 transition disabled:opacity-50"
+              >
+                {refundLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                {refundLoading ? 'Processing…' : 'Request refund'}
+              </button>
+            )}
+          </motion.div>
+        )}
 
         {/* ─── Free: upgrade nudge ─────────────────────── */}
         {plan === 'free' && (
