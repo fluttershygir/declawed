@@ -111,15 +111,6 @@ function MainApp() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  // Redirect paid users to /app (skip when returning from Stripe or opening upgrade modal)
-  useEffect(() => {
-    if (authLoading) return;
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('checkout') === 'success' || params.get('upgrade') === '1') return;
-    if (user && profile && PAID_PLANS.has(profile.plan)) navigate('/app');
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, profile, authLoading]);
-
   // Capture ?ref=UUID from URL on load and store in localStorage for signup attribution
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);

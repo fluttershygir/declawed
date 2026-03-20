@@ -128,14 +128,14 @@ export default function AnalyzePage() {
       {/* Main */}
       <main className="flex-1 w-full">
         <div className="max-w-5xl mx-auto px-4 py-10">
-          <div className="mb-8">
-            <h1 className="text-xl font-semibold text-white tracking-tight">Analyze Your Lease</h1>
-            <p className="text-sm text-zinc-500 mt-1">Upload a PDF, Word doc, or image — results in under 30 seconds.</p>
-          </div>
 
           {!hasResult ? (
-            /* Upload panel only — before first analysis */
-            <div className="max-w-xl">
+            /* Centered upload — before first analysis */
+            <div className="max-w-xl mx-auto">
+              <div className="text-center mb-8">
+                <h1 className="text-xl font-semibold text-white tracking-tight">Analyze Your Lease</h1>
+                <p className="text-sm text-zinc-500 mt-1">Upload a PDF, Word doc, or image — results in under 30 seconds.</p>
+              </div>
               <UploadPanel
                 onUpload={handleUpload}
                 loading={loading}
