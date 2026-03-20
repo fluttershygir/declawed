@@ -6,6 +6,7 @@ import UploadPanel from '../components/UploadPanel';
 import SummaryPanel from '../components/SummaryPanel';
 import Footer from '../components/Footer';
 import { trackEvent } from '../lib/analytics';
+import UserDropdown from '../components/UserDropdown';
 
 const LogoMark = () => (
   <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shadow-sm shrink-0">
@@ -114,14 +115,7 @@ export default function AnalyzePage() {
             <LogoMark />
             <span className="text-[15px] font-bold tracking-tight text-white">Declawed</span>
           </a>
-          {user && (
-            <a
-              href="/dashboard"
-              className="text-[13px] font-medium text-zinc-500 hover:text-zinc-200 transition-colors"
-            >
-              ← Dashboard
-            </a>
-          )}
+          {user && <UserDropdown size="sm" />}
         </div>
       </header>
 
