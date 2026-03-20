@@ -1,11 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ArrowLeft, Upload, FileText, Image as ImageIcon } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import UploadPanel from '../components/UploadPanel';
 import SummaryPanel from '../components/SummaryPanel';
+import Footer from '../components/Footer';
 import { trackEvent } from '../lib/analytics';
+
+const LogoMark = () => (
+  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shadow-sm shrink-0">
+    <svg viewBox="0 0 20 20" fill="none" className="w-[14px] h-[14px]">
+      <path d="M6 10V7a4 4 0 0 1 8 0v3" stroke="white" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+      <rect x="3.5" y="10" width="13" height="9" rx="2.5" fill="white" fillOpacity="0.95" />
+      <circle cx="10" cy="14.5" r="1.4" fill="#0d9488" />
+    </svg>
+  </div>
+);
 
 export default function AnalyzePage() {
   const { user } = useAuth();
@@ -19,7 +29,6 @@ export default function AnalyzePage() {
   const [analysisLandlordMode, setAnalysisLandlordMode] = useState(false);
   const [retryPayload, setRetryPayload] = useState(null);
 
-  // Fetch usage data
   const fetchUsage = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -32,8 +41,9 @@ export default function AnalyzePage() {
     }
   };
 
-  useState(() => {
+  useEffect(() => {
     fetchUsage();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const handleUpload = async (payload) => {
@@ -63,19 +73,18 @@ export default function AnalyzePage() {
       const contentType = res.headers.get('content-type') || '';
       if (!contentType.includes('application/json')) {
         const raw = await res.text();
-        throw new Error(`CF error (HTTP ${res.status}): ${raw.replace(/<[^>]+>/g, '').trim().slice(0, 200)}`);
+        throw new Error(`Error (HTTP ${res.status}): ${raw.replace(/<[^>]+>/g, '').trim().slice(0, 200)}`);
       }
 
       const data = await res.json();
 
       if (res.status === 402) {
-        // Redirect to billing for paywall
         navigate('/billing');
         return;
       }
 
       if (!res.ok || data.error) throw new Error(data.error || 'Something went wrong.');
-      
+
       const rawSummary = data.summary;
       const parsedSummary = (() => {
         if (!rawSummary) return null;
@@ -94,62 +103,77 @@ export default function AnalyzePage() {
     }
   };
 
+  const hasResult = loading || summary || error;
+
   return (
     <div className="min-h-screen bg-[#07070d] text-slate-100 flex flex-col">
-      {/* Simple header */}
+      {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b border-white/[0.06] bg-[#07070d]/95 backdrop-blur-xl">
         <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
-          <a href="/app" className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-teal-500/25 shrink-0">
-              <svg viewBox="0 0 20 20" fill="none" className="w-[14px] h-[14px]">
-                <path d="M6 10V7a4 4 0 0 1 8 0v3" stroke="white" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-                <rect x="3.5" y="10" width="13" height="9" rx="2.5" fill="white" fillOpacity="0.95" />
-                <circle cx="10" cy="14.5" r="1.4" fill="#0d9488" />
-              </svg>
-            </div>
+          <a href="/" className="flex items-center gap-2.5">
+            <LogoMark />
             <span className="text-[15px] font-bold tracking-tight text-white">Declawed</span>
           </a>
-          
-          <button
-            onClick={() => navigate('/app')}
-            className="text-[13px] font-medium text-zinc-400 hover:text-white transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Dashboard
-          </button>
+          {user && (
+            <a
+              href="/dashboard"
+              className="text-[13px] font-medium text-zinc-500 hover:text-zinc-200 transition-colors"
+            >
+              ← Dashboard
+            </a>
+          )}
         </div>
       </header>
 
-      {/* Main content - centered upload tool */}
-      <main className="flex-1 w-full max-w-4xl mx-auto px-4 py-12">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mb-2">Analyze Your Lease</h1>
-          <p className="text-zinc-500 text-sm sm:text-base">Upload your lease and get a full breakdown in under 30 seconds.</p>
-        </div>
-        
-        <div className="grid md:grid-cols-2 gap-6 items-stretch">
-          <UploadPanel 
-            onUpload={handleUpload} 
-            loading={loading} 
-            usage={usage} 
-            onUpgrade={() => navigate('/billing')} 
-            landlordMode={landlordMode} 
-            onLandlordModeChange={setLandlordMode} 
-          />
-          <SummaryPanel 
-            summary={summary} 
-            loading={loading} 
-            error={error} 
-            modelTier={null} 
-            usage={usage} 
-            filename={uploadedFilename} 
-            onUpgrade={() => navigate('/billing')} 
-            landlordMode={analysisLandlordMode} 
-            user={user} 
-            onRetry={retryPayload ? () => handleUpload(retryPayload) : null} 
-          />
+      {/* Main */}
+      <main className="flex-1 w-full">
+        <div className="max-w-5xl mx-auto px-4 py-10">
+          <div className="mb-8">
+            <h1 className="text-xl font-semibold text-white tracking-tight">Analyze Your Lease</h1>
+            <p className="text-sm text-zinc-500 mt-1">Upload a PDF, Word doc, or image — results in under 30 seconds.</p>
+          </div>
+
+          {!hasResult ? (
+            /* Upload panel only — before first analysis */
+            <div className="max-w-xl">
+              <UploadPanel
+                onUpload={handleUpload}
+                loading={loading}
+                usage={usage}
+                onUpgrade={() => navigate('/billing')}
+                landlordMode={landlordMode}
+                onLandlordModeChange={setLandlordMode}
+              />
+            </div>
+          ) : (
+            /* Side-by-side once analysis starts */
+            <div className="grid md:grid-cols-2 gap-6 items-start">
+              <UploadPanel
+                onUpload={handleUpload}
+                loading={loading}
+                usage={usage}
+                onUpgrade={() => navigate('/billing')}
+                landlordMode={landlordMode}
+                onLandlordModeChange={setLandlordMode}
+              />
+              <SummaryPanel
+                summary={summary}
+                loading={loading}
+                error={error}
+                modelTier={null}
+                usage={usage}
+                filename={uploadedFilename}
+                onUpgrade={() => navigate('/billing')}
+                landlordMode={analysisLandlordMode}
+                user={user}
+                onRetry={retryPayload ? () => handleUpload(retryPayload) : null}
+              />
+            </div>
+          )}
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }

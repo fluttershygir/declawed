@@ -87,7 +87,7 @@ export default function AccountSettings() {
     setFullName(profile.full_name || '');
     const prefs = profile.user_preferences || {};
     setNotifAnalysis(prefs.email_on_complete ?? true);
-    setNotifSummary(prefs.monthly_summary     ?? false);
+    setNotifSummary(prefs.monthly_summary     ?? true);
   }, [profile]);
 
   // Redirect if not logged in
@@ -99,18 +99,15 @@ export default function AccountSettings() {
     e.preventDefault();
     setSavingProfile(true);
     setProfileMsg(null);
-    // Direct table update — simpler and avoids schema-cache RPC issues
-    const { error } = await supabase
-      .from('profiles')
-      .update({ full_name: fullName.trim() })
-      .eq('id', user.id);
-    if (!error) {
-      // Also sync into auth user_metadata so avatar initials update immediately
-      await supabase.auth.updateUser({ data: { full_name: fullName.trim() } });
-    }
+    // Run both updates in parallel. auth.updateUser bypasses PostgREST entirely
+    // so it succeeds even when the Supabase schema cache is stale.
+    const [{ error: authErr }, { error: profileErr }] = await Promise.all([
+      supabase.auth.updateUser({ data: { full_name: fullName.trim() } }),
+      supabase.from('profiles').update({ full_name: fullName.trim() }).eq('id', user.id),
+    ]);
     setSavingProfile(false);
-    if (error) {
-      setProfileMsg({ ok: false, text: error.message });
+    if (authErr && profileErr) {
+      setProfileMsg({ ok: false, text: profileErr.message });
     } else {
       setProfileMsg({ ok: true, text: 'Name saved successfully.' });
       refreshProfile();

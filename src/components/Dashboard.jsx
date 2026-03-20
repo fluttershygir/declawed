@@ -168,6 +168,25 @@ export default function Dashboard({ onClose, onUpgrade }) {
         </div>
 
         {/* Plan card */}
+        {!usage ? (
+          <div className="rounded-xl border border-white/[0.06] bg-[#0b0b12] p-5 mb-5 animate-pulse">
+            <div className="flex items-start justify-between mb-4">
+              <div className="space-y-2">
+                <div className="h-4 w-16 rounded bg-white/[0.06]" />
+                <div className="h-6 w-28 rounded bg-white/[0.06]" />
+                <div className="h-3 w-20 rounded bg-white/[0.04]" />
+              </div>
+              <div className="h-8 w-24 rounded-lg bg-white/[0.05]" />
+            </div>
+            <div className="pt-4 border-t border-white/[0.05]">
+              <div className="flex justify-between mb-2">
+                <div className="h-3 w-24 rounded bg-white/[0.04]" />
+                <div className="h-3 w-12 rounded bg-white/[0.04]" />
+              </div>
+              <div className="h-1 rounded-full bg-white/[0.04]" />
+            </div>
+          </div>
+        ) : (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -225,6 +244,7 @@ export default function Dashboard({ onClose, onUpgrade }) {
           </div>
 
         </motion.div>
+        )}
 
         {/* Quick Stats row */}
         {loadingHistory ? (

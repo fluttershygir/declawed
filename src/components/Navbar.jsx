@@ -9,11 +9,10 @@ const NAV_LINKS = [
   { label: 'How it Works', href: '/#how-it-works' },
   { label: 'Pricing', href: '/#pricing' },
   { label: 'FAQ', href: '/#faq' },
-  { label: 'Contact', href: '/contact' },
 ];
 
 const LogoMark = () => (
-  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-teal-500/25 shrink-0">
+  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shadow-sm shrink-0">
     <svg viewBox="0 0 20 20" fill="none" className="w-[14px] h-[14px]">
       <path d="M6 10V7a4 4 0 0 1 8 0v3" stroke="white" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
       <rect x="3.5" y="10" width="13" height="9" rx="2.5" fill="white" fillOpacity="0.95" />
@@ -75,7 +74,7 @@ export default function Navbar() {
                 </button>
                 <a
                   href="/#upload"
-                  className="px-4 py-2 rounded-lg bg-teal-500 text-[13px] font-semibold text-black hover:bg-teal-400 active:scale-95 transition-all shadow-lg shadow-teal-500/20"
+                  className="px-4 py-2 rounded-lg bg-teal-600 text-[13px] font-semibold text-white hover:bg-teal-500 active:scale-95 transition-all"
                 >
                   Try free →
                 </a>

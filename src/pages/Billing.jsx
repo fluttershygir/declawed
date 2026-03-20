@@ -193,6 +193,27 @@ export default function Billing() {
         </div>
 
         {/* ─── Current plan card ───────────────────────── */}
+        {usage === null ? (
+          <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 mb-5 animate-pulse">
+            <div className="h-3 w-24 rounded bg-white/[0.05] mb-3" />
+            <div className="h-7 w-36 rounded bg-white/[0.06] mb-5" />
+            <div className="space-y-2.5 mb-5">
+              {[80, 60, 70, 50].map(w => (
+                <div key={w} className="flex items-center gap-2">
+                  <div className="h-3.5 w-3.5 rounded bg-white/[0.05] shrink-0" />
+                  <div className={`h-3 rounded bg-white/[0.04]`} style={{ width: `${w}%` }} />
+                </div>
+              ))}
+            </div>
+            <div className="pt-5 border-t border-white/[0.05]">
+              <div className="flex justify-between mb-2">
+                <div className="h-3.5 w-32 rounded bg-white/[0.05]" />
+                <div className="h-3.5 w-16 rounded bg-white/[0.05]" />
+              </div>
+              <div className="h-1.5 rounded-full bg-white/[0.04]" />
+            </div>
+          </div>
+        ) : (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -213,7 +234,7 @@ export default function Billing() {
           </ul>
 
           {/* Usage bar */}
-          {profile && (
+          {(usage || profile) && (
             <div className="mt-5 pt-5 border-t border-white/[0.06]">
               <div className="flex items-center justify-between text-sm mb-2">
                 <span className="text-zinc-500">Analyses used this period</span>
@@ -232,6 +253,7 @@ export default function Billing() {
             </div>
           )}
         </motion.div>
+        )}
 
         {/* ─── 7-day guarantee / refund ────────────────── */}
         {planInfo.isPaid && (
