@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { FileText, AlertCircle, Calendar, Pencil, Share2, ChevronRight, Loader2, Search, Upload } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FileText, AlertCircle, Calendar, Pencil, Share2, ChevronRight, Loader2, Search, Upload, Columns2, X, CheckSquare, Square } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import AppShell from '../components/AppShell';
@@ -37,6 +37,130 @@ function sortAnalyses(analyses, sort) {
   return copy;
 }
 
+function scoreColor(score) {
+  if (score === null || score === undefined) return { text: 'text-zinc-400', ring: 'border-zinc-700 bg-zinc-800/40' };
+  if (score <= 4) return { text: 'text-rose-400', ring: 'border-rose-500/40 bg-rose-500/[0.07]' };
+  if (score <= 7) return { text: 'text-amber-400', ring: 'border-amber-500/40 bg-amber-500/[0.07]' };
+  return { text: 'text-emerald-400', ring: 'border-emerald-500/40 bg-emerald-500/[0.07]' };
+}
+
+function ComparePanel({ a, b, onClose }) {
+  const da = a.result || {};
+  const db = b.result || {};
+  const sa = da.score ?? null;
+  const sb = db.score ?? null;
+  const ca = scoreColor(sa);
+  const cb = scoreColor(sb);
+
+  const ColHeader = ({ analysis, sc }) => (
+    <div className="flex-1 min-w-0 text-center px-3 py-3 border-b border-white/[0.06]">
+      <p className="text-xs font-semibold text-white truncate">{analysis.filename || 'Untitled'}</p>
+      <time className="text-[10px] text-zinc-600">{new Date(analysis.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}</time>
+    </div>
+  );
+
+  const ScoreCell = ({ score, sc, verdict }) => (
+    <div className={`flex-1 p-4 flex flex-col items-center gap-2 border-r border-white/[0.04] last:border-r-0`}>
+      {score !== null ? (
+        <div className={`w-12 h-12 rounded-full border-2 flex items-center justify-center ${sc.ring}`}>
+          <span className={`text-xl font-extrabold ${sc.text}`}>{score}</span>
+        </div>
+      ) : <div className="w-12 h-12 rounded-full border border-zinc-700 flex items-center justify-center text-zinc-600 text-xs">—</div>}
+      {verdict && <p className="text-[11px] text-zinc-400 text-center leading-snug line-clamp-3">{verdict}</p>}
+    </div>
+  );
+
+  const flagHigher = sa !== null && sb !== null && da.redFlags?.length !== db.redFlags?.length;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 6 }}
+      className="mt-4 rounded-xl border border-white/[0.1] bg-[#0b0b12] overflow-hidden"
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06] bg-white/[0.02]">
+        <div className="flex items-center gap-2">
+          <Columns2 className="w-3.5 h-3.5 text-teal-400" />
+          <span className="text-xs font-semibold text-white">Comparison</span>
+        </div>
+        <button onClick={onClose} className="text-zinc-600 hover:text-white transition p-1 rounded">
+          <X className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      {/* Column headers */}
+      <div className="flex divide-x divide-white/[0.04]">
+        <ColHeader analysis={a} sc={ca} />
+        <ColHeader analysis={b} sc={cb} />
+      </div>
+
+      {/* Score row */}
+      <div className="border-b border-white/[0.04]">
+        <p className="px-4 py-1.5 text-[9px] font-bold uppercase tracking-[0.15em] text-zinc-600 border-b border-white/[0.03]">Score</p>
+        <div className="flex divide-x divide-white/[0.04]">
+          <ScoreCell score={sa} sc={ca} verdict={da.verdict} />
+          <ScoreCell score={sb} sc={cb} verdict={db.verdict} />
+        </div>
+      </div>
+
+      {/* Red flags row */}
+      <div className="border-b border-white/[0.04]">
+        <p className="px-4 py-1.5 text-[9px] font-bold uppercase tracking-[0.15em] text-zinc-600 border-b border-white/[0.03]">Red Flags</p>
+        <div className="flex divide-x divide-white/[0.04]">
+          {[a, b].map((analysis, idx) => {
+            const flags = analysis.result?.redFlags || [];
+            const other = idx === 0 ? b : a;
+            const otherCount = other.result?.redFlags?.length ?? 0;
+            const isBetter = flags.length < otherCount;
+            const isWorse = flags.length > otherCount;
+            return (
+              <div key={analysis.id} className="flex-1 px-4 py-3 border-r border-white/[0.04] last:border-r-0">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className={`text-lg font-bold ${isWorse ? 'text-rose-400' : isBetter ? 'text-emerald-400' : 'text-zinc-300'}`}>{flags.length}</span>
+                  {isWorse && <span className="text-[9px] font-bold text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded px-1.5 py-0.5">more</span>}
+                  {isBetter && <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded px-1.5 py-0.5">fewer</span>}
+                </div>
+                {flags.slice(0, 3).map((f, i) => {
+                  const text = typeof f === 'string' ? f : f.text;
+                  const sev = typeof f === 'string' ? 'MEDIUM' : (f.severity || 'MEDIUM');
+                  return (
+                    <div key={i} className="flex items-start gap-1.5 mb-1.5">
+                      <SeverityBadge severity={sev} />
+                      <p className="text-[10px] text-zinc-500 leading-snug line-clamp-2">{text}</p>
+                    </div>
+                  );
+                })}
+                {flags.length > 3 && <p className="text-[10px] text-zinc-600 mt-1">+{flags.length - 3} more</p>}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Key dates row */}
+      <div>
+        <p className="px-4 py-1.5 text-[9px] font-bold uppercase tracking-[0.15em] text-zinc-600 border-b border-white/[0.03]">Key Dates</p>
+        <div className="flex divide-x divide-white/[0.04]">
+          {[a, b].map((analysis) => {
+            const dates = analysis.result?.keyDates || [];
+            return (
+              <div key={analysis.id} className="flex-1 px-4 py-3 border-r border-white/[0.04] last:border-r-0">
+                <span className="text-lg font-bold text-zinc-300">{dates.length}</span>
+                {dates.slice(0, 2).map((d, i) => (
+                  <p key={i} className="text-[10px] text-zinc-600 mt-1.5 leading-snug"><span className="text-zinc-500">{d.label}:</span> {d.value}</p>
+                ))}
+                {dates.length > 2 && <p className="text-[10px] text-zinc-700 mt-1">+{dates.length - 2} more</p>}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function AnalysisHistory() {
   const { user } = useAuth();
   const [analyses, setAnalyses] = useState([]);
@@ -46,6 +170,8 @@ export default function AnalysisHistory() {
   const [sort, setSort] = useState('newest');
   const [shareLoadingIds, setShareLoadingIds] = useState(new Set());
   const [toast, setToast] = useState(null);
+  const [compareMode, setCompareMode] = useState(false);
+  const [compareIds, setCompareIds] = useState([]);
 
   useEffect(() => {
     if (!user) return;
@@ -109,6 +235,21 @@ export default function AnalysisHistory() {
     }
   }
 
+  function toggleCompareId(id) {
+    setCompareIds(prev => {
+      if (prev.includes(id)) return prev.filter(x => x !== id);
+      if (prev.length >= 2) return [prev[1], id]; // slide window
+      return [...prev, id];
+    });
+  }
+
+  function exitCompare() {
+    setCompareMode(false);
+    setCompareIds([]);
+  }
+
+  const compareAnalyses = compareIds.map(id => analyses.find(a => a.id === id)).filter(Boolean);
+
   const q = search.trim().toLowerCase();
   const filtered = sortAnalyses(
     q
@@ -133,12 +274,36 @@ export default function AnalysisHistory() {
 <div className="max-w-5xl mx-auto px-4 py-5 sm:px-6 sm:py-8">
 
           {/* Page header */}
-          <div className="mb-7">
-            <h1 className="text-xl font-semibold text-white tracking-tight">Analysis History</h1>
-            <p className="text-sm text-zinc-500 mt-0.5">
-              {loading ? 'Loading…' : `${analyses.length} lease${analyses.length !== 1 ? 's' : ''} analyzed`}
-            </p>
+          <div className="flex items-start justify-between mb-7">
+            <div>
+              <h1 className="text-xl font-semibold text-white tracking-tight">Analysis History</h1>
+              <p className="text-sm text-zinc-500 mt-0.5">
+                {loading ? 'Loading…' : `${analyses.length} lease${analyses.length !== 1 ? 's' : ''} analyzed`}
+              </p>
+            </div>
+            {analyses.length >= 2 && (
+              compareMode ? (
+                <button
+                  onClick={exitCompare}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-teal-500/15 border border-teal-500/30 text-teal-400 hover:bg-teal-500/25 transition"
+                >
+                  <X className="w-3 h-3" /> Exit compare
+                </button>
+              ) : (
+                <button
+                  onClick={() => setCompareMode(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/[0.05] border border-white/[0.08] text-zinc-400 hover:text-white hover:bg-white/[0.09] transition"
+                >
+                  <Columns2 className="w-3 h-3" /> Compare
+                </button>
+              )
+            )}
           </div>
+          {compareMode && (
+            <p className="text-xs text-zinc-500 mb-4 -mt-4">
+              {compareIds.length === 0 ? 'Select two leases to compare.' : compareIds.length === 1 ? 'Select one more lease.' : 'Showing comparison below.'}
+            </p>
+          )}
 
           {/* Search + Sort bar */}
           <div className="flex flex-col sm:flex-row gap-3 mb-5">
@@ -237,9 +402,16 @@ export default function AnalysisHistory() {
                       initial={{ opacity: 0, y: 6 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: Math.min(i * 0.03, 0.3) }}
-                      onClick={() => setSelectedAnalysis(a)}
-                      className="relative px-4 py-4 sm:px-6 flex items-start gap-3 cursor-pointer transition-all group border-l-2 border-transparent hover:border-blue-500/40 hover:bg-white/[0.03] active:bg-white/[0.04]"
+                      onClick={() => compareMode ? toggleCompareId(a.id) : setSelectedAnalysis(a)}
+                      className={`relative px-4 py-4 sm:px-6 flex items-start gap-3 cursor-pointer transition-all group border-l-2 ${compareMode && compareIds.includes(a.id) ? 'border-teal-500/60 bg-teal-500/[0.04]' : 'border-transparent hover:border-blue-500/40 hover:bg-white/[0.03]'} active:bg-white/[0.04]`}
                     >
+                      {compareMode && (
+                        <div className="shrink-0 mt-1 text-zinc-600">
+                          {compareIds.includes(a.id)
+                            ? <CheckSquare className="w-4 h-4 text-teal-400" />
+                            : <Square className="w-4 h-4" />}
+                        </div>
+                      )}
                       <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.07] flex items-center justify-center shrink-0 mt-0.5 group-hover:border-blue-500/30 transition">
                         <FileText className="w-3.5 h-3.5 text-zinc-500 group-hover:text-blue-400 transition" />
                       </div>
@@ -299,6 +471,18 @@ export default function AnalysisHistory() {
               </ul>
             )}
           </div>
+
+          {/* Compare panel */}
+          <AnimatePresence>
+            {compareMode && compareAnalyses.length === 2 && (
+              <ComparePanel
+                a={compareAnalyses[0]}
+                b={compareAnalyses[1]}
+                onClose={exitCompare}
+              />
+            )}
+          </AnimatePresence>
+
         </div>
       </AppShell>
 
