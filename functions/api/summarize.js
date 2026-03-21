@@ -88,6 +88,22 @@ function json(data, status = 200) {
   });
 }
 
+async function signCookieValue(secret, value) {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey('raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(value));
+  return btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+
+async function verifyCookieValue(secret, value, signature) {
+  const expected = await signCookieValue(secret, value);
+  if (expected.length !== signature.length) return false;
+  // constant-time comparison
+  let diff = 0;
+  for (let i = 0; i < expected.length; i++) diff |= expected.charCodeAt(i) ^ signature.charCodeAt(i);
+  return diff === 0;
+}
+
 async function getUserFromJwt(jwt, supabaseUrl, serviceRoleKey) {
   const res = await fetch(`${supabaseUrl}/auth/v1/user`, {
     headers: {
@@ -195,8 +211,15 @@ async function handleRequest(request, env) {
       return json({ error: 'Too many requests from this network. Please try again tomorrow or create a free account.' }, 429);
     }
     const cookieHeader = request.headers.get('Cookie') || '';
-    if (cookieHeader.includes('dcl_free_used=1')) {
-      return json({ error: 'Free analysis already used. Please sign in or upgrade.' }, 402);
+    const cookieMatch = cookieHeader.match(/(?:^|;\s*)dcl_free_used=([^;]+)/);
+    if (cookieMatch) {
+      const cookieSecret = env.COOKIE_SECRET || '';
+      const isValid = cookieSecret
+        ? await verifyCookieValue(cookieSecret, 'dcl_free_used', cookieMatch[1])
+        : cookieMatch[1] === '1'; // fallback for missing secret (dev only)
+      if (isValid) {
+        return json({ error: 'Free analysis already used. Please sign in or upgrade.' }, 402);
+      }
     }
   }
 
@@ -344,8 +367,12 @@ async function handleRequest(request, env) {
       }),
     });
   } else {
-    // Anonymous — set a simple cookie. Not tamper-proof like before, but Supabase auth is the real gate now.
-    responseHeaders.append('Set-Cookie', 'dcl_free_used=1; Path=/; HttpOnly; SameSite=Strict; Max-Age=31536000; Secure');
+    // Anonymous — set a signed cookie so users can't clear it and reuse the free tier.
+    const cookieSecret = env.COOKIE_SECRET || '';
+    const cookieSig = cookieSecret
+      ? await signCookieValue(cookieSecret, 'dcl_free_used')
+      : '1'; // fallback for missing secret (dev only)
+    responseHeaders.append('Set-Cookie', `dcl_free_used=${cookieSig}; Path=/; HttpOnly; SameSite=Strict; Max-Age=31536000; Secure`);
   }
 
   return new Response(JSON.stringify({ summary: analysis, modelTier, landlordMode: useLandlordMode }), { status: 200, headers: responseHeaders });

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Building2, CheckCircle2 } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { supabase } from './lib/supabase';
+import { callSummarize } from './lib/callSummarize';
 
 class ErrorBoundary extends Component {
   state = { error: null };
@@ -131,6 +132,15 @@ function MainApp() {
       return;
     }
 
+    // /analyze page sign-up/sign-in buttons navigate here with ?auth=signup or ?auth=signin
+    const authParam = params.get('auth');
+    if (authParam === 'signup' || authParam === 'signin') {
+      setAuthTab(authParam);
+      setAuthOpen(true);
+      window.history.replaceState({}, '', window.location.pathname);
+      return;
+    }
+
     const checkout = params.get('checkout');
     const sessionId = params.get('session_id');
     const tier = params.get('tier');
@@ -162,7 +172,7 @@ function MainApp() {
 
   // UploadPanel calls onUpload({ text, filename }) or onUpload({ imageBase64, imageMediaType, filename })
   const handleUpload = async (payload) => {
-    const { text, imageBase64, imageMediaType, filename } = payload || {};
+    const { imageBase64, filename } = payload || {};
     setError('');
     setSummary('');
     setModelTier(null);
@@ -172,48 +182,11 @@ function MainApp() {
     setLoading(true);
     trackEvent('analysis_started', { filename_type: imageBase64 ? 'image' : 'text' });
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const headers = { 'Content-Type': 'application/json' };
-      if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`;
-
-      const bodyPayload = imageBase64
-        ? { imageBase64, imageMediaType, filename, landlordMode: payload?.landlordMode }
-        : { text, filename, landlordMode: payload?.landlordMode };
-
-      const res = await fetch('/api/summarize', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(bodyPayload),
-      });
-
-      // Guard against CF returning an HTML error page instead of JSON
-      const contentType = res.headers.get('content-type') || '';
-      if (!contentType.includes('application/json')) {
-        const raw = await res.text();
-        console.error('[summarize] Non-JSON response:', raw.slice(0, 500));
-        throw new Error(`CF error (HTTP ${res.status}): ${raw.replace(/<[^>]+>/g, '').trim().slice(0, 200)}`);
-      }
-
-      const data = await res.json();
-
-      if (res.status === 402) {
-        setPaywallOpen(true);
-        trackEvent('upgrade_clicked', { trigger: 'paywall_402' });
-        return;
-      }
-
-      if (!res.ok || data.error) throw new Error(data.error || 'Something went wrong.');
-      // Normalize: if the server ever returns summary as a JSON string, parse it
-      const rawSummary = data.summary;
-      const parsedSummary = (() => {
-        if (!rawSummary) return null;
-        if (typeof rawSummary === 'object') return rawSummary;
-        try { return JSON.parse(rawSummary); } catch { return { _parseError: true }; }
-      })();
-      setSummary(parsedSummary);
-      setModelTier(data.modelTier || null);
-      setAnalysisLandlordMode(!!data.landlordMode);
-      trackEvent('analysis_completed', { model_tier: data.modelTier || 'standard' });
+      const result = await callSummarize(payload);
+      setSummary(result.summary);
+      setModelTier(result.modelTier);
+      setAnalysisLandlordMode(result.landlordMode);
+      trackEvent('analysis_completed', { model_tier: result.modelTier || 'standard' });
       fetchUsage();
       // Fire-and-forget: reward referrer if this is the referred user's first analysis
       supabase.auth.getSession().then(({ data: sd }) => {
@@ -224,6 +197,11 @@ function MainApp() {
         }).catch(() => {});
       });
     } catch (e) {
+      if (e.paywall) {
+        setPaywallOpen(true);
+        trackEvent('upgrade_clicked', { trigger: 'paywall_402' });
+        return;
+      }
       setError(e.message || 'Something went wrong.');
       trackEvent('analysis_failed', { error: e.message?.slice(0, 100) || 'unknown' });
     } finally {
@@ -389,7 +367,7 @@ function AppPage() {
   }, []);
 
   const handleUpload = async (payload) => {
-    const { text, imageBase64, imageMediaType, filename } = payload || {};
+    const { imageBase64, filename } = payload || {};
     setError('');
     setSummary('');
     setModelTier(null);
@@ -397,35 +375,13 @@ function AppPage() {
     setUploadedFilename(filename || '');
     setRetryPayload(payload || null);
     setUploading(true);
+    trackEvent('analysis_started', { filename_type: imageBase64 ? 'image' : 'text' });
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const headers = { 'Content-Type': 'application/json' };
-      if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`;
-      const bodyPayload = imageBase64
-        ? { imageBase64, imageMediaType, filename, landlordMode: payload?.landlordMode }
-        : { text, filename, landlordMode: payload?.landlordMode };
-      const res = await fetch('/api/summarize', {
-        method: 'POST', headers,
-        body: JSON.stringify(bodyPayload),
-      });
-      const contentType = res.headers.get('content-type') || '';
-      if (!contentType.includes('application/json')) {
-        const raw = await res.text();
-        throw new Error(`CF error (HTTP ${res.status}): ${raw.replace(/<[^>]+>/g, '').trim().slice(0, 200)}`);
-      }
-      const data = await res.json();
-      if (res.status === 402) { setPaywallOpen(true); return; }
-      if (!res.ok || data.error) throw new Error(data.error || 'Something went wrong.');
-      // Normalize: if the server ever returns summary as a JSON string, parse it
-      const rawSummary2 = data.summary;
-      const parsedSummary2 = (() => {
-        if (!rawSummary2) return null;
-        if (typeof rawSummary2 === 'object') return rawSummary2;
-        try { return JSON.parse(rawSummary2); } catch { return { _parseError: true }; }
-      })();
-      setSummary(parsedSummary2);
-      setModelTier(data.modelTier || null);
-      setAnalysisLandlordMode(!!data.landlordMode);
+      const result = await callSummarize(payload);
+      setSummary(result.summary);
+      setModelTier(result.modelTier);
+      setAnalysisLandlordMode(result.landlordMode);
+      trackEvent('analysis_completed', { model_tier: result.modelTier || 'standard' });
       fetchUsage();
       supabase.auth.getSession().then(({ data: sd }) => {
         if (!sd?.session?.access_token) return;
@@ -435,7 +391,9 @@ function AppPage() {
         }).catch(() => {});
       });
     } catch (e) {
+      if (e.paywall) { setPaywallOpen(true); return; }
       setError(e.message || 'Something went wrong.');
+      trackEvent('analysis_failed', { error: e.message?.slice(0, 100) || 'unknown' });
     } finally {
       setUploading(false);
     }

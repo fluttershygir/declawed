@@ -11,7 +11,7 @@ export function AuthProvider({ children }) {
   const fetchProfile = async (userId) => {
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, plan, analyses_used, analyses_limit, full_name')
+      .select('id, plan, analyses_used, analyses_limit, full_name, user_preferences')
       .eq('id', userId)
       .maybeSingle();          // maybeSingle: returns null (no error) when row is absent
     if (error) console.error('[Declawed] profile fetch error:', error.message, error.code);

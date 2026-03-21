@@ -166,8 +166,8 @@ export default function Billing() {
     }
   }
 
-  const used  = usage?.analyses_used  ?? profile?.analyses_used  ?? 0;
-  const limit = usage?.analyses_limit ?? profile?.analyses_limit ?? 1;
+  const used  = usage?.used  ?? profile?.analyses_used  ?? 0;
+  const limit = usage?.limit ?? profile?.analyses_limit ?? 1;
   const limitIsUnlimited = limit >= 9999;
   const usagePct = limitIsUnlimited ? 0 : Math.min(100, (used / limit) * 100);
 

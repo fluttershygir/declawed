@@ -6,6 +6,7 @@ import UploadPanel from '../components/UploadPanel';
 import SummaryPanel from '../components/SummaryPanel';
 import Footer from '../components/Footer';
 import { trackEvent } from '../lib/analytics';
+import { callSummarize } from '../lib/callSummarize';
 import UserDropdown from '../components/UserDropdown';
 
 const LogoMark = () => (
@@ -28,6 +29,7 @@ export default function AnalyzePage() {
   const [uploadedFilename, setUploadedFilename] = useState('');
   const [landlordMode, setLandlordMode] = useState(false);
   const [analysisLandlordMode, setAnalysisLandlordMode] = useState(false);
+  const [modelTier, setModelTier] = useState(null);
   const [retryPayload, setRetryPayload] = useState(null);
 
   const fetchUsage = async () => {
@@ -48,55 +50,24 @@ export default function AnalyzePage() {
   }, [user]);
 
   const handleUpload = async (payload) => {
-    const { text, imageBase64, imageMediaType, filename } = payload || {};
+    const { imageBase64, filename } = payload || {};
     setError('');
     setSummary('');
+    setModelTier(null);
     setAnalysisLandlordMode(false);
     setUploadedFilename(filename || '');
     setRetryPayload(payload || null);
     setLoading(true);
     trackEvent('analysis_started', { filename_type: imageBase64 ? 'image' : 'text' });
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const headers = { 'Content-Type': 'application/json' };
-      if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`;
-
-      const bodyPayload = imageBase64
-        ? { imageBase64, imageMediaType, filename, landlordMode: payload?.landlordMode }
-        : { text, filename, landlordMode: payload?.landlordMode };
-
-      const res = await fetch('/api/summarize', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(bodyPayload),
-      });
-
-      const contentType = res.headers.get('content-type') || '';
-      if (!contentType.includes('application/json')) {
-        const raw = await res.text();
-        throw new Error(`Error (HTTP ${res.status}): ${raw.replace(/<[^>]+>/g, '').trim().slice(0, 200)}`);
-      }
-
-      const data = await res.json();
-
-      if (res.status === 402) {
-        navigate('/billing');
-        return;
-      }
-
-      if (!res.ok || data.error) throw new Error(data.error || 'Something went wrong.');
-
-      const rawSummary = data.summary;
-      const parsedSummary = (() => {
-        if (!rawSummary) return null;
-        if (typeof rawSummary === 'object') return rawSummary;
-        try { return JSON.parse(rawSummary); } catch { return { _parseError: true }; }
-      })();
-      setSummary(parsedSummary);
-      setAnalysisLandlordMode(!!data.landlordMode);
-      trackEvent('analysis_completed', { model_tier: data.modelTier || 'standard' });
+      const result = await callSummarize(payload);
+      setSummary(result.summary);
+      setModelTier(result.modelTier);
+      setAnalysisLandlordMode(result.landlordMode);
+      trackEvent('analysis_completed', { model_tier: result.modelTier || 'standard' });
       fetchUsage();
     } catch (e) {
+      if (e.paywall) { navigate('/billing'); return; }
       setError(e.message || 'Something went wrong.');
       trackEvent('analysis_failed', { error: e.message?.slice(0, 100) || 'unknown' });
     } finally {
@@ -154,12 +125,13 @@ export default function AnalyzePage() {
                 summary={summary}
                 loading={loading}
                 error={error}
-                modelTier={null}
+                modelTier={modelTier}
                 usage={usage}
                 filename={uploadedFilename}
                 onUpgrade={() => navigate('/billing')}
                 landlordMode={analysisLandlordMode}
                 user={user}
+                onSignUp={(tab) => navigate(`/?auth=${tab}`)}
                 onRetry={retryPayload ? () => handleUpload(retryPayload) : null}
               />
             </div>
