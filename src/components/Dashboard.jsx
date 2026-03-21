@@ -37,6 +37,7 @@ export default function Dashboard({ onClose, onUpgrade }) {
   const [toast, setToast] = useState(null);
   const [shareLoadingIds, setShareLoadingIds] = useState(new Set());
   const [usage, setUsage] = useState(null);
+  const [referralCount, setReferralCount] = useState(null);
 
   useEffect(() => {
     if (!user) return;
@@ -71,6 +72,16 @@ export default function Dashboard({ onClose, onUpgrade }) {
   useEffect(() => {
     if (user) refreshProfile();
   // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from('profiles')
+      .select('id', { count: 'exact', head: true })
+      .eq('referred_by', user.id)
+      .eq('referral_reward_given', true)
+      .then(({ count }) => { if (count !== null) setReferralCount(count); });
   }, [user]);
 
   const plan = (usage?.plan || 'free').toLowerCase();
@@ -505,11 +516,20 @@ export default function Dashboard({ onClose, onUpgrade }) {
           transition={{ delay: 0.2 }}
           className="mt-6 rounded-xl border border-violet-500/20 bg-violet-500/[0.04] p-5"
         >
-          <div className="flex items-center gap-2 mb-1.5">
-            <Users className="w-4 h-4 text-violet-400" />
-            <p className="font-semibold text-white text-sm">Share Declawed with a friend</p>
+          <div className="flex items-center justify-between mb-1.5">
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-violet-400" />
+              <p className="font-semibold text-white text-sm">Share Declawed with a friend</p>
+            </div>
+            {referralCount !== null && referralCount > 0 && (
+              <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-500/15 border border-violet-500/25 text-violet-300">
+                +{referralCount} reward{referralCount !== 1 ? 's' : ''} earned
+              </span>
+            )}
           </div>
-          <p className="text-xs text-zinc-500 mb-4 leading-relaxed">Help someone avoid a bad lease. Share your referral link — it's free for them to try.</p>
+          <p className="text-xs text-zinc-500 mb-4 leading-relaxed">
+            Each friend who analyzes a lease earns you <span className="text-zinc-300 font-medium">+1 free analysis</span>. Share your link:
+          </p>
           <div className="flex gap-2">
             <div className="flex-1 rounded-lg bg-white/[0.04] border border-white/[0.06] px-3 py-2 text-xs text-zinc-400 font-mono truncate select-all">
               https://declawed.app/?ref={user?.id}
