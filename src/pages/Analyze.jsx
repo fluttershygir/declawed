@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
@@ -34,6 +34,8 @@ export default function AnalyzePage() {
   const [modelTier, setModelTier] = useState(null);
   const [scorePercentile, setScorePercentile] = useState(null);
   const [retryPayload, setRetryPayload] = useState(null);
+  const [mobileTab, setMobileTab] = useState('upload'); // 'upload' | 'results'
+  const resultsRef = useRef(null);
 
   // Restore a result that was saved before the sign-in redirect
   useEffect(() => {
@@ -85,6 +87,9 @@ export default function AnalyzePage() {
       setAnalysisLandlordMode(result.landlordMode);
       trackEvent('analysis_completed', { model_tier: result.modelTier || 'standard' });
       fetchUsage();
+      // On mobile: switch to results tab and scroll into view
+      setMobileTab('results');
+      setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
     } catch (e) {
       if (e.paywall) { navigate('/billing'); return; }
       setError(e.message || 'Something went wrong.');
@@ -130,38 +135,59 @@ export default function AnalyzePage() {
               />
             </div>
           ) : (
-            /* Side-by-side once analysis starts */
-            <div className="grid md:grid-cols-2 gap-6 items-start">
-              <UploadPanel
-                onUpload={handleUpload}
-                loading={loading}
-                usage={usage}
-                onUpgrade={() => navigate('/billing')}
-                landlordMode={landlordMode}
-                onLandlordModeChange={setLandlordMode}
-              />
-              <SummaryPanel
-                summary={summary}
-                loading={loading}
-                error={error}
-                modelTier={modelTier}
-                scorePercentile={scorePercentile}
-                usage={usage}
-                filename={uploadedFilename}
-                onUpgrade={() => navigate('/billing')}
-                landlordMode={analysisLandlordMode}
-                user={user}
-                onSignUp={(tab) => {
-                  // Save current result so it can be restored after sign-in
-                  if (summary) {
-                    sessionStorage.setItem(PENDING_KEY, JSON.stringify({
-                      summary, modelTier, analysisLandlordMode, uploadedFilename,
-                    }));
-                  }
-                  navigate(`/?auth=${tab}&next=analyze`);
-                }}
-                onRetry={retryPayload ? () => handleUpload(retryPayload) : null}
-              />
+            /* Side-by-side on md+, tab-switcher on mobile */
+            <div>
+              {/* Mobile tab switcher — hidden on md+ */}
+              <div className="flex md:hidden rounded-xl bg-white/[0.04] border border-white/[0.07] p-1 mb-5">
+                <button
+                  onClick={() => setMobileTab('upload')}
+                  className={`flex-1 py-2 rounded-lg text-xs font-semibold transition ${mobileTab === 'upload' ? 'bg-white/[0.09] text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
+                >
+                  Upload
+                </button>
+                <button
+                  onClick={() => { setMobileTab('results'); setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50); }}
+                  className={`flex-1 py-2 rounded-lg text-xs font-semibold transition ${mobileTab === 'results' ? 'bg-white/[0.09] text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
+                >
+                  Results {loading && <span className="ml-1 inline-block w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" />}
+                </button>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6 items-start">
+                <div className={mobileTab === 'upload' ? 'block' : 'hidden md:block'}>
+                  <UploadPanel
+                    onUpload={(p) => { setMobileTab('upload'); handleUpload(p); }}
+                    loading={loading}
+                    usage={usage}
+                    onUpgrade={() => navigate('/billing')}
+                    landlordMode={landlordMode}
+                    onLandlordModeChange={setLandlordMode}
+                  />
+                </div>
+                <div ref={resultsRef} className={mobileTab === 'results' ? 'block' : 'hidden md:block'}>
+                  <SummaryPanel
+                    summary={summary}
+                    loading={loading}
+                    error={error}
+                    modelTier={modelTier}
+                    scorePercentile={scorePercentile}
+                    usage={usage}
+                    filename={uploadedFilename}
+                    onUpgrade={() => navigate('/billing')}
+                    landlordMode={analysisLandlordMode}
+                    user={user}
+                    onSignUp={(tab) => {
+                      if (summary) {
+                        sessionStorage.setItem(PENDING_KEY, JSON.stringify({
+                          summary, modelTier, analysisLandlordMode, uploadedFilename,
+                        }));
+                      }
+                      navigate(`/?auth=${tab}&next=analyze`);
+                    }}
+                    onRetry={retryPayload ? () => handleUpload(retryPayload) : null}
+                  />
+                </div>
+              </div>
             </div>
           )}
         </div>

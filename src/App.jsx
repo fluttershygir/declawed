@@ -1,4 +1,4 @@
-import { useState, useEffect, Component } from 'react';
+import { useState, useEffect, useRef, Component } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Building2, CheckCircle2 } from 'lucide-react';
@@ -80,6 +80,8 @@ function DashboardPage() {
 function MainApp() {
   const { user, profile, loading: authLoading, refreshProfile } = useAuth();
   const navigate = useNavigate();
+  const resultsRef = useRef(null);
+  const [mobileTab, setMobileTab] = useState('upload');
   const [summary, setSummary] = useState('');
   const [loading, setLoading] = useState(false);
   const [paywallOpen, setPaywallOpen] = useState(false);
@@ -194,6 +196,8 @@ function MainApp() {
       setAnalysisLandlordMode(result.landlordMode);
       trackEvent('analysis_completed', { model_tier: result.modelTier || 'standard' });
       fetchUsage();
+      setMobileTab('results');
+      setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
       // Fire-and-forget: reward referrer if this is the referred user's first analysis
       supabase.auth.getSession().then(({ data: sd }) => {
         if (!sd?.session?.access_token) return;
@@ -230,9 +234,28 @@ function MainApp() {
             <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">Analyze Your Lease</h2>
             <p className="text-zinc-500 mt-2 text-sm sm:text-base">Upload your lease and get a full breakdown in under 30 seconds.</p>
           </div>
+          {/* Mobile tab switcher — only visible after first upload */}
+          {(summary || loading || error) && (
+            <div className="flex md:hidden rounded-xl bg-white/[0.04] border border-white/[0.07] p-1 mb-5">
+              <button
+                onClick={() => setMobileTab('upload')}
+                className={`flex-1 py-2 rounded-lg text-xs font-semibold transition ${mobileTab === 'upload' ? 'bg-white/[0.09] text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
+              >Upload</button>
+              <button
+                onClick={() => { setMobileTab('results'); setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50); }}
+                className={`flex-1 py-2 rounded-lg text-xs font-semibold transition ${mobileTab === 'results' ? 'bg-white/[0.09] text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
+              >
+                Results {loading && <span className="ml-1 inline-block w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse align-middle" />}
+              </button>
+            </div>
+          )}
           <div className="grid md:grid-cols-2 gap-6 items-stretch">
-            <UploadPanel onUpload={handleUpload} loading={loading} usage={usage} onUpgrade={() => setPaywallOpen(true)} landlordMode={landlordMode} onLandlordModeChange={setLandlordMode} />
-            <SummaryPanel summary={summary} loading={loading} error={error} modelTier={modelTier} scorePercentile={scorePercentile} usage={usage} filename={uploadedFilename} onUpgrade={() => setPaywallOpen(true)} landlordMode={analysisLandlordMode} user={user} onSignUp={(tab) => { setAuthTab(tab); setAuthOpen(true); }} onRetry={retryPayload ? () => handleUpload(retryPayload) : null} />
+            <div className={(summary || loading || error) ? (mobileTab === 'upload' ? 'block' : 'hidden md:block') : 'block'}>
+              <UploadPanel onUpload={(p) => { setMobileTab('upload'); handleUpload(p); }} loading={loading} usage={usage} onUpgrade={() => setPaywallOpen(true)} landlordMode={landlordMode} onLandlordModeChange={setLandlordMode} />
+            </div>
+            <div ref={resultsRef} className={(summary || loading || error) ? (mobileTab === 'results' ? 'block' : 'hidden md:block') : 'block'}>
+              <SummaryPanel summary={summary} loading={loading} error={error} modelTier={modelTier} scorePercentile={scorePercentile} usage={usage} filename={uploadedFilename} onUpgrade={() => setPaywallOpen(true)} landlordMode={analysisLandlordMode} user={user} onSignUp={(tab) => { setAuthTab(tab); setAuthOpen(true); }} onRetry={retryPayload ? () => handleUpload(retryPayload) : null} />
+            </div>
           </div>
         </div>
       </section>
