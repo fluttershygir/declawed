@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Zap, Infinity, CreditCard, CheckCircle } from 'lucide-react';
+import { X, Zap, Infinity, CreditCard, CheckCircle, Ticket } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import AuthModal from './AuthModal';
 import { trackEvent } from '../lib/analytics';
@@ -157,18 +157,38 @@ export default function PaywallModal({ open, onClose }) {
               ))}
             </div>
 
-            <div className="mt-4 text-center">
+            {/* One-time option — smaller card, below main plans */}
+            <div className="mt-3">
               <button
                 onClick={() => startCheckout('one')}
                 disabled={!!loading}
-                className="text-[11px] text-zinc-500 hover:text-zinc-300 underline underline-offset-2 decoration-zinc-600 hover:decoration-zinc-400 transition-colors disabled:opacity-40"
+                className="w-full rounded-xl border border-zinc-700/60 bg-zinc-900/60 px-4 py-3 flex items-center gap-3 text-left hover:border-zinc-600 hover:bg-zinc-800/60 transition-all active:scale-[0.99] disabled:opacity-40 group"
               >
-                {loading === 'one' ? 'Redirecting…' : 'Just need one more? Pay $3.99 for a single use — no subscription.'}
+                <div className="shrink-0 w-7 h-7 rounded-lg bg-zinc-800 border border-zinc-700/60 flex items-center justify-center group-hover:border-zinc-600 transition-colors">
+                  <Ticket className="w-3.5 h-3.5 text-zinc-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-zinc-500">One Time</span>
+                  </div>
+                  <p className="text-[11px] text-zinc-400 mt-0.5">1 analysis, no subscription</p>
+                </div>
+                <div className="shrink-0 text-right">
+                  {loading === 'one' ? (
+                    <div className="w-3.5 h-3.5 border-2 border-zinc-500 border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <span className="text-sm font-bold text-white">$3.99</span>
+                      <p className="text-[10px] text-zinc-600">one-time</p>
+                    </>
+                  )}
+                </div>
               </button>
-              <p className="mt-2.5 text-[10px] text-zinc-700">
-                Payments processed by Stripe · Cancel anytime · No hidden charges
-              </p>
             </div>
+
+            <p className="mt-3 text-center text-[10px] text-zinc-700">
+              Payments processed by Stripe · Cancel anytime · No hidden charges
+            </p>
           </motion.div>
         </motion.div>
       )}
