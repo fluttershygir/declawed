@@ -75,8 +75,8 @@ export default function Dashboard({ onClose, onUpgrade }) {
 
   const plan = (usage?.plan || 'free').toLowerCase();
   const planInfo = PLAN_LABELS[plan] || PLAN_LABELS.free;
-  const used = usage?.analyses_used ?? 0;
-  const limit = usage?.analyses_limit ?? 1;
+  const used = usage?.used ?? 0;
+  const limit = usage?.limit ?? 1;
   const isUnlimited = plan === 'unlimited';
   const fullDisplayName = user?.user_metadata?.full_name || profile?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'there';
   const displayName = fullDisplayName.split(' ')[0];
