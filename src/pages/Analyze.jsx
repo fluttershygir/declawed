@@ -19,6 +19,8 @@ const LogoMark = () => (
   </div>
 );
 
+const PENDING_KEY = 'dcl_pending_result';
+
 export default function AnalyzePage() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -31,6 +33,21 @@ export default function AnalyzePage() {
   const [analysisLandlordMode, setAnalysisLandlordMode] = useState(false);
   const [modelTier, setModelTier] = useState(null);
   const [retryPayload, setRetryPayload] = useState(null);
+
+  // Restore a result that was saved before the sign-in redirect
+  useEffect(() => {
+    const saved = sessionStorage.getItem(PENDING_KEY);
+    if (!saved) return;
+    try {
+      const { summary: s, modelTier: mt, analysisLandlordMode: lm, uploadedFilename: fn } = JSON.parse(saved);
+      setSummary(s);
+      setModelTier(mt);
+      setAnalysisLandlordMode(lm);
+      setUploadedFilename(fn || '');
+    } catch { /* ignore corrupt data */ }
+    sessionStorage.removeItem(PENDING_KEY);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchUsage = async () => {
     try {
@@ -131,7 +148,15 @@ export default function AnalyzePage() {
                 onUpgrade={() => navigate('/billing')}
                 landlordMode={analysisLandlordMode}
                 user={user}
-                onSignUp={(tab) => navigate(`/?auth=${tab}`)}
+                onSignUp={(tab) => {
+                  // Save current result so it can be restored after sign-in
+                  if (summary) {
+                    sessionStorage.setItem(PENDING_KEY, JSON.stringify({
+                      summary, modelTier, analysisLandlordMode, uploadedFilename,
+                    }));
+                  }
+                  navigate(`/?auth=${tab}&next=analyze`);
+                }}
                 onRetry={retryPayload ? () => handleUpload(retryPayload) : null}
               />
             </div>

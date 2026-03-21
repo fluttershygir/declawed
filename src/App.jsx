@@ -109,6 +109,10 @@ function MainApp() {
   // Re-fetch usage whenever auth state changes (sign-in / sign-out)
   useEffect(() => {
     fetchUsage();
+    // After sign-in, if a pending result was saved from /analyze, redirect back there
+    if (user && sessionStorage.getItem('dcl_pending_result')) {
+      navigate('/analyze');
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
