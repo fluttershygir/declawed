@@ -1,6 +1,6 @@
 // Shared utility for POST /api/summarize.
 // Handles auth headers, fetch, JSON validation, status checks, and summary normalization.
-// Returns { summary, modelTier, landlordMode } on success, throws on error.
+// Returns { summary, modelTier, landlordMode, scorePercentile } on success, throws on error.
 // Throws a special { paywall: true } error when the server responds 402.
 
 import { supabase } from './supabase';
@@ -46,5 +46,10 @@ export async function callSummarize(payload) {
     try { return JSON.parse(raw); } catch { return { _parseError: true }; }
   })();
 
-  return { summary, modelTier: data.modelTier || null, landlordMode: !!data.landlordMode };
+  return {
+    summary,
+    modelTier: data.modelTier || null,
+    landlordMode: !!data.landlordMode,
+    scorePercentile: typeof data.scorePercentile === 'number' ? data.scorePercentile : null,
+  };
 }

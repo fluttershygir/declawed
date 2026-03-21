@@ -32,6 +32,7 @@ export default function AnalyzePage() {
   const [landlordMode, setLandlordMode] = useState(false);
   const [analysisLandlordMode, setAnalysisLandlordMode] = useState(false);
   const [modelTier, setModelTier] = useState(null);
+  const [scorePercentile, setScorePercentile] = useState(null);
   const [retryPayload, setRetryPayload] = useState(null);
 
   // Restore a result that was saved before the sign-in redirect
@@ -80,6 +81,7 @@ export default function AnalyzePage() {
       const result = await callSummarize(payload);
       setSummary(result.summary);
       setModelTier(result.modelTier);
+      setScorePercentile(result.scorePercentile);
       setAnalysisLandlordMode(result.landlordMode);
       trackEvent('analysis_completed', { model_tier: result.modelTier || 'standard' });
       fetchUsage();
@@ -143,6 +145,7 @@ export default function AnalyzePage() {
                 loading={loading}
                 error={error}
                 modelTier={modelTier}
+                scorePercentile={scorePercentile}
                 usage={usage}
                 filename={uploadedFilename}
                 onUpgrade={() => navigate('/billing')}

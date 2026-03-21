@@ -375,7 +375,26 @@ async function handleRequest(request, env) {
     responseHeaders.append('Set-Cookie', `dcl_free_used=${cookieSig}; Path=/; HttpOnly; SameSite=Strict; Max-Age=31536000; Secure`);
   }
 
-  return new Response(JSON.stringify({ summary: analysis, modelTier, landlordMode: useLandlordMode }), { status: 200, headers: responseHeaders });
+  // Compute score percentile — how does this lease compare to all analyzed leases?
+  let scorePercentile = null;
+  if (typeof analysis.score === 'number' && env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) {
+    try {
+      const scoresRes = await fetch(
+        `${env.SUPABASE_URL}/rest/v1/analyses?select=s:result->>score&limit=10000`,
+        { headers: { apikey: env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}` } }
+      );
+      if (scoresRes.ok) {
+        const rows = await scoresRes.json();
+        const total = rows.length;
+        if (total > 1) {
+          const lower = rows.filter(r => Number(r.s) < analysis.score).length;
+          scorePercentile = Math.round((lower / total) * 100);
+        }
+      }
+    } catch { /* ignore — non-critical */ }
+  }
+
+  return new Response(JSON.stringify({ summary: analysis, modelTier, landlordMode: useLandlordMode, scorePercentile }), { status: 200, headers: responseHeaders });
 }
 
 export async function onRequestOptions() {

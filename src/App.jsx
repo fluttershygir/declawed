@@ -87,6 +87,7 @@ function MainApp() {
   const [usage, setUsage] = useState(null);
   const [successToast, setSuccessToast] = useState(null);
   const [modelTier, setModelTier] = useState(null);
+  const [scorePercentile, setScorePercentile] = useState(null);
   const [uploadedFilename, setUploadedFilename] = useState('');
   const [landlordMode, setLandlordMode] = useState(false);
   const [analysisLandlordMode, setAnalysisLandlordMode] = useState(false);
@@ -189,6 +190,7 @@ function MainApp() {
       const result = await callSummarize(payload);
       setSummary(result.summary);
       setModelTier(result.modelTier);
+      setScorePercentile(result.scorePercentile);
       setAnalysisLandlordMode(result.landlordMode);
       trackEvent('analysis_completed', { model_tier: result.modelTier || 'standard' });
       fetchUsage();
@@ -230,7 +232,7 @@ function MainApp() {
           </div>
           <div className="grid md:grid-cols-2 gap-6 items-stretch">
             <UploadPanel onUpload={handleUpload} loading={loading} usage={usage} onUpgrade={() => setPaywallOpen(true)} landlordMode={landlordMode} onLandlordModeChange={setLandlordMode} />
-            <SummaryPanel summary={summary} loading={loading} error={error} modelTier={modelTier} usage={usage} filename={uploadedFilename} onUpgrade={() => setPaywallOpen(true)} landlordMode={analysisLandlordMode} user={user} onSignUp={(tab) => { setAuthTab(tab); setAuthOpen(true); }} onRetry={retryPayload ? () => handleUpload(retryPayload) : null} />
+            <SummaryPanel summary={summary} loading={loading} error={error} modelTier={modelTier} scorePercentile={scorePercentile} usage={usage} filename={uploadedFilename} onUpgrade={() => setPaywallOpen(true)} landlordMode={analysisLandlordMode} user={user} onSignUp={(tab) => { setAuthTab(tab); setAuthOpen(true); }} onRetry={retryPayload ? () => handleUpload(retryPayload) : null} />
           </div>
         </div>
       </section>
@@ -324,6 +326,7 @@ function AppPage() {
   const [usage, setUsage] = useState(null);
   const [successToast, setSuccessToast] = useState(null);
   const [modelTier, setModelTier] = useState(null);
+  const [scorePercentile, setScorePercentile] = useState(null);
   const [uploadedFilename, setUploadedFilename] = useState('');
   const [landlordMode, setLandlordMode] = useState(false);
   const [analysisLandlordMode, setAnalysisLandlordMode] = useState(false);
@@ -384,6 +387,7 @@ function AppPage() {
       const result = await callSummarize(payload);
       setSummary(result.summary);
       setModelTier(result.modelTier);
+      setScorePercentile(result.scorePercentile);
       setAnalysisLandlordMode(result.landlordMode);
       trackEvent('analysis_completed', { model_tier: result.modelTier || 'standard' });
       fetchUsage();
@@ -449,6 +453,7 @@ function AppPage() {
             loading={uploading}
             error={error}
             modelTier={modelTier}
+            scorePercentile={scorePercentile}
             usage={usage}
             filename={uploadedFilename}
             onUpgrade={() => setPaywallOpen(true)}

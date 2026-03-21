@@ -85,7 +85,7 @@ function SeverityBadge({ severity }) {
   );
 }
 
-function StructuredSummary({ data, landlordMode }) {
+function StructuredSummary({ data, landlordMode, scorePercentile }) {
   const score = data.score ?? null;
   // In landlord mode: high score = landlord-favorable (green), low = red
   // In tenant mode: high score = tenant-favorable (green), low = red (same logic)
@@ -112,6 +112,11 @@ function StructuredSummary({ data, landlordMode }) {
             <div className="min-w-0">
               <p className={`font-bold ${scoreColor}`}>{scoreLabel}</p>
               {data.verdict && <p className="text-slate-400 mt-1 leading-relaxed">{data.verdict}</p>}
+              {typeof scorePercentile === 'number' && (
+                <p className="mt-2 text-[11px] text-zinc-500">
+                  Better than <span className="font-semibold text-zinc-300">{scorePercentile}%</span> of leases we've analyzed
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -221,7 +226,7 @@ function StructuredSummary({ data, landlordMode }) {
 const PAID_PLANS = new Set(['one', 'pro', 'unlimited']);
 const EMAIL_PLANS = new Set(['pro', 'unlimited']);
 
-function AnonTeaser({ data, onSignUp }) {
+function AnonTeaser({ data, onSignUp, scorePercentile }) {
   const score = data?.score ?? null;
   const isRed = score !== null && score <= 4;
   const isYellow = score !== null && score >= 5 && score <= 7;
@@ -245,6 +250,11 @@ function AnonTeaser({ data, onSignUp }) {
               <div className="min-w-0">
                 <p className={`font-bold ${scoreColor}`}>{scoreLabel}</p>
                 {data.verdict && <p className="text-slate-400 mt-1 leading-relaxed">{data.verdict}</p>}
+                {typeof scorePercentile === 'number' && (
+                  <p className="mt-2 text-[11px] text-zinc-500">
+                    Better than <span className="font-semibold text-zinc-300">{scorePercentile}%</span> of leases we've analyzed
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -323,7 +333,7 @@ function AnonTeaser({ data, onSignUp }) {
   );
 }
 
-export default function SummaryPanel({ summary, loading, error, modelTier, usage, filename, onUpgrade, landlordMode, user, onSignUp, onRetry }) {
+export default function SummaryPanel({ summary, loading, error, modelTier, scorePercentile, usage, filename, onUpgrade, landlordMode, user, onSignUp, onRetry }) {
   const [pdfLoading, setPdfLoading] = useState(false);
   const [emailModalOpen, setEmailModalOpen] = useState(false);
 
@@ -454,7 +464,7 @@ export default function SummaryPanel({ summary, loading, error, modelTier, usage
         {!loading && !error && parsedSummary && !summaryParseError && (
           user ? (
             <>
-            <StructuredSummary data={parsedSummary} landlordMode={landlordMode} />
+            <StructuredSummary data={parsedSummary} landlordMode={landlordMode} scorePercentile={scorePercentile} />
 
             {/* ── What to do next ─────────────────────────────── */}
             <div className="mt-5 pt-4 border-t border-slate-800/60">
@@ -516,7 +526,7 @@ export default function SummaryPanel({ summary, loading, error, modelTier, usage
             </p>
             </>
           ) : (
-            <AnonTeaser data={parsedSummary} onSignUp={onSignUp} />
+            <AnonTeaser data={parsedSummary} onSignUp={onSignUp} scorePercentile={scorePercentile} />
           )
         )}
         </div>
