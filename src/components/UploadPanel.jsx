@@ -1,13 +1,11 @@
 import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Upload, FileText, Loader2, AlertCircle, Lock, Zap, Image as ImageIcon, Building2, Gift, ShieldCheck, EyeOff } from 'lucide-react';
+import { Upload, FileText, Loader2, AlertCircle, Lock, Zap, Image as ImageIcon, Building2, Gift, ShieldCheck, EyeOff, CloudUpload } from 'lucide-react';
 import ShareToUnlockModal from './ShareToUnlockModal';
 
 const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 const IMAGE_EXTS = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
 
-// Resize image to max 1568x1568 (Anthropic's internal cap) and encode as JPEG.
-// This keeps API token cost identical regardless of original file size.
 const MAX_IMG_PX = 1568;
 async function resizeAndEncodeImage(file) {
   return new Promise((resolve, reject) => {
@@ -124,83 +122,80 @@ export default function UploadPanel({ onUpload, loading, usage, onUpgrade, landl
   const paidAtLimit = usage && usage.plan !== 'free' && usage.plan !== 'unlimited' && (usage.used ?? 0) >= (usage.limit ?? 1);
   const canUpload = !freeExhausted && !paidAtLimit;
 
+  const acceptStr = `application/pdf,.pdf,text/plain,.txt,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx${isPaidUser ? ',image/jpeg,image/png,image/gif,image/webp,.jpg,.jpeg,.png,.gif,.webp' : ''}`;
+
   return (
     <motion.section
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5 }}
-      className="relative rounded-2xl bg-slate-900/60 border border-slate-800/80 shadow-[0_0_50px_rgba(34,211,238,0.08)] backdrop-blur-sm p-6 flex flex-col"
+      className="relative rounded-2xl bg-zinc-950 border border-white/[0.09] shadow-2xl shadow-black/40 p-5 sm:p-6 flex flex-col"
     >
-      <div className="flex items-center gap-2 mb-2">
-        <Upload className="w-5 h-5 text-blue-400" />
-        <h2 className="text-lg font-semibold text-slate-100">Upload your lease</h2>
-      </div>
-      <p className="text-sm text-slate-400 mb-4">
-        PDF, .docx, .txt{isPaidUser ? ', or image (JPG/PNG/WebP)' : ''} · Processed in your browser — your file is never stored.
-      </p>
-
-      {/* Landlord Mode toggle — Unlimited plan only */}
-      {isUnlimited && (
-      <div className="flex items-center justify-between mb-4 rounded-xl border px-3.5 py-2.5 transition-all duration-200"
-        style={{
-          borderColor: landlordMode ? 'rgba(245,158,11,0.35)' : 'rgba(51,65,85,0.6)',
-          background: landlordMode ? 'rgba(245,158,11,0.06)' : 'rgba(15,23,42,0.3)',
-        }}
-      >
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Building2 className={`w-3.5 h-3.5 shrink-0 transition-colors ${landlordMode ? 'text-amber-400' : 'text-zinc-500'}`} />
-          <span className={`text-xs font-semibold transition-colors ${landlordMode ? 'text-amber-300' : 'text-zinc-400'}`}>
-            Landlord Mode
-          </span>
-          {/* Tooltip trigger */}
-          <div className="relative">
-            <button
-              type="button"
-              onMouseEnter={() => setTooltipVisible(true)}
-              onFocus={() => setTooltipVisible(true)}
-              onMouseLeave={() => setTooltipVisible(false)}
-              onBlur={() => setTooltipVisible(false)}
-              className="w-4 h-4 rounded-full border border-zinc-600 text-zinc-500 hover:text-zinc-300 hover:border-zinc-400 transition text-[9px] font-bold flex items-center justify-center leading-none"
-              aria-label="Landlord Mode info"
-            >
-              ?
-            </button>
-            {tooltipVisible && (
-              <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-56 rounded-lg bg-zinc-800 border border-zinc-700 shadow-xl p-2.5 text-[11px] text-zinc-300 leading-relaxed z-30 pointer-events-none">
-                <p className="font-semibold text-amber-300 mb-1">Landlord Mode</p>
-                Analyzes the lease from a landlord&rsquo;s perspective — highlighting tenant obligations, liability gaps, unenforceable clauses, and recommended additions to better protect you as the landlord.
-          {!isUnlimited && <p className="mt-1.5 text-amber-400 font-semibold">Requires Unlimited plan.</p>}
-                <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-zinc-800" />
-              </div>
-            )}
+          <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+            <Upload className="w-4 h-4 text-blue-400" />
           </div>
-          {!isUnlimited && (
-            <span className="text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500/70 border border-amber-500/20">Unlimited</span>
-          )}
+          <div>
+            <h2 className="text-sm font-bold text-white leading-none">Upload your lease</h2>
+            <p className="text-[11px] text-zinc-600 mt-0.5">
+              PDF, .docx{isPaidUser ? ', image' : ''}
+            </p>
+          </div>
         </div>
 
-        {/* The toggle switch */}
-        {isUnlimited ? (
-          <button
-            type="button"
-            role="switch"
-            aria-checked={!!landlordMode}
-            onClick={() => onLandlordModeChange?.(!landlordMode)}
-            className={`relative w-9 h-5 rounded-full border transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50 ${
-              landlordMode
-                ? 'bg-amber-400 border-amber-500'
-                : 'bg-zinc-700 border-zinc-600'
-            }`}
-          >
-            <span
-              className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform duration-200 ${
-                landlordMode ? 'translate-x-4' : 'translate-x-0'
+        {/* Landlord Mode toggle — Unlimited plan only */}
+        {isUnlimited && (
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <button
+                type="button"
+                onMouseEnter={() => setTooltipVisible(true)}
+                onFocus={() => setTooltipVisible(true)}
+                onMouseLeave={() => setTooltipVisible(false)}
+                onBlur={() => setTooltipVisible(false)}
+                className={`text-[10px] font-semibold px-2 py-1 rounded-lg border transition-all ${
+                  landlordMode
+                    ? 'border-amber-500/40 bg-amber-500/10 text-amber-300'
+                    : 'border-zinc-700 text-zinc-500 hover:border-zinc-600'
+                }`}
+                aria-label="Landlord Mode info"
+              >
+                <Building2 className="w-3 h-3 inline mr-1" />
+                Landlord
+              </button>
+              {tooltipVisible && (
+                <div className="absolute right-0 bottom-full mb-2 w-56 rounded-lg bg-zinc-800 border border-zinc-700 shadow-xl p-2.5 text-[11px] text-zinc-300 leading-relaxed z-30 pointer-events-none">
+                  <p className="font-semibold text-amber-300 mb-1">Landlord Mode</p>
+                  Analyzes from a landlord&rsquo;s perspective — highlighting tenant obligations, liability gaps, and unenforceable clauses.
+                  <div className="absolute right-3 top-full w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-zinc-800" />
+                </div>
+              )}
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={!!landlordMode}
+              onClick={() => onLandlordModeChange?.(!landlordMode)}
+              className={`relative w-9 h-5 rounded-full border transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50 ${
+                landlordMode ? 'bg-amber-400 border-amber-500' : 'bg-zinc-700 border-zinc-600'
               }`}
-            />
-          </button>
-        ) : null}
+            >
+              <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform duration-200 ${landlordMode ? 'translate-x-4' : 'translate-x-0'}`} />
+            </button>
+          </div>
+        )}
       </div>
-      )}
+
+      {/* Drop zone */}
+      <input
+        ref={inputRef}
+        type="file"
+        accept={acceptStr}
+        className="hidden"
+        onChange={(e) => handleFile(e.target.files?.[0])}
+      />
 
       <div
         onDrop={handleDrop}
@@ -208,61 +203,92 @@ export default function UploadPanel({ onUpload, loading, usage, onUpgrade, landl
         onDragLeave={() => setDragActive(false)}
         onClick={() => canUpload && !loading && inputRef.current?.click()}
         className={`
-          flex flex-col items-center justify-center rounded-xl border-2 border-dashed py-10 px-6 cursor-pointer transition-all
-          ${dragActive ? 'border-blue-500 bg-blue-500/10' : 'border-slate-700 hover:border-slate-600'}
-          ${!canUpload || loading ? 'opacity-60 cursor-not-allowed' : ''}
+          relative flex flex-col items-center justify-center rounded-xl py-8 px-5 cursor-pointer transition-all duration-200 overflow-hidden
+          ${dragActive
+            ? 'border-2 border-blue-400 bg-blue-500/10 shadow-lg shadow-blue-500/10'
+            : canUpload && !loading
+              ? 'border-2 border-white/[0.07] bg-white/[0.02] hover:border-blue-500/40 hover:bg-blue-500/[0.04] hover:shadow-md hover:shadow-blue-500/10'
+              : 'border-2 border-white/[0.05] bg-transparent opacity-50 cursor-not-allowed'
+          }
         `}
       >
-        <input
-          ref={inputRef}
-          type="file"
-          accept={`application/pdf,.pdf,text/plain,.txt,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx${isPaidUser ? ',image/jpeg,image/png,image/gif,image/webp,.jpg,.jpeg,.png,.gif,.webp' : ''}`}
-          className="hidden"
-          onChange={(e) => handleFile(e.target.files?.[0])}
-        />
-        {loading ? (
-          <Loader2 className="w-12 h-12 text-blue-400 animate-spin mb-3" />
-        ) : isImage ? (
-          <ImageIcon className="w-12 h-12 text-blue-400 mb-3" />
-        ) : (
-          <FileText className="w-12 h-12 text-slate-500 mb-3" />
+        {/* Subtle glow on drag */}
+        {dragActive && (
+          <div className="absolute inset-0 pointer-events-none rounded-xl bg-blue-500/[0.06]" />
         )}
-        <p className="text-sm font-medium text-slate-300">
-          {loading
-            ? (isImage ? 'Scanning image...' : 'Analyzing lease...')
-            : isPaidUser
-            ? 'Drop PDF, .docx, .txt, or image here, or click to browse'
-            : 'Drop PDF, .docx, or .txt here, or click to browse'}
-        </p>
-        {fileName && !loading && (
-          <p className="mt-2 text-xs text-slate-500 truncate max-w-full">{fileName}</p>
+
+        {loading ? (
+          <>
+            <div className="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-3">
+              <Loader2 className="w-7 h-7 text-blue-400 animate-spin" />
+            </div>
+            <p className="text-sm font-semibold text-blue-300">
+              {isImage ? 'Scanning image…' : 'Analyzing lease…'}
+            </p>
+            <p className="text-[11px] text-zinc-600 mt-1">Usually 10–30 seconds</p>
+          </>
+        ) : fileName ? (
+          <>
+            <div className="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-3">
+              {isImage ? (
+                <ImageIcon className="w-7 h-7 text-blue-400" />
+              ) : (
+                <FileText className="w-7 h-7 text-blue-400" />
+              )}
+            </div>
+            <p className="text-sm font-semibold text-white truncate max-w-full px-4">{fileName}</p>
+            <p className="text-[11px] text-zinc-500 mt-1">Tap to change file</p>
+          </>
+        ) : (
+          <>
+            <div className="w-14 h-14 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center mb-3 group-hover:border-blue-500/30 transition-colors">
+              <CloudUpload className="w-7 h-7 text-zinc-500" />
+            </div>
+            <p className="text-sm font-semibold text-white">
+              Drop your lease here
+            </p>
+            <p className="text-[11px] text-zinc-500 mt-1">
+              {isPaidUser ? 'PDF, .docx, .txt, or image' : 'PDF, .docx, or .txt'}
+            </p>
+          </>
         )}
       </div>
 
+      {/* Mobile tap-to-upload button */}
+      {canUpload && !loading && (
+        <button
+          onClick={() => inputRef.current?.click()}
+          className="mt-3 w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-[0.98] transition-all text-sm font-bold text-white flex items-center justify-center gap-2 shadow-lg shadow-blue-600/25"
+        >
+          <Upload className="w-4 h-4" />
+          Choose lease file
+        </button>
+      )}
+
       {/* Trust badges */}
-      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
-        <span className="flex items-center gap-1.5 text-[11px] text-zinc-600">
-          <Lock className="w-3 h-3 shrink-0" />
-          Files stay in your browser
+      <div className="mt-3 flex items-center justify-center gap-4 flex-wrap">
+        <span className="flex items-center gap-1 text-[10.5px] text-zinc-600">
+          <Lock className="w-2.5 h-2.5 shrink-0" />
+          File never uploaded
         </span>
-        <span className="flex items-center gap-1.5 text-[11px] text-zinc-600">
-          <ShieldCheck className="w-3 h-3 shrink-0" />
-          Never stored on our servers
-        </span>
-        <span className="flex items-center gap-1.5 text-[11px] text-zinc-600">
-          <EyeOff className="w-3 h-3 shrink-0" />
+        <span className="flex items-center gap-1 text-[10.5px] text-zinc-600">
+          <ShieldCheck className="w-2.5 h-2.5 shrink-0" />
           Not used to train AI
+        </span>
+        <span className="flex items-center gap-1 text-[10.5px] text-zinc-600">
+          <EyeOff className="w-2.5 h-2.5 shrink-0" />
+          Private &amp; secure
         </span>
       </div>
 
       {parseError && (
-        <div className="mt-3 flex items-start gap-2 text-rose-400 text-xs">
+        <div className="mt-3 flex items-start gap-2 text-rose-400 text-xs bg-rose-500/[0.07] border border-rose-500/20 rounded-lg px-3 py-2">
           <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
           {parseError}
         </div>
       )}
 
-      {/* Free tier exhausted — two-option card */}
+      {/* Free tier exhausted */}
       {freeExhausted && (
         <motion.div
           initial={{ opacity: 0, y: 6 }}
@@ -271,7 +297,7 @@ export default function UploadPanel({ onUpload, loading, usage, onUpgrade, landl
         >
           <div className="flex items-center gap-2 mb-1.5">
             <Lock className="w-4 h-4 text-zinc-500 shrink-0" />
-            <p className="text-sm font-semibold text-white">You've used your free analysis</p>
+            <p className="text-sm font-semibold text-white">You&rsquo;ve used your free analysis</p>
           </div>
           <p className="text-xs text-zinc-500 leading-relaxed mb-4">
             Share Declawed with a friend to unlock a free analysis, or upgrade to a paid plan.
@@ -306,7 +332,7 @@ export default function UploadPanel({ onUpload, loading, usage, onUpgrade, landl
             <p className="text-sm font-semibold text-white">Monthly limit reached</p>
           </div>
           <p className="text-xs text-zinc-500 leading-relaxed mb-3">
-            You've used all {usage?.limit ?? ''} analyses this month. Upgrade to Unlimited for unlimited analyses.
+            You&rsquo;ve used all {usage?.limit ?? ''} analyses this month. Upgrade to Unlimited for unlimited analyses.
           </p>
           <button
             onClick={onUpgrade}
@@ -323,10 +349,6 @@ export default function UploadPanel({ onUpload, loading, usage, onUpgrade, landl
         onClose={() => setShareModalOpen(false)}
         onUpgrade={() => { setShareModalOpen(false); onUpgrade(); }}
       />
-
-      <p className="mt-4 text-[11px] text-slate-500">
-        Not legal advice. For binding decisions, consult a licensed attorney.
-      </p>
     </motion.section>
   );
 }

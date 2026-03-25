@@ -98,6 +98,7 @@ function MainApp() {
   const [authOpen, setAuthOpen] = useState(false);
   const [authTab, setAuthTab] = useState('signin');
   const [retryPayload, setRetryPayload] = useState(null);
+  const [shareToken, setShareToken] = useState(null);
 
   const fetchUsage = async () => {
     try {
@@ -188,6 +189,7 @@ function MainApp() {
     setAnalysisLandlordMode(false);
     setUploadedFilename(filename || '');
     setRetryPayload(payload || null);
+    setShareToken(null);
     setLoading(true);
     trackEvent('analysis_started', { filename_type: imageBase64 ? 'image' : 'text' });
     try {
@@ -196,6 +198,7 @@ function MainApp() {
       setModelTier(result.modelTier);
       setScorePercentile(result.scorePercentile);
       setAnalysisLandlordMode(result.landlordMode);
+      setShareToken(result.shareToken || null);
       trackEvent('analysis_completed', { model_tier: result.modelTier || 'standard' });
       fetchUsage();
       setMobileTab('results');
@@ -225,17 +228,10 @@ function MainApp() {
     <div className="min-h-screen bg-black text-slate-100 flex flex-col">
       <Navbar />
       <Landing usage={usage} />
-      <HowItWorks />
-      <TrustBar />
 
-      {/* Tool: upload + summary */}
-      <section id="upload" className="w-full border-t border-b border-white/[0.06] bg-[#0f1117]" style={{ paddingTop: '80px', paddingBottom: '80px' }}>
+      {/* ── Upload tool — immediately after hero ── */}
+      <section id="upload" className="w-full border-t border-white/[0.06] bg-[#07070d]" style={{ paddingTop: '64px', paddingBottom: '64px' }}>
         <div className="w-full max-w-5xl mx-auto px-4">
-          {/* Section header */}
-          <div className="text-center mb-10">
-            <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">Analyze Your Lease</h2>
-            <p className="text-zinc-500 mt-2 text-sm sm:text-base">Upload your lease and get a full breakdown in under 30 seconds.</p>
-          </div>
           {/* Mobile tab switcher — only visible after first upload */}
           {(summary || loading || error) && (
             <div className="flex md:hidden rounded-xl bg-white/[0.04] border border-white/[0.07] p-1 mb-5">
@@ -256,12 +252,13 @@ function MainApp() {
               <UploadPanel onUpload={(p) => { setMobileTab('upload'); handleUpload(p); }} loading={loading} usage={usage} onUpgrade={() => setPaywallOpen(true)} landlordMode={landlordMode} onLandlordModeChange={setLandlordMode} />
             </div>
             <div ref={resultsRef} className={(summary || loading || error) ? (mobileTab === 'results' ? 'block' : 'hidden md:block') : 'block'}>
-              <SummaryPanel summary={summary} loading={loading} error={error} modelTier={modelTier} scorePercentile={scorePercentile} usage={usage} filename={uploadedFilename} onUpgrade={() => setPaywallOpen(true)} landlordMode={analysisLandlordMode} user={user} onSignUp={(tab) => { setAuthTab(tab); setAuthOpen(true); }} onRetry={retryPayload ? () => handleUpload(retryPayload) : null} />
+              <SummaryPanel summary={summary} loading={loading} error={error} modelTier={modelTier} scorePercentile={scorePercentile} usage={usage} filename={uploadedFilename} onUpgrade={() => setPaywallOpen(true)} landlordMode={analysisLandlordMode} user={user} onSignUp={(tab) => { setAuthTab(tab); setAuthOpen(true); }} onRetry={retryPayload ? () => handleUpload(retryPayload) : null} shareToken={shareToken} />
             </div>
           </div>
         </div>
       </section>
 
+      <TrustBar />
       <Testimonials />
 
       {/* Landlord Mode callout */}
@@ -314,6 +311,7 @@ function MainApp() {
         </div>
       </section>
 
+      <HowItWorks />
       <PricingSection onSelectTier={() => setPaywallOpen(true)} />
       <FAQ />
       <Footer />

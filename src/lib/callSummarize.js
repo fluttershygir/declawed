@@ -51,5 +51,6 @@ export async function callSummarize(payload) {
     modelTier: data.modelTier || null,
     landlordMode: !!data.landlordMode,
     scorePercentile: typeof data.scorePercentile === 'number' ? data.scorePercentile : null,
+    shareToken: data.shareToken || null,
   };
 }

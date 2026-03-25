@@ -5,33 +5,72 @@ import { Loader2 } from 'lucide-react';
 
 export default function AuthCallback() {
   const navigate = useNavigate();
-  const [error, setError] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
-    const code = new URLSearchParams(window.location.search).get('code');
-    if (!code) {
-      navigate('/');
-      return;
+    let cancelled = false;
+
+    async function handleCallback() {
+      // Check for OAuth error from Google
+      const params = new URLSearchParams(window.location.search);
+      const oauthError = params.get('error');
+      if (oauthError) {
+        setErrorMsg(params.get('error_description') || 'Sign-in was cancelled or failed.');
+        setTimeout(() => { if (!cancelled) navigate('/'); }, 3000);
+        return;
+      }
+
+      const code = params.get('code');
+
+      if (code) {
+        // PKCE flow — exchange code for session
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (!cancelled) {
+          if (error) {
+            console.error('[AuthCallback] exchangeCodeForSession error:', error.message);
+            setErrorMsg('Sign-in failed. Please try again.');
+            setTimeout(() => navigate('/'), 3000);
+          } else {
+            navigate('/');
+          }
+        }
+        return;
+      }
+
+      // Implicit flow fallback — Supabase sets session from URL hash automatically
+      // Wait briefly for the client to process it
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!cancelled) {
+        if (session) {
+          navigate('/');
+        } else {
+          // Give Supabase one more tick to process the hash
+          setTimeout(async () => {
+            const { data: { session: retrySession } } = await supabase.auth.getSession();
+            if (!cancelled) {
+              navigate('/');
+            }
+          }, 800);
+        }
+      }
     }
 
-    supabase.auth.exchangeCodeForSession(code)
-      .then(({ error: err }) => {
-        if (err) {
-          setError('Sign-in failed. Please try again.');
-          setTimeout(() => navigate('/'), 3000);
-        } else {
-          navigate('/');
-        }
-      });
+    handleCallback();
+    return () => { cancelled = true; };
   }, [navigate]);
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center">
-      {error ? (
-        <p className="text-rose-400 text-sm">{error}</p>
+      {errorMsg ? (
+        <div className="text-center px-6">
+          <p className="text-rose-400 text-sm font-medium mb-2">{errorMsg}</p>
+          <p className="text-zinc-600 text-xs">Redirecting you back…</p>
+        </div>
       ) : (
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-6 h-6 text-blue-400 animate-spin" />
+          <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+            <Loader2 className="w-5 h-5 text-blue-400 animate-spin" />
+          </div>
           <p className="text-zinc-500 text-sm">Signing you in…</p>
         </div>
       )}

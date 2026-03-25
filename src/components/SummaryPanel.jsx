@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileCheck, AlertCircle, Calendar, ShieldCheck, AlertTriangle, ListChecks, Download, Lock, Mail, Building2, RotateCcw, ExternalLink, CheckCircle2 } from 'lucide-react';
+import { FileCheck, AlertCircle, Calendar, ShieldCheck, AlertTriangle, ListChecks, Download, Lock, Mail, Building2, RotateCcw, ExternalLink, CheckCircle2, Share2 } from 'lucide-react';
 import EmailReportModal from './EmailReportModal';
 
 const ANALYSIS_STEPS = [
@@ -333,9 +333,10 @@ function AnonTeaser({ data, onSignUp, scorePercentile }) {
   );
 }
 
-export default function SummaryPanel({ summary, loading, error, modelTier, scorePercentile, usage, filename, onUpgrade, landlordMode, user, onSignUp, onRetry }) {
+export default function SummaryPanel({ summary, loading, error, modelTier, scorePercentile, usage, filename, onUpgrade, landlordMode, user, onSignUp, onRetry, shareToken }) {
   const [pdfLoading, setPdfLoading] = useState(false);
   const [emailModalOpen, setEmailModalOpen] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
 
   // Normalize summary: handle string (double-encoded), object, or null
   const parsedSummary = (() => {
@@ -346,6 +347,28 @@ export default function SummaryPanel({ summary, loading, error, modelTier, score
     return summary;
   })();
   const summaryParseError = parsedSummary?._parseError === true;
+
+  const handleShare = async () => {
+    const url = shareToken
+      ? `${window.location.origin}/shared/${shareToken}`
+      : window.location.href;
+    if (navigator.share) {
+      try {
+        const score = parsedSummary?.score;
+        await navigator.share({
+          title: 'My Lease Analysis — Declawed',
+          text: score != null
+            ? `My lease scored ${score}/10 on Declawed. See what the AI found →`
+            : 'Check out my lease analysis on Declawed →',
+          url,
+        });
+      } catch { /* user cancelled */ }
+    } else {
+      await navigator.clipboard.writeText(url).catch(() => {});
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
+    }
+  };
 
   const handleDownloadPDF = async () => {
     const isPaid = PAID_PLANS.has(usage?.plan);
@@ -469,7 +492,21 @@ export default function SummaryPanel({ summary, loading, error, modelTier, score
             {/* ── What to do next ─────────────────────────────── */}
             <div className="mt-5 pt-4 border-t border-slate-800/60">
               <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-600 mb-3">What to do next</p>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-4 gap-2">
+                {/* Share result */}
+                <button
+                  onClick={handleShare}
+                  className="group flex flex-col items-center gap-1.5 rounded-xl px-2 py-3 border border-blue-500/25 bg-blue-500/[0.07] hover:border-blue-500/50 hover:bg-blue-500/[0.12] transition"
+                >
+                  {shareCopied ? (
+                    <CheckCircle2 className="w-4 h-4 text-blue-400" />
+                  ) : (
+                    <Share2 className="w-4 h-4 text-blue-400" />
+                  )}
+                  <span className="text-[10px] font-semibold text-blue-400 group-hover:text-blue-300 text-center leading-tight transition">
+                    {shareCopied ? 'Copied!' : 'Share'}
+                  </span>
+                </button>
                 {/* Download PDF */}
                 <button
                   onClick={handleDownloadPDF}
@@ -482,7 +519,7 @@ export default function SummaryPanel({ summary, loading, error, modelTier, score
                     <Download className={`w-4 h-4 ${PAID_PLANS.has(usage?.plan) ? 'text-blue-400' : 'text-zinc-500'}`} />
                   )}
                   <span className="text-[10px] font-semibold text-zinc-400 group-hover:text-zinc-200 text-center leading-tight transition">
-                    {PAID_PLANS.has(usage?.plan) ? 'Download PDF' : 'PDF (Paid)'}
+                    {PAID_PLANS.has(usage?.plan) ? 'PDF' : 'PDF (Paid)'}
                   </span>
                 </button>
                 {/* Email results */}
@@ -495,10 +532,10 @@ export default function SummaryPanel({ summary, loading, error, modelTier, score
                 >
                   <Mail className={`w-4 h-4 ${EMAIL_PLANS.has(usage?.plan) ? 'text-blue-400' : 'text-zinc-500'}`} />
                   <span className="text-[10px] font-semibold text-zinc-400 group-hover:text-zinc-200 text-center leading-tight transition">
-                    {EMAIL_PLANS.has(usage?.plan) ? 'Email report' : 'Email (Pro)'}
+                    {EMAIL_PLANS.has(usage?.plan) ? 'Email' : 'Email (Pro)'}
                   </span>
                 </button>
-                {/* Consult a lawyer */}
+                {/* Tenant rights */}
                 <a
                   href="/tenant-rights"
                   target="_blank"
@@ -506,7 +543,7 @@ export default function SummaryPanel({ summary, loading, error, modelTier, score
                   className="group flex flex-col items-center gap-1.5 rounded-xl px-2 py-3 border border-white/[0.08] bg-white/[0.03] hover:border-emerald-500/30 hover:bg-emerald-500/[0.06] transition"
                 >
                   <ExternalLink className="w-4 h-4 text-emerald-400" />
-                  <span className="text-[10px] font-semibold text-zinc-400 group-hover:text-zinc-200 text-center leading-tight transition">Consult a lawyer</span>
+                  <span className="text-[10px] font-semibold text-zinc-400 group-hover:text-zinc-200 text-center leading-tight transition">Rights</span>
                 </a>
               </div>
             </div>

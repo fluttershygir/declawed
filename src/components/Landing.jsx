@@ -1,87 +1,50 @@
 import { motion } from 'framer-motion';
-import { useState } from 'react';
-import { ArrowRight, Mail } from 'lucide-react';
+import { ArrowRight, AlertCircle, CalendarDays, ShieldCheck } from 'lucide-react';
 
-function EmailCapture() {
-  const [email, setEmail] = useState('');
-  const [status, setStatus] = useState('idle'); // idle | loading | success | error
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-    if (!email) return;
-    setStatus('loading');
-    try {
-      const res = await fetch('/api/email-lead', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, source: 'landing_hero' }),
-      });
-      if (res.ok) {
-        setStatus('success');
-      } else {
-        setStatus('error');
-      }
-    } catch {
-      setStatus('error');
-    }
-  }
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.6 }}
-      className="mt-8 w-full max-w-md"
-    >
-      <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-6 py-5 text-left">
-        <div className="flex items-center gap-2 mb-1">
-          <Mail className="w-4 h-4 text-blue-400" />
-          <p className="text-sm font-semibold text-white">Get your free lease review checklist</p>
-        </div>
-        <p className="text-xs text-zinc-500 mb-4">A plain-English checklist of 15 things to look for before signing any lease.</p>
-        {status === 'success' ? (
-          <p className="text-sm text-blue-400 font-medium">Checklist sent! Check your inbox.</p>
-        ) : (
-          <form onSubmit={handleSubmit} className="flex gap-2">
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="you@email.com"
-              className="flex-1 min-w-0 rounded-lg bg-white/[0.06] border border-white/10 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500/50 transition-colors"
-            />
-            <button
-              type="submit"
-              disabled={status === 'loading'}
-              className="shrink-0 px-4 py-2 rounded-lg bg-blue-500 text-black text-sm font-semibold hover:bg-blue-400 transition-colors disabled:opacity-60"
-            >
-              {status === 'loading' ? '…' : 'Send it'}
-            </button>
-          </form>
-        )}
-        {status === 'error' && (
-          <p className="mt-2 text-xs text-rose-400">Something went wrong. Please try again.</p>
-        )}
-      </div>
-    </motion.div>
-  );
-}
+const PREVIEW_CHIPS = [
+  {
+    icon: AlertCircle,
+    color: 'text-rose-400',
+    border: 'border-rose-500/25',
+    bg: 'bg-rose-500/[0.07]',
+    label: '3 red flags',
+    sub: 'incl. 1 HIGH severity',
+  },
+  {
+    icon: CalendarDays,
+    color: 'text-blue-400',
+    border: 'border-blue-500/25',
+    bg: 'bg-blue-500/[0.07]',
+    label: 'Key dates extracted',
+    sub: '60-day notice to vacate',
+  },
+  {
+    icon: ShieldCheck,
+    color: 'text-emerald-400',
+    border: 'border-emerald-500/25',
+    bg: 'bg-emerald-500/[0.07]',
+    label: 'Tenant rights mapped',
+    sub: '4 protections found',
+  },
+];
 
 export default function Landing({ usage }) {
   return (
-    <section id="hero" className="relative flex flex-col items-center text-center px-5 pt-28 pb-24 md:pt-36 md:pb-32 overflow-hidden">
+    <section
+      id="hero"
+      className="relative flex flex-col items-center text-center px-5 pt-20 pb-14 md:pt-28 md:pb-20 overflow-hidden"
+    >
       {/* Background */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/4 w-[900px] h-[600px] rounded-full bg-blue-500/[0.06] blur-[120px]" />
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[400px] rounded-full bg-blue-500/[0.04] blur-[100px]" />
+        <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/4 w-[900px] h-[700px] rounded-full bg-blue-600/[0.07] blur-[130px]" />
+        <div className="absolute left-1/2 top-1/2 -translate-x-[30%] -translate-y-1/2 w-[300px] h-[300px] rounded-full bg-emerald-500/[0.04] blur-[90px]" />
         <div
-          className="absolute inset-0 opacity-[0.35]"
+          className="absolute inset-0 opacity-[0.3]"
           style={{
-            backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)',
+            backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.055) 1px, transparent 1px)',
             backgroundSize: '36px 36px',
-            maskImage: 'radial-gradient(ellipse 70% 60% at 50% 40%, #000 20%, transparent 100%)',
-            WebkitMaskImage: 'radial-gradient(ellipse 70% 60% at 50% 40%, #000 20%, transparent 100%)',
+            maskImage: 'radial-gradient(ellipse 70% 55% at 50% 30%, #000 10%, transparent 100%)',
+            WebkitMaskImage: 'radial-gradient(ellipse 70% 55% at 50% 30%, #000 10%, transparent 100%)',
           }}
         />
       </div>
@@ -97,78 +60,106 @@ export default function Landing({ usage }) {
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
           <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-400" />
         </span>
-        AI-Powered Lease Analysis
+        AI Lease Analysis · Free to Try
       </motion.div>
 
       {/* Headline */}
       <motion.h1
-        initial={{ opacity: 0, y: 14 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
-        className="mt-8 text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight leading-[1.07] max-w-4xl"
+        transition={{ duration: 0.5, delay: 0.08 }}
+        className="mt-7 text-[2.6rem] sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.06] max-w-3xl"
       >
-        <span className="bg-gradient-to-br from-white via-white to-white/60 bg-clip-text text-transparent">
-          Don't sign until you know
+        <span className="bg-gradient-to-br from-white via-white to-white/55 bg-clip-text text-transparent">
+          Your lease has traps.
         </span>
         <br />
-        <span className="bg-gradient-to-r from-blue-300 via-blue-300 to-emerald-300 bg-clip-text text-transparent">
-          what you're signing.
+        <span className="bg-gradient-to-r from-blue-300 via-blue-200 to-emerald-300 bg-clip-text text-transparent">
+          Find them first.
         </span>
       </motion.h1>
 
-      {/* Subheading */}
+      {/* Sub */}
       <motion.p
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="mt-7 max-w-xl text-lg md:text-xl text-zinc-400 leading-relaxed"
+        transition={{ duration: 0.5, delay: 0.18 }}
+        className="mt-5 max-w-lg text-base md:text-lg text-zinc-400 leading-relaxed"
       >
-        Upload your lease PDF. Declawed surfaces every{' '}
+        Upload your lease PDF and get every{' '}
         <span className="text-rose-400 font-medium">red flag</span>,{' '}
         <span className="text-blue-400 font-medium">key date</span>, and{' '}
-        <span className="text-emerald-400 font-medium">tenant right</span>—in plain English, not legalese.
+        <span className="text-emerald-400 font-medium">tenant right</span> surfaced in plain English — in 30 seconds.
       </motion.p>
 
-      {/* CTAs */}
+      {/* CTA */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="mt-10 flex flex-col sm:flex-row items-center gap-3"
+        transition={{ delay: 0.28 }}
+        className="mt-8 flex flex-col items-center gap-3"
       >
         <a
           href="#upload"
-          className="group inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-500 text-sm font-semibold text-black hover:bg-blue-400 transition-all shadow-lg shadow-blue-500/25 active:scale-95"
+          className="group inline-flex items-center gap-2.5 px-7 py-3.5 rounded-xl bg-blue-500 text-sm font-bold text-black hover:bg-blue-400 transition-all shadow-lg shadow-blue-500/30 active:scale-95"
         >
-          Analyze my lease — it's free
+          Analyze my lease — it&rsquo;s free
           <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
         </a>
-        <a
-          href="#how-it-works"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/10 text-sm font-medium text-zinc-300 hover:border-white/20 hover:text-white transition-all"
-        >
-          See how it works
-        </a>
+        <p className="text-[11px] text-zinc-600 tracking-wide">
+          No account required &nbsp;·&nbsp; File stays in your browser &nbsp;·&nbsp; 30 seconds
+        </p>
       </motion.div>
 
-      {/* Micro trust line */}
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
-        className="mt-5 text-xs text-zinc-600"
+      {/* Result preview strip */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.42 }}
+        className="mt-10 w-full max-w-xl"
       >
-        No account required · First summary free · Your file is never stored
-      </motion.p>
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-600 mb-3">
+          Example result
+        </p>
 
-      {/* Email capture */}
-      <EmailCapture />
+        {/* Score card */}
+        <div className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-4 mb-3 text-left flex items-center gap-4">
+          <div className="shrink-0 flex flex-col items-center justify-center w-14 h-14 rounded-xl bg-rose-500/[0.1] border border-rose-500/25">
+            <span className="text-2xl font-black text-rose-400 leading-none">4</span>
+            <span className="text-[9px] text-zinc-600 font-semibold">/ 10</span>
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-bold text-rose-400">Heavily favors landlord</p>
+            <p className="text-xs text-zinc-500 mt-0.5 leading-snug">
+              Auto-renewal trap, below-standard entry notice, and waived habitability rights found.
+            </p>
+          </div>
+        </div>
+
+        {/* Chips row */}
+        <div className="grid grid-cols-3 gap-2">
+          {PREVIEW_CHIPS.map(({ icon: Icon, color, border, bg, label, sub }) => (
+            <div
+              key={label}
+              className={`rounded-xl border ${border} ${bg} px-3 py-2.5 text-left`}
+            >
+              <Icon className={`w-3.5 h-3.5 ${color} mb-1.5`} />
+              <p className={`text-[11px] font-semibold ${color} leading-tight`}>{label}</p>
+              <p className="text-[10px] text-zinc-600 mt-0.5 leading-tight">{sub}</p>
+            </div>
+          ))}
+        </div>
+
+        <p className="mt-2.5 text-[10px] text-zinc-700 text-center">
+          ↑ This is what your real result looks like
+        </p>
+      </motion.div>
 
       {usage && usage.plan !== 'free' && (
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="mt-3 text-sm text-blue-600"
+          className="mt-4 text-sm text-blue-600"
         >
           {usage.plan === 'unlimited'
             ? 'Unlimited access active'
