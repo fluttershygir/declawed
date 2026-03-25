@@ -14,11 +14,11 @@ function Section({ title, children }) {
 function CookieRow({ name, purpose, duration, required }) {
   return (
     <tr className="border-b border-white/[0.05]">
-      <td className="py-3 pr-4 font-mono text-sm text-teal-400">{name}</td>
+      <td className="py-3 pr-4 font-mono text-sm text-blue-400">{name}</td>
       <td className="py-3 pr-4 text-sm text-zinc-400">{purpose}</td>
       <td className="py-3 pr-4 text-sm text-zinc-500">{duration}</td>
       <td className="py-3 text-sm">
-        <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${required ? 'bg-teal-500/10 text-teal-400 border border-teal-500/20' : 'bg-zinc-800 text-zinc-500'}`}>
+        <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${required ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-zinc-800 text-zinc-500'}`}>
           {required ? 'Required' : 'Optional'}
         </span>
       </td>
@@ -34,7 +34,7 @@ export default function CookiePolicy() {
       {/* Hero */}
       <div className="relative overflow-hidden border-b border-white/[0.06]">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute left-1/2 top-0 -translate-x-1/2 w-[600px] h-[300px] rounded-full bg-teal-500/[0.05] blur-[100px]" />
+          <div className="absolute left-1/2 top-0 -translate-x-1/2 w-[600px] h-[300px] rounded-full bg-blue-500/[0.05] blur-[100px]" />
           <div
             className="absolute inset-0 opacity-[0.25]"
             style={{
@@ -51,8 +51,8 @@ export default function CookiePolicy() {
             Back to Declawed
           </a>
           <div className="flex items-center gap-4 mb-5">
-            <div className="w-11 h-11 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center shrink-0">
-              <Cookie className="w-5 h-5 text-teal-400" />
+            <div className="w-11 h-11 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
+              <Cookie className="w-5 h-5 text-blue-400" />
             </div>
             <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">Cookie Policy</h1>
           </div>
@@ -115,7 +115,7 @@ export default function CookiePolicy() {
 
           <Section title="Authentication Cookies">
             <p>
-              When you sign in to Declawed, Supabase sets authentication cookies (prefixed with <code className="text-teal-400 text-[13px] bg-teal-500/10 px-1 rounded">sb-</code>) to maintain your session. These cookies are HttpOnly, meaning they cannot be accessed by JavaScript, and are marked Secure, meaning they are only sent over HTTPS.
+              When you sign in to Declawed, Supabase sets authentication cookies (prefixed with <code className="text-blue-400 text-[13px] bg-blue-500/10 px-1 rounded">sb-</code>) to maintain your session. These cookies are HttpOnly, meaning they cannot be accessed by JavaScript, and are marked Secure, meaning they are only sent over HTTPS.
             </p>
             <p>
               These cookies are deleted when you sign out, or automatically expire after approximately one week of inactivity.
@@ -124,7 +124,7 @@ export default function CookiePolicy() {
 
           <Section title="Free Tier Cookie">
             <p>
-              For users who analyze a lease without creating an account, we set a cookie called <code className="text-teal-400 text-[13px] bg-teal-500/10 px-1 rounded">dcl_free_used</code> to record that your one free analysis has been used. This prevents a single browser from receiving unlimited free analyses. It does not contain any personally identifiable information.
+              For users who analyze a lease without creating an account, we set a cookie called <code className="text-blue-400 text-[13px] bg-blue-500/10 px-1 rounded">dcl_free_used</code> to record that your one free analysis has been used. This prevents a single browser from receiving unlimited free analyses. It does not contain any personally identifiable information.
             </p>
             <p>
               This cookie is HttpOnly and Secure, and expires after one year from when it is set. Once you create an account, your usage is tracked by your account instead.
@@ -150,7 +150,7 @@ export default function CookiePolicy() {
               <li>Edge: Settings → Cookies and Site Permissions</li>
             </ul>
             <p>
-              Note that deleting the <code className="text-teal-400 text-[13px] bg-teal-500/10 px-1 rounded">dcl_free_used</code> cookie does not entitle you to an additional free analysis — the free tier is intended as one use per person, and is ultimately enforced by your account once you sign up.
+              Note that deleting the <code className="text-blue-400 text-[13px] bg-blue-500/10 px-1 rounded">dcl_free_used</code> cookie does not entitle you to an additional free analysis — the free tier is intended as one use per person, and is ultimately enforced by your account once you sign up.
             </p>
           </Section>
 
@@ -162,7 +162,7 @@ export default function CookiePolicy() {
 
           <Section title="Contact">
             <p>
-              For questions about our use of cookies, contact us at <span className="text-teal-400">privacy@declawed.app</span>.
+              For questions about our use of cookies, contact us at <span className="text-blue-400">privacy@declawed.app</span>.
             </p>
           </Section>
 

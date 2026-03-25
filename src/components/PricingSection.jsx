@@ -29,7 +29,7 @@ const TIERS = [
     key: 'pro',
     label: 'Pro',
     icon: Zap,
-    iconColor: 'text-teal-300',
+    iconColor: 'text-blue-300',
     price: '$12',
     period: '/mo',
     desc: '10 lease analyses per month. Perfect for small landlords.',
@@ -45,9 +45,9 @@ const TIERS = [
     guarantee: '7-day money-back guarantee',
     popular: true,
     landlordMode: false,
-    cardClass: 'border-teal-400/40 bg-teal-500/[0.07] shadow-[0_0_48px_rgba(20,184,166,0.12)]',
-    ctaClass: 'bg-teal-500 text-black font-semibold hover:bg-teal-400 shadow-lg shadow-teal-500/20',
-    checkColor: 'text-teal-400',
+    cardClass: 'border-blue-400/40 bg-blue-500/[0.07] shadow-[0_0_48px_rgba(20,184,166,0.12)]',
+    ctaClass: 'bg-blue-500 text-black font-semibold hover:bg-blue-400 shadow-lg shadow-blue-500/20',
+    checkColor: 'text-blue-400',
   },
   {
     key: 'unlimited',
@@ -85,7 +85,7 @@ export default function PricingSection({ onSelectTier }) {
           viewport={{ once: true }}
           className="text-center mb-14"
         >
-          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-teal-400 mb-4">Pricing</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-blue-400 mb-4">Pricing</p>
           <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight">Simple, honest pricing</h2>
           <p className="mt-4 text-zinc-400 max-w-sm mx-auto">Pay once or go unlimited. No tricks, no auto-upgrades.</p>
         </motion.div>
@@ -101,7 +101,7 @@ export default function PricingSection({ onSelectTier }) {
               className={`relative rounded-2xl border p-6 flex flex-col ${cardClass}`}
             >
               {popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.12em] bg-teal-500 text-black shadow-lg shadow-teal-500/30 whitespace-nowrap">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.12em] bg-blue-500 text-black shadow-lg shadow-blue-500/30 whitespace-nowrap">
                   Most Popular
                 </div>
               )}

@@ -16,9 +16,9 @@ export function generatePDF({ data, filename, analysisDate, userName }) {
   let y = 0;
 
   // ── Palette ──────────────────────────────────────────────────────────
-  const teal      = [13, 148, 136];
-  const tealDk    = [9, 115, 106];
-  const cyan      = [6, 182, 212];
+  const teal      = [74, 127, 203];
+  const tealDk    = [55, 101, 170];
+  const cyan      = [96, 165, 250];
   const rose      = [244, 63, 94];
   const amber     = [245, 158, 11];
   const emerald   = [16, 185, 129];
@@ -253,14 +253,14 @@ export function generatePDF({ data, filename, analysisDate, userName }) {
 
       pair.forEach((item, j) => {
         const cx = M + j * (colW + 4);
-        doc.setFillColor(207, 250, 254);   // cyan-100
-        doc.setDrawColor(165, 243, 252);   // cyan-200
+        doc.setFillColor(219, 234, 254);   // blue-100
+        doc.setDrawColor(191, 219, 254);   // blue-200
         doc.setLineWidth(0.25);
         doc.roundedRect(cx, y, colW, rowH, 1.5, 1.5, 'FD');
 
         doc.setFontSize(7);
         doc.setFont('helvetica', 'bold');
-        doc.setTextColor(8, 145, 178);     // cyan-600
+        doc.setTextColor(37, 99, 235);     // blue-600
         doc.text((item.label || '').toUpperCase().slice(0, 32), cx + 4, y + 6);
 
         const vl = doc.splitTextToSize(item.value || '', colW - 8);
@@ -350,8 +350,8 @@ export function generatePDF({ data, filename, analysisDate, userName }) {
       const h = lines.length * 4.5 + 7;
       needSpace(h + 2);
 
-      doc.setFillColor(204, 251, 241);   // teal-100
-      doc.setDrawColor(153, 246, 228);   // teal-200
+      doc.setFillColor(219, 234, 254);   // blue-100
+      doc.setDrawColor(191, 219, 254);   // blue-200
       doc.setLineWidth(0.2);
       doc.roundedRect(M, y, CW, h, 1.5, 1.5, 'FD');
 

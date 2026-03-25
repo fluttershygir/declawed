@@ -21,11 +21,11 @@ const NAV_GROUPS = [
 ];
 
 const LogoIcon = () => (
-  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shadow-sm shrink-0">
+  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-sm shrink-0">
     <svg viewBox="0 0 20 20" fill="none" className="w-[14px] h-[14px]">
       <path d="M6 10V7a4 4 0 0 1 8 0v3" stroke="white" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
       <rect x="3.5" y="10" width="13" height="9" rx="2.5" fill="white" fillOpacity="0.95" />
-      <circle cx="10" cy="14.5" r="1.4" fill="#0d9488" />
+      <circle cx="10" cy="14.5" r="1.4" fill="#4a7fcb" />
     </svg>
   </div>
 );
@@ -67,11 +67,11 @@ export default function AppShell({ children }) {
                       onClick={() => setMobileOpen(false)}
                       className={`flex items-center gap-2.5 px-2.5 py-2.5 rounded-md text-[13px] font-medium transition-all ${
                         active
-                        ? 'bg-teal-500/10 text-teal-400'
+                        ? 'bg-blue-500/10 text-blue-400'
                           : 'text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.04]'
                       }`}
                     >
-                      <Icon className={`w-4 h-4 shrink-0 ${active ? 'text-teal-400' : ''}`} />
+                      <Icon className={`w-4 h-4 shrink-0 ${active ? 'text-blue-400' : ''}`} />
                       {itemLabel}
                     </a>
                   </li>
@@ -85,7 +85,7 @@ export default function AppShell({ children }) {
       {/* User + Sign Out */}
       <div className="border-t border-white/[0.06] p-3 shrink-0">
         <div className="flex items-center gap-2.5 px-2.5 py-2 min-w-0">
-          <div className="w-7 h-7 rounded-full bg-teal-500/15 border border-teal-500/25 text-teal-300 text-[10px] font-bold flex items-center justify-center shrink-0">
+          <div className="w-7 h-7 rounded-full bg-blue-500/15 border border-blue-500/25 text-blue-300 text-[10px] font-bold flex items-center justify-center shrink-0">
             {initials}
           </div>
           <div className="min-w-0 flex-1">

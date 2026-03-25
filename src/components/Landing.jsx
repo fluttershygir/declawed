@@ -35,12 +35,12 @@ function EmailCapture() {
     >
       <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-6 py-5 text-left">
         <div className="flex items-center gap-2 mb-1">
-          <Mail className="w-4 h-4 text-teal-400" />
+          <Mail className="w-4 h-4 text-blue-400" />
           <p className="text-sm font-semibold text-white">Get your free lease review checklist</p>
         </div>
         <p className="text-xs text-zinc-500 mb-4">A plain-English checklist of 15 things to look for before signing any lease.</p>
         {status === 'success' ? (
-          <p className="text-sm text-teal-400 font-medium">Checklist sent! Check your inbox.</p>
+          <p className="text-sm text-blue-400 font-medium">Checklist sent! Check your inbox.</p>
         ) : (
           <form onSubmit={handleSubmit} className="flex gap-2">
             <input
@@ -49,12 +49,12 @@ function EmailCapture() {
               value={email}
               onChange={e => setEmail(e.target.value)}
               placeholder="you@email.com"
-              className="flex-1 min-w-0 rounded-lg bg-white/[0.06] border border-white/10 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-teal-500/50 transition-colors"
+              className="flex-1 min-w-0 rounded-lg bg-white/[0.06] border border-white/10 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500/50 transition-colors"
             />
             <button
               type="submit"
               disabled={status === 'loading'}
-              className="shrink-0 px-4 py-2 rounded-lg bg-teal-500 text-black text-sm font-semibold hover:bg-teal-400 transition-colors disabled:opacity-60"
+              className="shrink-0 px-4 py-2 rounded-lg bg-blue-500 text-black text-sm font-semibold hover:bg-blue-400 transition-colors disabled:opacity-60"
             >
               {status === 'loading' ? '…' : 'Send it'}
             </button>
@@ -73,8 +73,8 @@ export default function Landing({ usage }) {
     <section id="hero" className="relative flex flex-col items-center text-center px-5 pt-28 pb-24 md:pt-36 md:pb-32 overflow-hidden">
       {/* Background */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/4 w-[900px] h-[600px] rounded-full bg-teal-500/[0.06] blur-[120px]" />
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[400px] rounded-full bg-cyan-500/[0.04] blur-[100px]" />
+        <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/4 w-[900px] h-[600px] rounded-full bg-blue-500/[0.06] blur-[120px]" />
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[400px] rounded-full bg-blue-500/[0.04] blur-[100px]" />
         <div
           className="absolute inset-0 opacity-[0.35]"
           style={{
@@ -91,11 +91,11 @@ export default function Landing({ usage }) {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="relative inline-flex items-center gap-2 rounded-full border border-teal-500/25 bg-teal-500/[0.08] px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-teal-300"
+        className="relative inline-flex items-center gap-2 rounded-full border border-blue-500/25 bg-blue-500/[0.08] px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-blue-300"
       >
         <span className="relative flex h-1.5 w-1.5">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75" />
-          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-teal-400" />
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
+          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-400" />
         </span>
         AI-Powered Lease Analysis
       </motion.div>
@@ -111,7 +111,7 @@ export default function Landing({ usage }) {
           Don't sign until you know
         </span>
         <br />
-        <span className="bg-gradient-to-r from-teal-300 via-cyan-300 to-emerald-300 bg-clip-text text-transparent">
+        <span className="bg-gradient-to-r from-blue-300 via-blue-300 to-emerald-300 bg-clip-text text-transparent">
           what you're signing.
         </span>
       </motion.h1>
@@ -125,7 +125,7 @@ export default function Landing({ usage }) {
       >
         Upload your lease PDF. Declawed surfaces every{' '}
         <span className="text-rose-400 font-medium">red flag</span>,{' '}
-        <span className="text-cyan-400 font-medium">key date</span>, and{' '}
+        <span className="text-blue-400 font-medium">key date</span>, and{' '}
         <span className="text-emerald-400 font-medium">tenant right</span>—in plain English, not legalese.
       </motion.p>
 
@@ -138,7 +138,7 @@ export default function Landing({ usage }) {
       >
         <a
           href="#upload"
-          className="group inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-teal-500 text-sm font-semibold text-black hover:bg-teal-400 transition-all shadow-lg shadow-teal-500/25 active:scale-95"
+          className="group inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-500 text-sm font-semibold text-black hover:bg-blue-400 transition-all shadow-lg shadow-blue-500/25 active:scale-95"
         >
           Analyze my lease — it's free
           <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
@@ -168,7 +168,7 @@ export default function Landing({ usage }) {
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="mt-3 text-sm text-teal-600"
+          className="mt-3 text-sm text-blue-600"
         >
           {usage.plan === 'unlimited'
             ? 'Unlimited access active'

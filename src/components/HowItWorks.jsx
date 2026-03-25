@@ -7,20 +7,20 @@ const STEPS = [
     icon: Upload,
     title: 'Upload your lease',
     desc: 'Drag in any PDF, Word doc, or image of your lease. Your file is processed in memory and never stored on our servers.',
-    color: 'text-teal-400',
-    ring: 'border-teal-500/30',
-    glow: 'bg-teal-500/[0.07]',
-    accent: 'from-teal-500/20 to-transparent',
+    color: 'text-blue-400',
+    ring: 'border-blue-500/30',
+    glow: 'bg-blue-500/[0.07]',
+    accent: 'from-blue-500/20 to-transparent',
   },
   {
     number: '02',
     icon: ScanText,
     title: 'AI scans every clause',
     desc: 'Our AI reads every line with tenant-advocate instructions — trained to surface what landlords hope you miss.',
-    color: 'text-cyan-400',
-    ring: 'border-cyan-500/30',
-    glow: 'bg-cyan-500/[0.07]',
-    accent: 'from-cyan-500/20 to-transparent',
+    color: 'text-blue-400',
+    ring: 'border-blue-500/30',
+    glow: 'bg-blue-500/[0.07]',
+    accent: 'from-blue-500/20 to-transparent',
   },
   {
     number: '03',
@@ -44,7 +44,7 @@ export default function HowItWorks() {
           viewport={{ once: true }}
           className="text-center mb-16 md:mb-20"
         >
-          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-teal-400 mb-4">How it works</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-blue-400 mb-4">How it works</p>
           <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight">Three steps. Two minutes.</h2>
           <p className="mt-4 text-zinc-400 text-base max-w-sm mx-auto">No account required. No waiting. Just upload and understand.</p>
         </motion.div>

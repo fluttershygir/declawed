@@ -44,22 +44,22 @@ function AnalysisProgress() {
               animate={{ opacity: pending ? 0.3 : 1, x: 0 }}
               transition={{ duration: 0.35, delay: i * 0.06 }}
               className={`flex items-center gap-3 rounded-xl px-4 py-2.5 border transition-all duration-500 ${
-                active  ? 'border-cyan-500/40 bg-cyan-500/[0.07]' :
-                done    ? 'border-teal-500/25 bg-teal-500/[0.04]' :
+                active  ? 'border-blue-500/40 bg-blue-500/[0.07]' :
+                done    ? 'border-blue-500/25 bg-blue-500/[0.04]' :
                           'border-white/[0.05] bg-transparent'
               }`}
             >
               <span className="text-base w-5 text-center shrink-0">{step.icon}</span>
               <span className={`text-sm flex-1 transition-colors duration-300 ${
-                active ? 'text-cyan-300 font-semibold' : done ? 'text-teal-400' : 'text-zinc-600'
+                active ? 'text-blue-300 font-semibold' : done ? 'text-blue-400' : 'text-zinc-600'
               }`}>
                 {step.label}
               </span>
               {active && (
-                <div className="w-3.5 h-3.5 border-2 border-cyan-500/50 border-t-cyan-400 rounded-full animate-spin shrink-0" />
+                <div className="w-3.5 h-3.5 border-2 border-blue-500/50 border-t-blue-400 rounded-full animate-spin shrink-0" />
               )}
               {done && (
-                <CheckCircle2 className="w-3.5 h-3.5 text-teal-500 shrink-0" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-blue-500 shrink-0" />
               )}
             </motion.div>
           );
@@ -151,13 +151,13 @@ function StructuredSummary({ data, landlordMode, scorePercentile }) {
       {/* Key Dates */}
       {data.keyDates?.length > 0 && (
         <section>
-          <h2 className="flex items-center gap-2 text-cyan-400 text-sm font-bold uppercase tracking-widest mb-3">
+          <h2 className="flex items-center gap-2 text-blue-400 text-sm font-bold uppercase tracking-widest mb-3">
             <Calendar className="w-4 h-4" /> Key Dates
           </h2>
           <div className="grid grid-cols-2 gap-1.5">
             {data.keyDates.map((item, i) => (
-              <div key={i} className="rounded-lg bg-cyan-500/[0.05] border border-cyan-500/[0.12] px-3 py-2">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-cyan-500/70 mb-0.5">{item.label}</p>
+              <div key={i} className="rounded-lg bg-blue-500/[0.05] border border-blue-500/[0.12] px-3 py-2">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-blue-500/70 mb-0.5">{item.label}</p>
                 <p className="text-xs text-slate-300 leading-snug">{item.value}</p>
               </div>
             ))}
@@ -201,17 +201,17 @@ function StructuredSummary({ data, landlordMode, scorePercentile }) {
 
       {/* Action steps — relabelled in landlord mode */}
       {data.actionSteps?.length > 0 && (
-        <section className="rounded-xl border border-teal-500/25 bg-teal-500/[0.05] overflow-hidden">
-          <div className="flex items-center gap-2 px-4 py-2.5 border-b border-teal-500/15 bg-teal-500/[0.04]">
-            <ListChecks className="w-3.5 h-3.5 text-teal-400 shrink-0" />
-            <h2 className="text-teal-300 text-[11px] font-bold uppercase tracking-widest">
+        <section className="rounded-xl border border-blue-500/25 bg-blue-500/[0.05] overflow-hidden">
+          <div className="flex items-center gap-2 px-4 py-2.5 border-b border-blue-500/15 bg-blue-500/[0.04]">
+            <ListChecks className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+            <h2 className="text-blue-300 text-[11px] font-bold uppercase tracking-widest">
               {landlordMode ? 'Recommended Lease Improvements' : 'What to do before signing'}
             </h2>
           </div>
-          <ul className="divide-y divide-teal-500/[0.08]">
+          <ul className="divide-y divide-blue-500/[0.08]">
             {data.actionSteps.map((step, i) => (
               <li key={i} className="flex items-start gap-3 px-4 py-2.5">
-                <span className="w-4 h-4 rounded border border-teal-500/40 bg-teal-500/10 text-teal-400 text-[8px] font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
+                <span className="w-4 h-4 rounded border border-blue-500/40 bg-blue-500/10 text-blue-400 text-[8px] font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
                 <span className="text-slate-300 leading-relaxed text-[13px]">{step}</span>
               </li>
             ))}
@@ -284,10 +284,10 @@ function AnonTeaser({ data, onSignUp, scorePercentile }) {
 
         {/* Blurred mock of remaining content */}
         <div className="pointer-events-none select-none blur-[5px] opacity-25 space-y-4">
-          <div className="rounded-lg bg-cyan-500/[0.08] border border-cyan-500/[0.12] h-8" />
+          <div className="rounded-lg bg-blue-500/[0.08] border border-blue-500/[0.12] h-8" />
           <div className="grid grid-cols-2 gap-1.5">
             {[1, 2, 3, 4].map(i => (
-              <div key={i} className="rounded-lg bg-cyan-500/[0.05] border border-cyan-500/[0.10] h-12" />
+              <div key={i} className="rounded-lg bg-blue-500/[0.05] border border-blue-500/[0.10] h-12" />
             ))}
           </div>
           <div className="rounded-lg bg-emerald-500/[0.08] border border-emerald-500/[0.12] h-8" />
@@ -296,7 +296,7 @@ function AnonTeaser({ data, onSignUp, scorePercentile }) {
               <div key={i} className="rounded-lg bg-emerald-500/[0.05] border border-emerald-500/[0.10] h-10" />
             ))}
           </div>
-          <div className="rounded-xl border border-teal-500/15 bg-teal-500/[0.04] h-24" />
+          <div className="rounded-xl border border-blue-500/15 bg-blue-500/[0.04] h-24" />
         </div>
       </article>
 
@@ -307,7 +307,7 @@ function AnonTeaser({ data, onSignUp, scorePercentile }) {
       <div className="absolute bottom-0 left-0 right-0 px-2 pb-1">
         <div className="w-full rounded-2xl border border-white/[0.09] bg-slate-900/95 backdrop-blur-sm p-5 shadow-2xl">
           <div className="flex items-center gap-2 mb-1.5">
-            <Lock className="w-4 h-4 text-teal-400 shrink-0" />
+            <Lock className="w-4 h-4 text-blue-400 shrink-0" />
             <p className="text-white font-semibold text-[14px]">See your full analysis</p>
           </div>
           <p className="text-zinc-400 text-[12px] mb-4 leading-relaxed">
@@ -316,7 +316,7 @@ function AnonTeaser({ data, onSignUp, scorePercentile }) {
           <div className="flex gap-2.5">
             <button
               onClick={() => onSignUp?.('signup')}
-              className="flex-1 py-2.5 rounded-lg bg-teal-500 text-black text-[13px] font-bold hover:bg-teal-400 active:scale-95 transition-all"
+              className="flex-1 py-2.5 rounded-lg bg-blue-500 text-black text-[13px] font-bold hover:bg-blue-400 active:scale-95 transition-all"
             >
               Sign up free
             </button>
@@ -380,11 +380,11 @@ export default function SummaryPanel({ summary, loading, error, modelTier, score
         {modelTier && (
           <span className={`ml-auto flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${
             modelTier === 'advanced'
-              ? 'bg-teal-500/15 text-teal-400 border border-teal-500/30'
+              ? 'bg-blue-500/15 text-blue-400 border border-blue-500/30'
               : 'bg-zinc-800 text-zinc-500 border border-zinc-700'
           }`}>
             <span className={`w-1.5 h-1.5 rounded-full ${
-              modelTier === 'advanced' ? 'bg-teal-400' : 'bg-zinc-600'
+              modelTier === 'advanced' ? 'bg-blue-400' : 'bg-zinc-600'
             }`} />
             {modelTier === 'advanced' ? 'Advanced AI' : 'Standard AI'}
           </span>
@@ -430,7 +430,7 @@ export default function SummaryPanel({ summary, loading, error, modelTier, score
                 <li className="text-slate-500 leading-relaxed blur-[3px]">Security deposit is 2× monthly rent — verify this is legal in your state.</li>
               </ul>
               {/* Progressively blurred sections */}
-              <h2 className="text-cyan-400 font-semibold mt-5 mb-2 blur-[2px] opacity-80">📅 Key Dates</h2>
+              <h2 className="text-blue-400 font-semibold mt-5 mb-2 blur-[2px] opacity-80">📅 Key Dates</h2>
               <ul className="list-disc ml-4 mb-2 space-y-1 blur-[3px] opacity-60">
                 <li className="text-slate-300 leading-relaxed">Lease start: March 1, 2026 — End: February 28, 2027</li>
                 <li className="text-slate-300 leading-relaxed">Rent due 1st of each month; $75 late fee after the 5th.</li>
@@ -474,12 +474,12 @@ export default function SummaryPanel({ summary, loading, error, modelTier, score
                 <button
                   onClick={handleDownloadPDF}
                   disabled={pdfLoading}
-                  className="group flex flex-col items-center gap-1.5 rounded-xl px-2 py-3 border border-white/[0.08] bg-white/[0.03] hover:border-teal-500/30 hover:bg-teal-500/[0.06] transition disabled:opacity-60"
+                  className="group flex flex-col items-center gap-1.5 rounded-xl px-2 py-3 border border-white/[0.08] bg-white/[0.03] hover:border-blue-500/30 hover:bg-blue-500/[0.06] transition disabled:opacity-60"
                 >
                   {pdfLoading ? (
-                    <div className="w-4 h-4 border-2 border-teal-400/40 border-t-teal-400 rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-blue-400/40 border-t-blue-400 rounded-full animate-spin" />
                   ) : (
-                    <Download className={`w-4 h-4 ${PAID_PLANS.has(usage?.plan) ? 'text-teal-400' : 'text-zinc-500'}`} />
+                    <Download className={`w-4 h-4 ${PAID_PLANS.has(usage?.plan) ? 'text-blue-400' : 'text-zinc-500'}`} />
                   )}
                   <span className="text-[10px] font-semibold text-zinc-400 group-hover:text-zinc-200 text-center leading-tight transition">
                     {PAID_PLANS.has(usage?.plan) ? 'Download PDF' : 'PDF (Paid)'}
@@ -491,9 +491,9 @@ export default function SummaryPanel({ summary, loading, error, modelTier, score
                     if (!EMAIL_PLANS.has(usage?.plan)) { onUpgrade?.(); return; }
                     setEmailModalOpen(true);
                   }}
-                  className="group flex flex-col items-center gap-1.5 rounded-xl px-2 py-3 border border-white/[0.08] bg-white/[0.03] hover:border-cyan-500/30 hover:bg-cyan-500/[0.06] transition"
+                  className="group flex flex-col items-center gap-1.5 rounded-xl px-2 py-3 border border-white/[0.08] bg-white/[0.03] hover:border-blue-500/30 hover:bg-blue-500/[0.06] transition"
                 >
-                  <Mail className={`w-4 h-4 ${EMAIL_PLANS.has(usage?.plan) ? 'text-cyan-400' : 'text-zinc-500'}`} />
+                  <Mail className={`w-4 h-4 ${EMAIL_PLANS.has(usage?.plan) ? 'text-blue-400' : 'text-zinc-500'}`} />
                   <span className="text-[10px] font-semibold text-zinc-400 group-hover:text-zinc-200 text-center leading-tight transition">
                     {EMAIL_PLANS.has(usage?.plan) ? 'Email report' : 'Email (Pro)'}
                   </span>
@@ -513,12 +513,12 @@ export default function SummaryPanel({ summary, loading, error, modelTier, score
 
             <p className="mt-3 text-[11px] text-zinc-600 flex items-center gap-1.5 pb-1">
               <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                modelTier === 'advanced' ? 'bg-teal-500' : 'bg-zinc-600'
+                modelTier === 'advanced' ? 'bg-blue-500' : 'bg-zinc-600'
               }`} />
               Analyzed by Declawed AI
               {modelTier && (
                 <span className={`ml-auto font-medium ${
-                  modelTier === 'advanced' ? 'text-teal-500' : 'text-zinc-500'
+                  modelTier === 'advanced' ? 'text-blue-500' : 'text-zinc-500'
                 }`}>
                   {modelTier === 'advanced' ? 'Advanced' : 'Standard'}
                 </span>

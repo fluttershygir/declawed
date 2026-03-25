@@ -22,7 +22,7 @@ export default function PrivacyPolicy() {
       {/* Hero */}
       <div className="relative overflow-hidden border-b border-white/[0.06]">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute left-1/2 top-0 -translate-x-1/2 w-[600px] h-[300px] rounded-full bg-teal-500/[0.05] blur-[100px]" />
+          <div className="absolute left-1/2 top-0 -translate-x-1/2 w-[600px] h-[300px] rounded-full bg-blue-500/[0.05] blur-[100px]" />
           <div
             className="absolute inset-0 opacity-[0.25]"
             style={{
@@ -39,8 +39,8 @@ export default function PrivacyPolicy() {
             Back to Declawed
           </a>
           <div className="flex items-center gap-4 mb-5">
-            <div className="w-11 h-11 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center shrink-0">
-              <Shield className="w-5 h-5 text-teal-400" />
+            <div className="w-11 h-11 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
+              <Shield className="w-5 h-5 text-blue-400" />
             </div>
             <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">Privacy Policy</h1>
           </div>
@@ -103,7 +103,7 @@ export default function PrivacyPolicy() {
               We retain your account information and analysis history for as long as your account is active. If you delete your account, we will remove your personal data within 30 days, except where retention is required by law.
             </p>
             <p>
-              For free-tier users, a browser cookie (<code className="text-teal-400 text-[13px] bg-teal-500/10 px-1 rounded">dcl_free_used</code>) is stored locally to track your free analysis. This cookie expires after one year.
+              For free-tier users, a browser cookie (<code className="text-blue-400 text-[13px] bg-blue-500/10 px-1 rounded">dcl_free_used</code>) is stored locally to track your free analysis. This cookie expires after one year.
             </p>
           </Section>
 
@@ -116,7 +116,7 @@ export default function PrivacyPolicy() {
               <li>Object to or restrict certain processing</li>
               <li>Data portability (receive a copy of your data)</li>
             </ul>
-            <p>To exercise any of these rights, email us at <span className="text-teal-400">privacy@declawed.app</span>.</p>
+            <p>To exercise any of these rights, email us at <span className="text-blue-400">privacy@declawed.app</span>.</p>
           </Section>
 
           <Section number="8" title="Security">
@@ -139,7 +139,7 @@ export default function PrivacyPolicy() {
 
           <Section number="11" title="Contact">
             <p>
-              For privacy-related questions or requests, contact us at <span className="text-teal-400">privacy@declawed.app</span>.
+              For privacy-related questions or requests, contact us at <span className="text-blue-400">privacy@declawed.app</span>.
             </p>
           </Section>
 

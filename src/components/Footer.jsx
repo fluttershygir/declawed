@@ -2,7 +2,7 @@ const LOGO_SVG = (
   <svg viewBox="0 0 20 20" fill="none" className="w-[13px] h-[13px]">
     <path d="M6 10V7a4 4 0 0 1 8 0v3" stroke="white" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
     <rect x="3.5" y="10" width="13" height="9" rx="2.5" fill="white" fillOpacity="0.95" />
-    <circle cx="10" cy="14.5" r="1.4" fill="#0d9488" />
+    <circle cx="10" cy="14.5" r="1.4" fill="#4a7fcb" />
   </svg>
 );
 
@@ -14,7 +14,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="max-w-xs">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center shrink-0 shadow-md shadow-teal-500/20">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-400 to-blue-500 flex items-center justify-center shrink-0 shadow-md shadow-blue-500/20">
                 {LOGO_SVG}
               </div>
               <span className="text-sm font-bold text-white tracking-tight">Declawed</span>
@@ -32,7 +32,7 @@ export default function Footer() {
           <div className="flex flex-wrap gap-x-14 gap-y-8 text-sm">
             <div className="flex flex-col gap-2.5">
               <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-600 mb-1">Product</p>
-              {[['How it Works', '/#how-it-works'], ['Pricing', '/#pricing'], ['FAQ', '/#faq'], ['Contact', '/contact']].map(([label, href]) => (
+              {[['How it Works', '/how-it-works'], ['Pricing', '/#pricing'], ['FAQ', '/#faq'], ['Contact', '/contact']].map(([label, href]) => (
                 <a key={label} href={href} className="text-[13px] text-zinc-500 hover:text-white transition-colors">{label}</a>
               ))}
             </div>

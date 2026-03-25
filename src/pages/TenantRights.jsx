@@ -34,7 +34,7 @@ export default function TenantRights() {
             className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight text-white mb-6"
           >
             Tenant Rights:<br />
-            <span className="bg-gradient-to-r from-emerald-300 to-teal-300 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-emerald-300 to-blue-300 bg-clip-text text-transparent">
               What You&rsquo;re Legally Entitled To
             </span>
           </motion.h1>
@@ -53,7 +53,7 @@ export default function TenantRights() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
             href="/#upload"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-teal-500 text-sm font-semibold text-black hover:bg-teal-400 transition-all shadow-lg shadow-teal-500/25 active:scale-95"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-500 text-sm font-semibold text-black hover:bg-blue-400 transition-all shadow-lg shadow-blue-500/25 active:scale-95"
           >
             Check my lease for rights violations
             <ArrowRight className="w-4 h-4" />
@@ -124,12 +124,12 @@ export default function TenantRights() {
               'You believe you\'re being discriminated against under fair housing law',
             ].map((item, i) => (
               <li key={i} className="flex items-start gap-3">
-                <BookOpen className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
+                <BookOpen className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
                 <span className="text-sm text-zinc-300 leading-relaxed">{item}</span>
               </li>
             ))}
           </ul>
-          <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/[0.04] p-5">
+          <div className="rounded-xl border border-blue-500/20 bg-blue-500/[0.04] p-5">
             <p className="text-sm font-semibold text-white mb-2">Free legal resources</p>
             <ul className="space-y-1.5">
               {[
@@ -138,7 +138,7 @@ export default function TenantRights() {
                 ['Nolo Tenant Rights Guide', 'https://www.nolo.com/legal-encyclopedia/tenants-rights', 'State-by-state tenant rights reference'],
               ].map(([name, href, desc]) => (
                 <li key={name}>
-                  <a href={href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-cyan-300 hover:text-cyan-200 transition">
+                  <a href={href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-blue-300 hover:text-blue-200 transition">
                     <ExternalLink className="w-3 h-3 shrink-0" />
                     <span className="font-medium">{name}</span>
                     <span className="text-zinc-500">— {desc}</span>
@@ -158,7 +158,7 @@ export default function TenantRights() {
           </p>
           <a
             href="/#upload"
-            className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-teal-500 text-sm font-semibold text-black hover:bg-teal-400 transition-all shadow-lg shadow-teal-500/25 active:scale-95"
+            className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-blue-500 text-sm font-semibold text-black hover:bg-blue-400 transition-all shadow-lg shadow-blue-500/25 active:scale-95"
           >
             Analyze my lease — it&rsquo;s free
             <ArrowRight className="w-4 h-4" />

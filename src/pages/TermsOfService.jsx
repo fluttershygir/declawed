@@ -22,7 +22,7 @@ export default function TermsOfService() {
       {/* Hero */}
       <div className="relative overflow-hidden border-b border-white/[0.06]">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute left-1/2 top-0 -translate-x-1/2 w-[600px] h-[300px] rounded-full bg-teal-500/[0.05] blur-[100px]" />
+          <div className="absolute left-1/2 top-0 -translate-x-1/2 w-[600px] h-[300px] rounded-full bg-blue-500/[0.05] blur-[100px]" />
           <div
             className="absolute inset-0 opacity-[0.25]"
             style={{
@@ -39,8 +39,8 @@ export default function TermsOfService() {
             Back to Declawed
           </a>
           <div className="flex items-center gap-4 mb-5">
-            <div className="w-11 h-11 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center shrink-0">
-              <FileText className="w-5 h-5 text-teal-400" />
+            <div className="w-11 h-11 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
+              <FileText className="w-5 h-5 text-blue-400" />
             </div>
             <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">Terms of Service</h1>
           </div>
@@ -130,7 +130,7 @@ export default function TermsOfService() {
 
           <Section number="7" title="Refunds">
             <p>
-              Due to the nature of digital services, all sales are generally final. However, we offer a 7-day money-back guarantee on all paid plans. If you experience a technical failure or are unsatisfied within 7 days of purchase, contact us at <span className="text-teal-400">support@declawed.app</span> and we will review your case. You can also request a refund directly from your dashboard.
+              Due to the nature of digital services, all sales are generally final. However, we offer a 7-day money-back guarantee on all paid plans. If you experience a technical failure or are unsatisfied within 7 days of purchase, contact us at <span className="text-blue-400">support@declawed.app</span> and we will review your case. You can also request a refund directly from your dashboard.
             </p>
           </Section>
 
@@ -175,7 +175,7 @@ export default function TermsOfService() {
 
           <Section number="13" title="Contact">
             <p>
-              Questions about these Terms can be directed to <span className="text-teal-400">support@declawed.app</span>.
+              Questions about these Terms can be directed to <span className="text-blue-400">support@declawed.app</span>.
             </p>
           </Section>
 

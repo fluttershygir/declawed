@@ -49,6 +49,7 @@ import AnalysisHistory from './pages/AnalysisHistory';
 import LeaseReview from './pages/LeaseReview';
 import TenantRights from './pages/TenantRights';
 import Analyze from './pages/Analyze';
+import HowItWorksPage from './pages/HowItWorksPage';
 import './index.css';
 
 const PAID_PLANS = new Set(['one', 'pro', 'unlimited']);
@@ -245,7 +246,7 @@ function MainApp() {
                 onClick={() => { setMobileTab('results'); setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50); }}
                 className={`flex-1 py-2 rounded-lg text-xs font-semibold transition ${mobileTab === 'results' ? 'bg-white/[0.09] text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
               >
-                Results {loading && <span className="ml-1 inline-block w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse align-middle" />}
+                Results {loading && <span className="ml-1 inline-block w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse align-middle" />}
               </button>
             </div>
           )}
@@ -438,11 +439,11 @@ function AppPage() {
       <header className="sticky top-0 z-50 w-full border-b border-white/[0.06] bg-[#07070d]/95 backdrop-blur-xl">
         <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
           <a href="/app" className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-teal-500/25 shrink-0">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-400 to-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/25 shrink-0">
               <svg viewBox="0 0 20 20" fill="none" className="w-[14px] h-[14px]">
                 <path d="M6 10V7a4 4 0 0 1 8 0v3" stroke="white" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
                 <rect x="3.5" y="10" width="13" height="9" rx="2.5" fill="white" fillOpacity="0.95" />
-                <circle cx="10" cy="14.5" r="1.4" fill="#0d9488" />
+                <circle cx="10" cy="14.5" r="1.4" fill="#4a7fcb" />
               </svg>
             </div>
             <span className="text-[15px] font-bold tracking-tight text-white">Declawed</span>
@@ -517,6 +518,7 @@ export default function App() {
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/analyze" element={<Analyze />} />
             <Route path="/tenant-rights" element={<TenantRights />} />
+            <Route path="/how-it-works" element={<HowItWorksPage />} />
           </Routes>
         </AuthProvider>
       </BrowserRouter>

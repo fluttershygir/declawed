@@ -16,10 +16,10 @@ const TIERS = [
     note: 'Perfect for tenants & small landlords',
     perks: ['10 analyses per month', 'All red flags & key dates', 'Image scanning', 'Advanced Declawed AI', 'PDF report & email export', '7-day money-back guarantee'],
     icon: Zap,
-    iconColor: 'text-teal-300',
-    borderClass: 'border-teal-400/50',
-    bgClass: 'bg-teal-500/[0.08]',
-    ctaClass: 'bg-teal-500 text-black font-semibold hover:bg-teal-400 shadow-lg shadow-teal-500/20',
+    iconColor: 'text-blue-300',
+    borderClass: 'border-blue-400/50',
+    bgClass: 'bg-blue-500/[0.08]',
+    ctaClass: 'bg-blue-500 text-black font-semibold hover:bg-blue-400 shadow-lg shadow-blue-500/20',
     popular: true,
   },
   {
@@ -80,7 +80,7 @@ export default function PaywallModal({ open, onClose }) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto"
         >
           <motion.div
             initial={{ scale: 0.96, opacity: 0, y: 12 }}
@@ -88,7 +88,7 @@ export default function PaywallModal({ open, onClose }) {
             exit={{ scale: 0.96, opacity: 0, y: 8 }}
             transition={{ duration: 0.2 }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-2xl rounded-2xl bg-zinc-950 border border-white/[0.09] shadow-2xl p-6 relative"
+            className="w-full max-w-2xl rounded-2xl bg-zinc-950 border border-white/[0.09] shadow-2xl p-6 relative my-auto"
           >
             <button
               onClick={onClose}
@@ -98,7 +98,7 @@ export default function PaywallModal({ open, onClose }) {
             </button>
 
             <div className="mb-6">
-              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-teal-400 mb-2">Upgrade</p>
+              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-blue-400 mb-2">Upgrade</p>
               <h3 className="text-xl font-bold text-white">Choose a plan</h3>
               <p className="mt-1.5 text-sm text-zinc-400">
                 Secure payment via Stripe. No hidden fees, cancel anytime.
@@ -114,7 +114,7 @@ export default function PaywallModal({ open, onClose }) {
                   {/* Most Popular badge row — reserves same height on all cards for alignment */}
                   <div className="h-6 flex items-center justify-center mb-2.5">
                     {popular && (
-                      <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-[0.14em] bg-teal-500 text-black px-2.5 py-1 rounded-full shadow-md shadow-teal-500/30">
+                      <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-[0.14em] bg-blue-500 text-black px-2.5 py-1 rounded-full shadow-md shadow-blue-500/30">
                         <Zap className="w-2.5 h-2.5" />
                         Most Popular
                       </span>
@@ -135,7 +135,7 @@ export default function PaywallModal({ open, onClose }) {
                   <ul className="space-y-1.5 mb-4 flex-1">
                     {perks.map(p => (
                       <li key={p} className="flex items-start gap-1.5 text-[11px] text-zinc-400">
-                        <CheckCircle className="w-3 h-3 text-teal-500 mt-0.5 shrink-0" />
+                        <CheckCircle className="w-3 h-3 text-blue-500 mt-0.5 shrink-0" />
                         {p}
                       </li>
                     ))}

@@ -233,13 +233,13 @@ export default function AnalysisModal({ analysis, onClose, onNoteUpdate, onReana
             {/* Key Dates grid */}
             {data.keyDates?.length > 0 && (
               <section>
-                <h3 className="flex items-center gap-1.5 text-cyan-400 font-semibold mb-3">
+                <h3 className="flex items-center gap-1.5 text-blue-400 font-semibold mb-3">
                   <Calendar className="w-4 h-4" /> Key Dates
                 </h3>
                 <div className="grid grid-cols-2 gap-2">
                   {data.keyDates.map((item, i) => (
-                    <div key={i} className="rounded-lg bg-cyan-500/[0.06] border border-cyan-500/20 px-3 py-2.5">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-cyan-500/80 mb-0.5">{item.label}</p>
+                    <div key={i} className="rounded-lg bg-blue-500/[0.06] border border-blue-500/20 px-3 py-2.5">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-blue-500/80 mb-0.5">{item.label}</p>
                       <p className="text-xs text-slate-300 leading-snug">{item.value}</p>
                     </div>
                   ))}
@@ -281,15 +281,15 @@ export default function AnalysisModal({ analysis, onClose, onNoteUpdate, onReana
 
             {/* What to do before signing */}
             {data.actionSteps?.length > 0 && (
-              <section className="rounded-xl border border-teal-500/25 bg-teal-500/[0.05] overflow-hidden">
-                <div className="flex items-center gap-2 px-4 py-2.5 border-b border-teal-500/15 bg-teal-500/[0.04]">
-                  <ListChecks className="w-4 h-4 text-teal-400 shrink-0" />
-                  <h3 className="text-teal-300 font-semibold text-sm">What to do before signing</h3>
+              <section className="rounded-xl border border-blue-500/25 bg-blue-500/[0.05] overflow-hidden">
+                <div className="flex items-center gap-2 px-4 py-2.5 border-b border-blue-500/15 bg-blue-500/[0.04]">
+                  <ListChecks className="w-4 h-4 text-blue-400 shrink-0" />
+                  <h3 className="text-blue-300 font-semibold text-sm">What to do before signing</h3>
                 </div>
-                <ul className="divide-y divide-teal-500/[0.08]">
+                <ul className="divide-y divide-blue-500/[0.08]">
                   {data.actionSteps.map((step, i) => (
                     <li key={i} className="flex items-start gap-3 px-4 py-2.5">
-                      <span className="w-4 h-4 rounded border border-teal-500/40 bg-teal-500/10 text-teal-400 text-[8px] font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
+                      <span className="w-4 h-4 rounded border border-blue-500/40 bg-blue-500/10 text-blue-400 text-[8px] font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
                       <span className="text-slate-300 leading-relaxed text-sm">{step}</span>
                     </li>
                   ))}
@@ -307,7 +307,7 @@ export default function AnalysisModal({ analysis, onClose, onNoteUpdate, onReana
                   <Pencil className="w-2.5 h-2.5" /> Note
                 </span>
                 {!editingNote && note && (
-                  <button onClick={() => setEditingNote(true)} className="text-[10px] text-teal-500 hover:text-teal-400 transition">Edit</button>
+                  <button onClick={() => setEditingNote(true)} className="text-[10px] text-blue-500 hover:text-blue-400 transition">Edit</button>
                 )}
               </div>
               {editingNote ? (
@@ -317,7 +317,7 @@ export default function AnalysisModal({ analysis, onClose, onNoteUpdate, onReana
                     onChange={(e) => setNote(e.target.value.slice(0, 500))}
                     placeholder="Add a personal note about this lease…"
                     rows={3}
-                    className="w-full rounded-lg bg-white/[0.05] border border-white/[0.08] text-sm text-slate-300 placeholder-zinc-600 px-3 py-2 resize-none focus:outline-none focus:border-teal-500/50 transition"
+                    className="w-full rounded-lg bg-white/[0.05] border border-white/[0.08] text-sm text-slate-300 placeholder-zinc-600 px-3 py-2 resize-none focus:outline-none focus:border-blue-500/50 transition"
                     autoFocus
                   />
                   <div className="flex items-center justify-between mt-1.5">
@@ -330,7 +330,7 @@ export default function AnalysisModal({ analysis, onClose, onNoteUpdate, onReana
                       <button
                         onClick={handleSaveNote}
                         disabled={noteSaving}
-                        className="text-[11px] font-semibold px-3 py-1 rounded-lg bg-teal-500/15 text-teal-400 hover:bg-teal-500/25 disabled:opacity-50 transition"
+                        className="text-[11px] font-semibold px-3 py-1 rounded-lg bg-blue-500/15 text-blue-400 hover:bg-blue-500/25 disabled:opacity-50 transition"
                       >{noteSaving ? 'Saving…' : 'Save note'}</button>
                     </div>
                   </div>
@@ -338,7 +338,7 @@ export default function AnalysisModal({ analysis, onClose, onNoteUpdate, onReana
               ) : (
                 <button
                   onClick={() => setEditingNote(true)}
-                  className="w-full text-left px-3 py-2.5 rounded-lg bg-white/[0.03] border border-dashed border-white/[0.08] text-sm hover:border-teal-500/30 transition"
+                  className="w-full text-left px-3 py-2.5 rounded-lg bg-white/[0.03] border border-dashed border-white/[0.08] text-sm hover:border-blue-500/30 transition"
                 >
                   {note
                     ? <span className="text-slate-300 leading-relaxed">{note}</span>
@@ -354,7 +354,7 @@ export default function AnalysisModal({ analysis, onClose, onNoteUpdate, onReana
                 disabled={shareLoading}
                 className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-white/[0.05] hover:bg-white/[0.09] border border-white/[0.07] text-xs font-semibold text-zinc-400 hover:text-white transition disabled:opacity-50"
               >
-                {shareLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : shareCopied ? <Check className="w-3 h-3 text-teal-400" /> : <Share2 className="w-3 h-3" />}
+                {shareLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : shareCopied ? <Check className="w-3 h-3 text-blue-400" /> : <Share2 className="w-3 h-3" />}
                 {shareCopied ? 'Link copied!' : 'Share report'}
               </button>
               <button

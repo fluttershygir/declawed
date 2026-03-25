@@ -132,7 +132,7 @@ export default function UploadPanel({ onUpload, loading, usage, onUpgrade, landl
       className="relative rounded-2xl bg-slate-900/60 border border-slate-800/80 shadow-[0_0_50px_rgba(34,211,238,0.08)] backdrop-blur-sm p-6 flex flex-col"
     >
       <div className="flex items-center gap-2 mb-2">
-        <Upload className="w-5 h-5 text-cyan-400" />
+        <Upload className="w-5 h-5 text-blue-400" />
         <h2 className="text-lg font-semibold text-slate-100">Upload your lease</h2>
       </div>
       <p className="text-sm text-slate-400 mb-4">
@@ -209,7 +209,7 @@ export default function UploadPanel({ onUpload, loading, usage, onUpgrade, landl
         onClick={() => canUpload && !loading && inputRef.current?.click()}
         className={`
           flex flex-col items-center justify-center rounded-xl border-2 border-dashed py-10 px-6 cursor-pointer transition-all
-          ${dragActive ? 'border-cyan-500 bg-cyan-500/10' : 'border-slate-700 hover:border-slate-600'}
+          ${dragActive ? 'border-blue-500 bg-blue-500/10' : 'border-slate-700 hover:border-slate-600'}
           ${!canUpload || loading ? 'opacity-60 cursor-not-allowed' : ''}
         `}
       >
@@ -221,9 +221,9 @@ export default function UploadPanel({ onUpload, loading, usage, onUpgrade, landl
           onChange={(e) => handleFile(e.target.files?.[0])}
         />
         {loading ? (
-          <Loader2 className="w-12 h-12 text-cyan-400 animate-spin mb-3" />
+          <Loader2 className="w-12 h-12 text-blue-400 animate-spin mb-3" />
         ) : isImage ? (
-          <ImageIcon className="w-12 h-12 text-cyan-400 mb-3" />
+          <ImageIcon className="w-12 h-12 text-blue-400 mb-3" />
         ) : (
           <FileText className="w-12 h-12 text-slate-500 mb-3" />
         )}

@@ -4,11 +4,11 @@ import { X, Mail, Lock, User, Loader2, AlertCircle, Eye, EyeOff, CheckCircle2 } 
 import { supabase } from '../lib/supabase';
 
 const LogoMark = () => (
-  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-teal-500/30 shrink-0">
+  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-400 to-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/30 shrink-0">
     <svg viewBox="0 0 20 20" fill="none" className="w-[17px] h-[17px]">
       <path d="M6 10V7a4 4 0 0 1 8 0v3" stroke="white" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
       <rect x="3.5" y="10" width="13" height="9" rx="2.5" fill="white" fillOpacity="0.95" />
-      <circle cx="10" cy="14.5" r="1.4" fill="#0d9488" />
+      <circle cx="10" cy="14.5" r="1.4" fill="#4a7fcb" />
     </svg>
   </div>
 );
@@ -143,7 +143,7 @@ export default function AuthModal({ open, onClose, defaultTab = 'signin' }) {
             className="w-full max-w-sm rounded-2xl bg-zinc-950 border border-white/[0.09] shadow-2xl shadow-black/60 relative overflow-hidden"
           >
             {/* Top accent line */}
-            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-teal-500/60 to-transparent" />
+            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-blue-500/60 to-transparent" />
 
             <button onClick={onClose} className="absolute right-4 top-4 text-zinc-600 hover:text-white transition z-10 p-1 rounded-md hover:bg-white/[0.06]">
               <X className="w-4 h-4" />
@@ -182,7 +182,7 @@ export default function AuthModal({ open, onClose, defaultTab = 'signin' }) {
                 {/* Full Name — signup only */}
                 {tab === 'signup' && (
                   <div className="relative group">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500 group-focus-within:text-teal-400 transition" />
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500 group-focus-within:text-blue-400 transition" />
                     <input
                       type="text"
                       required
@@ -190,14 +190,14 @@ export default function AuthModal({ open, onClose, defaultTab = 'signin' }) {
                       placeholder="Full Name"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-teal-500/60 focus:bg-white/[0.06] transition"
+                      className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-blue-500/60 focus:bg-white/[0.06] transition"
                     />
                   </div>
                 )}
 
                 {/* Email */}
                 <div className="relative group">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500 group-focus-within:text-teal-400 transition" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500 group-focus-within:text-blue-400 transition" />
                   <input
                     type="email"
                     required
@@ -205,7 +205,7 @@ export default function AuthModal({ open, onClose, defaultTab = 'signin' }) {
                     placeholder="Email address"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-teal-500/60 focus:bg-white/[0.06] transition"
+                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-blue-500/60 focus:bg-white/[0.06] transition"
                   />
                 </div>
 
@@ -213,7 +213,7 @@ export default function AuthModal({ open, onClose, defaultTab = 'signin' }) {
                 {tab !== 'forgot' && (
                   <div>
                     <div className="relative group">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500 group-focus-within:text-teal-400 transition" />
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500 group-focus-within:text-blue-400 transition" />
                       <input
                         type={showPass ? 'text' : 'password'}
                         required
@@ -222,7 +222,7 @@ export default function AuthModal({ open, onClose, defaultTab = 'signin' }) {
                         placeholder="Password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl pl-9 pr-10 py-2.5 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-teal-500/60 focus:bg-white/[0.06] transition"
+                        className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl pl-9 pr-10 py-2.5 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-blue-500/60 focus:bg-white/[0.06] transition"
                       />
                       <button
                         type="button"
@@ -234,7 +234,7 @@ export default function AuthModal({ open, onClose, defaultTab = 'signin' }) {
                     </div>
                     {tab === 'signup' && (
                       <p className="mt-1.5 ml-1 text-[11px] text-zinc-600 flex items-center gap-1">
-                        <span className={`w-1.5 h-1.5 rounded-full transition-colors ${password.length >= 8 ? 'bg-teal-400' : 'bg-zinc-700'}`} />
+                        <span className={`w-1.5 h-1.5 rounded-full transition-colors ${password.length >= 8 ? 'bg-blue-400' : 'bg-zinc-700'}`} />
                         At least 8 characters
                       </p>
                     )}
@@ -258,7 +258,7 @@ export default function AuthModal({ open, onClose, defaultTab = 'signin' }) {
                   <motion.div
                     initial={{ opacity: 0, y: -4 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="flex items-start gap-2.5 p-3 rounded-xl bg-teal-500/[0.08] border border-teal-500/20 text-teal-400 text-xs leading-relaxed"
+                    className="flex items-start gap-2.5 p-3 rounded-xl bg-blue-500/[0.08] border border-blue-500/20 text-blue-400 text-xs leading-relaxed"
                   >
                     <CheckCircle2 className="w-3.5 h-3.5 mt-0.5 shrink-0" />
                     {success}
@@ -269,7 +269,7 @@ export default function AuthModal({ open, onClose, defaultTab = 'signin' }) {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-2.5 rounded-xl bg-teal-500 text-black text-sm font-bold hover:bg-teal-400 active:scale-[0.98] transition-all disabled:opacity-60 flex items-center justify-center gap-2 shadow-lg shadow-teal-500/20 mt-1"
+                  className="w-full py-2.5 rounded-xl bg-blue-500 text-black text-sm font-bold hover:bg-blue-400 active:scale-[0.98] transition-all disabled:opacity-60 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 mt-1"
                 >
                   {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                   {tab === 'signin' ? 'Sign in' : tab === 'signup' ? 'Create account' : 'Send reset email'}

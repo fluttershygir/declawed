@@ -48,8 +48,8 @@ export default function Contact() {
         </p>
 
         {success ? (
-          <div className="rounded-2xl border border-teal-500/30 bg-teal-500/[0.07] p-8 text-center">
-            <CheckCircle className="w-10 h-10 text-teal-400 mx-auto mb-4" />
+          <div className="rounded-2xl border border-blue-500/30 bg-blue-500/[0.07] p-8 text-center">
+            <CheckCircle className="w-10 h-10 text-blue-400 mx-auto mb-4" />
             <p className="text-white font-semibold mb-1">Message sent</p>
             <p className="text-sm text-zinc-400">We'll get back to you within 1–2 business days.</p>
           </div>
@@ -66,7 +66,7 @@ export default function Contact() {
                 onChange={(e) => setName(e.target.value)}
                 maxLength={200}
                 placeholder="Your name"
-                className="w-full rounded-xl bg-white/[0.04] border border-white/[0.08] px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-teal-500/50 transition"
+                className="w-full rounded-xl bg-white/[0.04] border border-white/[0.08] px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-blue-500/50 transition"
               />
             </div>
 
@@ -81,7 +81,7 @@ export default function Contact() {
                 onChange={(e) => setEmail(e.target.value)}
                 maxLength={254}
                 placeholder="you@example.com"
-                className="w-full rounded-xl bg-white/[0.04] border border-white/[0.08] px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-teal-500/50 transition"
+                className="w-full rounded-xl bg-white/[0.04] border border-white/[0.08] px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-blue-500/50 transition"
               />
             </div>
 
@@ -96,7 +96,7 @@ export default function Contact() {
                 maxLength={5000}
                 rows={6}
                 placeholder="Describe your issue or question…"
-                className="w-full rounded-xl bg-white/[0.04] border border-white/[0.08] px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-teal-500/50 transition resize-none"
+                className="w-full rounded-xl bg-white/[0.04] border border-white/[0.08] px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-blue-500/50 transition resize-none"
               />
             </div>
 
@@ -107,7 +107,7 @@ export default function Contact() {
             <button
               type="submit"
               disabled={loading}
-              className="flex items-center justify-center gap-2 w-full rounded-xl py-3 bg-teal-500 hover:bg-teal-400 active:scale-[0.98] transition-all text-black font-semibold text-sm shadow-lg shadow-teal-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center justify-center gap-2 w-full rounded-xl py-3 bg-blue-500 hover:bg-blue-400 active:scale-[0.98] transition-all text-black font-semibold text-sm shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Send className="w-4 h-4" />
               {loading ? 'Sending…' : 'Send message'}

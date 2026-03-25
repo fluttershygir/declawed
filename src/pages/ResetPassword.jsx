@@ -4,11 +4,11 @@ import { Lock, Check, AlertTriangle, Loader2, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 const LogoMark = () => (
-  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-teal-500/25">
+  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-400 to-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/25">
     <svg viewBox="0 0 20 20" fill="none" className="w-[15px] h-[15px]">
       <path d="M6 10V7a4 4 0 0 1 8 0v3" stroke="white" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
       <rect x="3.5" y="10" width="13" height="9" rx="2.5" fill="white" fillOpacity="0.95" />
-      <circle cx="10" cy="14.5" r="1.4" fill="#0d9488" />
+      <circle cx="10" cy="14.5" r="1.4" fill="#4a7fcb" />
     </svg>
   </div>
 );
@@ -112,7 +112,7 @@ export default function ResetPassword() {
         {/* Loading (waiting for Supabase to confirm token) */}
         {!invalid && !ready && !done && (
           <div className="text-center space-y-4">
-            <Loader2 className="w-7 h-7 animate-spin text-teal-400 mx-auto" />
+            <Loader2 className="w-7 h-7 animate-spin text-blue-400 mx-auto" />
             <p className="text-zinc-400 text-sm">Verifying your reset link…</p>
           </div>
         )}
@@ -137,8 +137,8 @@ export default function ResetPassword() {
         {ready && !done && (
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="text-center mb-6">
-              <div className="w-12 h-12 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center mx-auto mb-3">
-                <Lock className="w-5 h-5 text-teal-400" />
+              <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mx-auto mb-3">
+                <Lock className="w-5 h-5 text-blue-400" />
               </div>
               <h1 className="text-xl font-bold text-white">Set a new password</h1>
               <p className="text-zinc-500 text-sm mt-1">Choose a strong password of at least 8 characters.</p>
@@ -158,7 +158,7 @@ export default function ResetPassword() {
                   minLength={8}
                   autoFocus
                   placeholder="At least 8 characters"
-                  className="w-full rounded-xl bg-white/[0.04] border border-white/[0.08] px-4 py-3 pr-10 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-teal-500/50 transition"
+                  className="w-full rounded-xl bg-white/[0.04] border border-white/[0.08] px-4 py-3 pr-10 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-blue-500/50 transition"
                 />
                 <button
                   type="button"
@@ -183,7 +183,7 @@ export default function ResetPassword() {
                   onChange={(e) => setConfirm(e.target.value)}
                   required
                   placeholder="Repeat new password"
-                  className="w-full rounded-xl bg-white/[0.04] border border-white/[0.08] px-4 py-3 pr-10 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-teal-500/50 transition"
+                  className="w-full rounded-xl bg-white/[0.04] border border-white/[0.08] px-4 py-3 pr-10 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-blue-500/50 transition"
                 />
                 <button
                   type="button"
@@ -217,7 +217,7 @@ export default function ResetPassword() {
             <button
               type="submit"
               disabled={saving}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-teal-500 text-black font-bold text-sm hover:bg-teal-400 active:scale-[0.98] transition-all disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-blue-500 text-black font-bold text-sm hover:bg-blue-400 active:scale-[0.98] transition-all disabled:opacity-50"
             >
               {saving
                 ? <><Loader2 className="w-4 h-4 animate-spin" /> Updating…</>
@@ -230,7 +230,7 @@ export default function ResetPassword() {
 
       <p className="mt-6 text-xs text-zinc-600">
         Need help?{' '}
-        <a href="/contact" className="text-teal-500 hover:text-teal-400 transition">Contact support</a>
+        <a href="/contact" className="text-blue-500 hover:text-blue-400 transition">Contact support</a>
       </p>
     </div>
   );

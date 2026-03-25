@@ -37,7 +37,7 @@ export default function FAQ() {
           viewport={{ once: true }}
           className="text-center mb-14"
         >
-          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-teal-400 mb-4">FAQ</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-blue-400 mb-4">FAQ</p>
           <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight">Common questions</h2>
         </motion.div>
 

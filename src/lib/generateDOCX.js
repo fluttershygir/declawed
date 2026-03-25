@@ -70,7 +70,7 @@ export function generateDOCX({ data, filename, analysisDate }) {
     : '';
 
   const stepsHtml = data.actionSteps?.length
-    ? `<h2 class="section-teal">✔ What to Do Before Signing</h2>
+    ? `<h2 class="section-blue">✔ What to Do Before Signing</h2>
        <ol>${data.actionSteps.map((s) => `<li>${esc(s)}</li>`).join('\n')}</ol>`
     : '';
 
@@ -84,15 +84,15 @@ export function generateDOCX({ data, filename, analysisDate }) {
   <title>Lease Analysis — ${esc(baseFilename)}</title>
   <style>
     body          { font-family: Calibri, Arial, sans-serif; font-size: 11pt; color: #222; margin: 2cm; }
-    h1            { font-size: 20pt; color: #0d9488; border-bottom: 2pt solid #0d9488; padding-bottom: 6pt; margin-top: 0; }
+    h1            { font-size: 20pt; color: #4a7fcb; border-bottom: 2pt solid #4a7fcb; padding-bottom: 6pt; margin-top: 0; }
     h2            { font-size: 13pt; margin-top: 20pt; margin-bottom: 8pt; }
     p, li         { line-height: 1.6; margin-bottom: 5pt; }
     ul, ol        { padding-left: 1.3cm; }
 
     .meta         { font-size: 9pt; color: #888; margin-bottom: 14pt; }
 
-    .score-box    { border: 2pt solid #0d9488; border-radius: 4pt; padding: 10pt 14pt; background: #f0fdf4; margin: 12pt 0 16pt; }
-    .score        { font-size: 30pt; font-weight: bold; color: #0d9488; }
+    .score-box    { border: 2pt solid #4a7fcb; border-radius: 4pt; padding: 10pt 14pt; background: #f0fdf4; margin: 12pt 0 16pt; }
+    .score        { font-size: 30pt; font-weight: bold; color: #4a7fcb; }
     .score-label  { font-size: 12pt; color: #555; margin-left: 10pt; }
     .verdict      { font-size: 11pt; color: #333; margin-top: 8pt; }
     .verdict-plain{ font-style: italic; color: #444; margin-bottom: 12pt; }
@@ -101,7 +101,7 @@ export function generateDOCX({ data, filename, analysisDate }) {
     .section-blue { color: #2980b9; }
     .section-green{ color: #27ae60; }
     .section-amber{ color: #e67e22; }
-    .section-teal { color: #0d9488; }
+    .section-blue { color: #4a7fcb; }
 
     table         { border-collapse: collapse; margin-bottom: 10pt; }
     .cell-label   { font-weight: bold; color: #2980b9; width: 170px; padding: 4pt 12pt 4pt 0; vertical-align: top; }

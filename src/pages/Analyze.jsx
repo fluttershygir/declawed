@@ -10,11 +10,11 @@ import { callSummarize } from '../lib/callSummarize';
 import UserDropdown from '../components/UserDropdown';
 
 const LogoMark = () => (
-  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shadow-sm shrink-0">
+  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-sm shrink-0">
     <svg viewBox="0 0 20 20" fill="none" className="w-[14px] h-[14px]">
       <path d="M6 10V7a4 4 0 0 1 8 0v3" stroke="white" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
       <rect x="3.5" y="10" width="13" height="9" rx="2.5" fill="white" fillOpacity="0.95" />
-      <circle cx="10" cy="14.5" r="1.4" fill="#0d9488" />
+      <circle cx="10" cy="14.5" r="1.4" fill="#4a7fcb" />
     </svg>
   </div>
 );
@@ -149,7 +149,7 @@ export default function AnalyzePage() {
                   onClick={() => { setMobileTab('results'); setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50); }}
                   className={`flex-1 py-2 rounded-lg text-xs font-semibold transition ${mobileTab === 'results' ? 'bg-white/[0.09] text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
                 >
-                  Results {loading && <span className="ml-1 inline-block w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" />}
+                  Results {loading && <span className="ml-1 inline-block w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />}
                 </button>
               </div>
 

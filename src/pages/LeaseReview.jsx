@@ -22,7 +22,7 @@ export default function LeaseReview() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 rounded-full border border-teal-500/25 bg-teal-500/[0.08] px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-teal-300 mb-6"
+            className="inline-flex items-center gap-2 rounded-full border border-blue-500/25 bg-blue-500/[0.08] px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-blue-300 mb-6"
           >
             <FileText className="w-3.5 h-3.5" />
             Free Lease Review
@@ -34,7 +34,7 @@ export default function LeaseReview() {
             className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight text-white mb-6"
           >
             Free Lease Review:<br />
-            <span className="bg-gradient-to-r from-teal-300 to-cyan-300 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-blue-300 to-blue-300 bg-clip-text text-transparent">
               Know What You&rsquo;re Signing
             </span>
           </motion.h1>
@@ -53,7 +53,7 @@ export default function LeaseReview() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
             href="/#upload"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-teal-500 text-sm font-semibold text-black hover:bg-teal-400 transition-all shadow-lg shadow-teal-500/25 active:scale-95"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-500 text-sm font-semibold text-black hover:bg-blue-400 transition-all shadow-lg shadow-blue-500/25 active:scale-95"
           >
             Review my lease free
             <ArrowRight className="w-4 h-4" />
@@ -78,7 +78,7 @@ export default function LeaseReview() {
             ].map(({ title, desc }) => (
               <div key={title} className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-4">
                 <div className="flex items-start gap-2.5">
-                  <CheckCircle className="w-4 h-4 text-teal-400 shrink-0 mt-0.5" />
+                  <CheckCircle className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
                   <div>
                     <p className="text-sm font-semibold text-white mb-1">{title}</p>
                     <p className="text-[13px] text-zinc-400 leading-relaxed">{desc}</p>
@@ -122,7 +122,7 @@ export default function LeaseReview() {
           </p>
           <a
             href="/#upload"
-            className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-teal-500 text-sm font-semibold text-black hover:bg-teal-400 transition-all shadow-lg shadow-teal-500/25 active:scale-95"
+            className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-blue-500 text-sm font-semibold text-black hover:bg-blue-400 transition-all shadow-lg shadow-blue-500/25 active:scale-95"
           >
             Start your free lease review
             <ArrowRight className="w-4 h-4" />

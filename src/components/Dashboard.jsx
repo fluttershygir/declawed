@@ -7,8 +7,8 @@ import AppShell from './AppShell';
 
 const PLAN_LABELS = {
   free:      { label: 'Free',      color: 'text-zinc-400',    border: 'border-zinc-700/60',    progress: 'bg-blue-600',    badge: 'FREE PLAN'  },
-  one:       { label: 'One Lease', color: 'text-cyan-400',    border: 'border-cyan-700/60',    progress: 'bg-cyan-500',    badge: 'ONE LEASE'  },
-  pro:       { label: 'Pro',       color: 'text-teal-400',    border: 'border-teal-600/60',    progress: 'bg-teal-500',    badge: 'PRO PLAN'   },
+  one:       { label: 'One Lease', color: 'text-blue-400',    border: 'border-blue-700/60',    progress: 'bg-blue-500',    badge: 'ONE LEASE'  },
+  pro:       { label: 'Pro',       color: 'text-blue-400',    border: 'border-blue-600/60',    progress: 'bg-blue-500',    badge: 'PRO PLAN'   },
   unlimited: { label: 'Unlimited', color: 'text-emerald-400', border: 'border-emerald-700/60', progress: 'bg-emerald-500', badge: 'UNLIMITED'  },
 };
 
@@ -373,7 +373,7 @@ export default function Dashboard({ onClose, onUpgrade }) {
                   <rect x="15" y="23" width="26" height="2.5" rx="1.25" fill="#334155"/>
                   <rect x="15" y="30" width="22" height="2.5" rx="1.25" fill="#334155"/>
                   <rect x="15" y="37" width="14" height="2.5" rx="1.25" fill="#334155"/>
-                  <circle cx="47" cy="47" r="13" fill="#0d1117" stroke="#0d9488" strokeWidth="1.5"/>
+                  <circle cx="47" cy="47" r="13" fill="#0d1117" stroke="#4a7fcb" strokeWidth="1.5"/>
                   <path d="M43 47l3 3 6-6" stroke="#14b8a6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
@@ -457,7 +457,7 @@ export default function Dashboard({ onClose, onUpgrade }) {
                         <button
                           onClick={(e) => { e.stopPropagation(); setSelectedAnalysis(a); }}
                           title="Add / edit note"
-                          className={`p-1 rounded transition ${a.note ? 'text-teal-500 hover:text-teal-400' : 'text-zinc-700 hover:text-zinc-400'}`}
+                          className={`p-1 rounded transition ${a.note ? 'text-blue-500 hover:text-blue-400' : 'text-zinc-700 hover:text-zinc-400'}`}
                         >
                           <Pencil className="w-3 h-3" />
                         </button>

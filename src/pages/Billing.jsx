@@ -36,10 +36,10 @@ const PLAN_INFO = {
   // Legacy 'one' plan — keep for existing users
   one: {
     label: 'One Lease (Legacy)',
-    color: 'text-cyan-400',
-    barColor: 'bg-cyan-400',
-    border: 'border-cyan-700/60',
-    bg: 'bg-cyan-500/[0.04]',
+    color: 'text-blue-400',
+    barColor: 'bg-blue-400',
+    border: 'border-blue-700/60',
+    bg: 'bg-blue-500/[0.04]',
     features: [
       '1 full analysis',
       'Advanced Declawed AI',
@@ -51,10 +51,10 @@ const PLAN_INFO = {
   },
   pro: {
     label: 'Pro',
-    color: 'text-teal-400',
-    barColor: 'bg-teal-400',
-    border: 'border-teal-600/60',
-    bg: 'bg-teal-500/[0.04]',
+    color: 'text-blue-400',
+    barColor: 'bg-blue-400',
+    border: 'border-blue-600/60',
+    bg: 'bg-blue-500/[0.04]',
     features: [
       '10 analyses / month',
       'Advanced Declawed AI',
@@ -264,7 +264,7 @@ export default function Billing() {
             className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6 mb-5"
           >
             <div className="flex items-center gap-2 mb-2">
-              <ShieldCheck className="w-4 h-4 text-teal-400" />
+              <ShieldCheck className="w-4 h-4 text-blue-400" />
               <p className="text-sm font-semibold text-white">7-day money-back guarantee</p>
             </div>
             <p className="text-sm text-zinc-500 leading-relaxed mb-4">
@@ -321,12 +321,12 @@ export default function Billing() {
             className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6 mb-5"
           >
             <div className="flex items-center gap-2 mb-2">
-              <Gift className="w-4 h-4 text-cyan-400" />
+              <Gift className="w-4 h-4 text-blue-400" />
               <p className="text-sm font-semibold text-white">Legacy one-time purchase</p>
             </div>
             <p className="text-sm text-zinc-500 leading-relaxed">
               Your One Lease plan was a one-time payment. When you're ready for more analyses,{' '}
-              <a href="/#pricing" className="text-teal-400 hover:text-teal-300 underline underline-offset-2 transition">
+              <a href="/#pricing" className="text-blue-400 hover:text-blue-300 underline underline-offset-2 transition">
                 upgrade to Pro or Unlimited
               </a>
               .

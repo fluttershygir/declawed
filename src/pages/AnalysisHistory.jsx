@@ -82,7 +82,7 @@ function ComparePanel({ a, b, onClose }) {
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06] bg-white/[0.02]">
         <div className="flex items-center gap-2">
-          <Columns2 className="w-3.5 h-3.5 text-teal-400" />
+          <Columns2 className="w-3.5 h-3.5 text-blue-400" />
           <span className="text-xs font-semibold text-white">Comparison</span>
         </div>
         <button onClick={onClose} className="text-zinc-600 hover:text-white transition p-1 rounded">
@@ -285,7 +285,7 @@ export default function AnalysisHistory() {
               compareMode ? (
                 <button
                   onClick={exitCompare}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-teal-500/15 border border-teal-500/30 text-teal-400 hover:bg-teal-500/25 transition"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-500/15 border border-blue-500/30 text-blue-400 hover:bg-blue-500/25 transition"
                 >
                   <X className="w-3 h-3" /> Exit compare
                 </button>
@@ -361,7 +361,7 @@ export default function AnalysisHistory() {
                     <rect x="15" y="23" width="26" height="2.5" rx="1.25" fill="#334155"/>
                     <rect x="15" y="30" width="22" height="2.5" rx="1.25" fill="#334155"/>
                     <rect x="15" y="37" width="14" height="2.5" rx="1.25" fill="#334155"/>
-                    <circle cx="47" cy="47" r="13" fill="#0d1117" stroke="#0d9488" strokeWidth="1.5"/>
+                    <circle cx="47" cy="47" r="13" fill="#0d1117" stroke="#4a7fcb" strokeWidth="1.5"/>
                     <path d="M43 47l3 3 6-6" stroke="#14b8a6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </div>
@@ -403,12 +403,12 @@ export default function AnalysisHistory() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: Math.min(i * 0.03, 0.3) }}
                       onClick={() => compareMode ? toggleCompareId(a.id) : setSelectedAnalysis(a)}
-                      className={`relative px-4 py-4 sm:px-6 flex items-start gap-3 cursor-pointer transition-all group border-l-2 ${compareMode && compareIds.includes(a.id) ? 'border-teal-500/60 bg-teal-500/[0.04]' : 'border-transparent hover:border-blue-500/40 hover:bg-white/[0.03]'} active:bg-white/[0.04]`}
+                      className={`relative px-4 py-4 sm:px-6 flex items-start gap-3 cursor-pointer transition-all group border-l-2 ${compareMode && compareIds.includes(a.id) ? 'border-blue-500/60 bg-blue-500/[0.04]' : 'border-transparent hover:border-blue-500/40 hover:bg-white/[0.03]'} active:bg-white/[0.04]`}
                     >
                       {compareMode && (
                         <div className="shrink-0 mt-1 text-zinc-600">
                           {compareIds.includes(a.id)
-                            ? <CheckSquare className="w-4 h-4 text-teal-400" />
+                            ? <CheckSquare className="w-4 h-4 text-blue-400" />
                             : <Square className="w-4 h-4" />}
                         </div>
                       )}
@@ -449,7 +449,7 @@ export default function AnalysisHistory() {
                           <button
                             onClick={(e) => { e.stopPropagation(); setSelectedAnalysis(a); }}
                             title="Add / edit note"
-                            className={`p-1 rounded transition ${a.note ? 'text-teal-500 hover:text-teal-400' : 'text-zinc-700 hover:text-zinc-400'}`}
+                            className={`p-1 rounded transition ${a.note ? 'text-blue-500 hover:text-blue-400' : 'text-zinc-700 hover:text-zinc-400'}`}
                           >
                             <Pencil className="w-3 h-3" />
                           </button>

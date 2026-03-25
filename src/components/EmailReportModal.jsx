@@ -85,7 +85,7 @@ export default function EmailReportModal({ open, onClose, analysisData, filename
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
               <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-teal-500/25 shrink-0">
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-400 to-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/25 shrink-0">
                   <Mail className="w-3.5 h-3.5 text-white" />
                 </div>
                 <div>
@@ -115,7 +115,7 @@ export default function EmailReportModal({ open, onClose, analysisData, filename
                   </div>
                   <button
                     onClick={onClose}
-                    className="mt-1 px-5 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-white font-semibold text-sm transition-colors"
+                    className="mt-1 px-5 py-2 rounded-xl bg-blue-500 hover:bg-blue-400 text-white font-semibold text-sm transition-colors"
                   >
                     View upgrade options
                   </button>
@@ -155,7 +155,7 @@ export default function EmailReportModal({ open, onClose, analysisData, filename
                     onChange={(e) => { setEmail(e.target.value); setErrorMsg(''); setStatus('idle'); }}
                     onKeyDown={handleKeyDown}
                     placeholder="you@example.com"
-                    className="w-full rounded-xl bg-white/[0.04] border border-white/[0.1] text-slate-200 placeholder-zinc-600 text-sm px-3.5 py-2.5 outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/20 transition"
+                    className="w-full rounded-xl bg-white/[0.04] border border-white/[0.1] text-slate-200 placeholder-zinc-600 text-sm px-3.5 py-2.5 outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition"
                     disabled={status === 'sending'}
                   />
 
@@ -176,7 +176,7 @@ export default function EmailReportModal({ open, onClose, analysisData, filename
                     <button
                       onClick={handleSend}
                       disabled={status === 'sending'}
-                      className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold text-sm transition-colors"
+                      className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-blue-500 hover:bg-blue-400 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold text-sm transition-colors"
                     >
                       {status === 'sending' ? (
                         <>

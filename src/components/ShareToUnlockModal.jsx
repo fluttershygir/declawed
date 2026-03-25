@@ -159,7 +159,7 @@ export default function ShareToUnlockModal({ open, onClose, onUpgrade }) {
                       className={`relative flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
                         copied
                           ? 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-300'
-                          : 'bg-teal-600 hover:bg-teal-500 active:scale-95 text-white border border-teal-500'
+                          : 'bg-blue-600 hover:bg-blue-500 active:scale-95 text-white border border-blue-500'
                       }`}
                     >
                       <AnimatePresence mode="wait">
