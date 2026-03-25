@@ -15,7 +15,8 @@ let supabase;
 try {
   supabase = createClient(
     supabaseUrl || 'https://placeholder.supabase.co',
-    supabaseAnonKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder'
+    supabaseAnonKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder',
+    { auth: { flowType: 'pkce' } }
   );
 } catch (e) {
   console.error('[Declawed] Failed to initialise Supabase client:', e.message);

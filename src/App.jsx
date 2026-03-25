@@ -50,6 +50,7 @@ import LeaseReview from './pages/LeaseReview';
 import TenantRights from './pages/TenantRights';
 import Analyze from './pages/Analyze';
 import HowItWorksPage from './pages/HowItWorksPage';
+import AuthCallback from './pages/AuthCallback';
 import './index.css';
 
 const PAID_PLANS = new Set(['one', 'pro', 'unlimited']);
@@ -519,6 +520,7 @@ export default function App() {
             <Route path="/analyze" element={<Analyze />} />
             <Route path="/tenant-rights" element={<TenantRights />} />
             <Route path="/how-it-works" element={<HowItWorksPage />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
           </Routes>
         </AuthProvider>
       </BrowserRouter>

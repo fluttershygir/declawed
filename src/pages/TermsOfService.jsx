@@ -44,7 +44,7 @@ export default function TermsOfService() {
             </div>
             <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">Terms of Service</h1>
           </div>
-          <p className="text-[13px] text-zinc-600 mb-4">Last updated: March 11, 2026</p>
+          <p className="text-[13px] text-zinc-600 mb-4">Last updated: March 25, 2026</p>
           <p className="text-zinc-400 leading-relaxed max-w-xl">
             Please read these Terms carefully before using Declawed. By accessing or using our service, you agree to be bound by these Terms.
           </p>
@@ -78,10 +78,10 @@ export default function TermsOfService() {
 
           <Section number="2" title="Description of Service">
             <p>
-              Declawed is an AI-powered tool that analyzes residential lease and rental agreements to help tenants understand their rights, identify red flags, and navigate key terms. The Service uses third-party AI service providers to generate summaries and analysis.
+              Declawed is an AI-powered tool that analyzes residential lease and rental agreements to help tenants and landlords understand key terms, identify red flags, and navigate their rights. The Service uses Anthropic's Claude AI to generate structured analysis.
             </p>
             <p>
-              The Service is intended primarily for US and Canadian residential leases. Analysis accuracy may vary for other jurisdictions or document types.
+              The Service is intended primarily for US and Canadian residential leases, though it can process leases from other jurisdictions. Analysis accuracy may vary for non-standard document types or highly jurisdiction-specific language.
             </p>
           </Section>
 
@@ -118,7 +118,7 @@ export default function TermsOfService() {
 
           <Section number="6" title="Subscription and Payment">
             <p>
-              Declawed offers a free tier and paid subscription plans ("One Lease", "Pro", and "Unlimited"). Paid plans are billed via Stripe using the pricing displayed on the pricing page at time of purchase.
+              Declawed offers a free tier (1 analysis) and paid plans: One Lease ($3.99 one-time), Pro ($12/mo, 10 analyses), and Unlimited ($29/mo, unlimited analyses). Paid plans are billed via Stripe at the pricing displayed at time of purchase.
             </p>
             <p>
               Subscription plans are as described at the time of purchase. We reserve the right to change pricing with reasonable notice. Price changes will not affect already-purchased one-time plans.

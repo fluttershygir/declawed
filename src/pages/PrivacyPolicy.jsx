@@ -44,7 +44,7 @@ export default function PrivacyPolicy() {
             </div>
             <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">Privacy Policy</h1>
           </div>
-          <p className="text-[13px] text-zinc-600 mb-4">Last updated: March 11, 2026</p>
+          <p className="text-[13px] text-zinc-600 mb-4">Last updated: March 25, 2026</p>
           <p className="text-zinc-400 leading-relaxed max-w-xl">
             Declawed is committed to protecting your privacy. This policy explains what data we collect, how we use it, and your rights with respect to your information.
           </p>
@@ -61,11 +61,12 @@ export default function PrivacyPolicy() {
           </Section>
 
           <Section number="2" title="Information We Collect">
-            <p><span className="text-zinc-200 font-medium">Account information.</span> When you create an account, we collect your full name, email address, and a hashed password (managed by Supabase Auth). Your full name is used to personalise your dashboard experience and analysis reports. If you sign in with Google, we receive your email and name from Google's OAuth service.</p>
-            <p><span className="text-zinc-200 font-medium">Document text.</span> When you upload a lease, the document text is extracted and sent to our servers for AI analysis. For free-tier users, document text is not stored after analysis. For paid-tier users, the structured analysis result is stored; the original document text is optionally retained to enable re-analysis.</p>
-            <p><span className="text-zinc-200 font-medium">Usage data.</span> We track the number of analyses you have completed and your current subscription plan.</p>
+            <p><span className="text-zinc-200 font-medium">Account information.</span> When you create an account, we collect your full name, email address, and a hashed password (managed by Supabase Auth). Your full name personalises your dashboard and PDF reports. If you sign in with Google, we receive your email and display name via Google's OAuth service — the callback is handled on declawed.app, not a third-party domain.</p>
+            <p><span className="text-zinc-200 font-medium">Document text.</span> When you upload a lease, the document is parsed in your browser and only the extracted text (or image data) is sent to our servers for AI analysis. Your original file is never uploaded. For free and one-time users, document text is not stored after analysis. For Pro and Unlimited subscribers, the structured analysis result is stored in your account history; the source text is retained only to enable future re-analysis.</p>
+            <p><span className="text-zinc-200 font-medium">Usage data.</span> We track the number of analyses completed and your current subscription plan to enforce usage limits.</p>
+            <p><span className="text-zinc-200 font-medium">Referral data.</span> If you arrive via a referral link, we store the referring user's ID to credit them when you complete your first analysis. This association is stored in your account profile.</p>
             <p><span className="text-zinc-200 font-medium">Payment information.</span> Payments are processed by Stripe. We do not store your card number or full payment details — only a Stripe customer ID and subscription status.</p>
-            <p><span className="text-zinc-200 font-medium">Technical data.</span> Our infrastructure partners (Cloudflare) may log IP addresses and request metadata for security and performance. We do not use this to personally identify users.</p>
+            <p><span className="text-zinc-200 font-medium">Technical data.</span> Cloudflare (our hosting provider) may log IP addresses and request metadata for security and CDN performance. We do not use this data to personally identify users.</p>
           </Section>
 
           <Section number="3" title="How We Use Your Information">
@@ -83,7 +84,10 @@ export default function PrivacyPolicy() {
 
           <Section number="4" title="AI Processing">
             <p>
-              Document text you submit is processed by third-party machine learning services for analysis. These providers process document text in memory solely to generate the analysis — they do not permanently store your documents or use them for training. By using Declawed, you acknowledge that your document text will be processed by third-party AI service providers. We strongly recommend removing personally identifiable information (names, Social Security numbers, bank details) from documents before uploading.
+              Document text is processed by <span className="text-zinc-200">Anthropic's Claude</span> — a large language model accessed via Anthropic's API. Claude processes your document text solely to generate the analysis. Anthropic does not permanently store API inputs and does not use them to train its models, per Anthropic's API data usage policy. By using Declawed, you acknowledge that your document text will be transmitted to Anthropic for this purpose.
+            </p>
+            <p>
+              We strongly recommend removing personally identifiable information (names, Social Security numbers, bank account details) from your lease before uploading, as a general precaution.
             </p>
           </Section>
 
@@ -91,9 +95,10 @@ export default function PrivacyPolicy() {
             <p>Declawed uses the following third-party services:</p>
             <ul className="list-disc list-inside space-y-1.5 pl-2">
               <li><span className="text-zinc-200">Supabase</span> — authentication, database hosting, and user profile storage (supabase.com)</li>
-              <li><span className="text-zinc-200">Third-party AI service providers</span> — machine learning analysis of uploaded document text (processed in memory, not stored)</li>
+              <li><span className="text-zinc-200">Anthropic</span> — AI analysis of uploaded document text via the Claude API; inputs are not stored or used for training (anthropic.com)</li>
               <li><span className="text-zinc-200">Cloudflare Pages</span> — web hosting and CDN (cloudflare.com)</li>
               <li><span className="text-zinc-200">Stripe</span> — payment processing (stripe.com)</li>
+              <li><span className="text-zinc-200">Google OAuth</span> — optional sign-in via Google account; the OAuth callback is routed through declawed.app</li>
             </ul>
             <p>Each service operates under its own privacy policy. We encourage you to review them.</p>
           </Section>

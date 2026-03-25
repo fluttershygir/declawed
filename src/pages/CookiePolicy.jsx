@@ -56,7 +56,7 @@ export default function CookiePolicy() {
             </div>
             <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">Cookie Policy</h1>
           </div>
-          <p className="text-[13px] text-zinc-600 mb-4">Last updated: March 11, 2026</p>
+          <p className="text-[13px] text-zinc-600 mb-4">Last updated: March 25, 2026</p>
           <p className="text-zinc-400 leading-relaxed max-w-xl">
             Declawed uses a minimal set of cookies — only those strictly necessary to operate the service. We don't use advertising, analytics, or tracking cookies.
           </p>
