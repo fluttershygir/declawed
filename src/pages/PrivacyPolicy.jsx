@@ -84,7 +84,7 @@ export default function PrivacyPolicy() {
 
           <Section number="4" title="AI Processing">
             <p>
-              Document text is processed by <span className="text-zinc-200">Anthropic's Claude</span> — a large language model accessed via Anthropic's API. Claude processes your document text solely to generate the analysis. Anthropic does not permanently store API inputs and does not use them to train its models, per Anthropic's API data usage policy. By using Declawed, you acknowledge that your document text will be transmitted to Anthropic for this purpose.
+              Document text is processed by <span className="text-zinc-200">Declawed AI</span> — a large language model accessed via a third-party AI API. Declawed AI processes your document text solely to generate the analysis. Per our AI provider's API terms, inputs are not permanently stored and are not used to train AI models. By using Declawed, you acknowledge that your document text will be transmitted to our AI provider for this purpose.
             </p>
             <p>
               We strongly recommend removing personally identifiable information (names, Social Security numbers, bank account details) from your lease before uploading, as a general precaution.
@@ -95,7 +95,7 @@ export default function PrivacyPolicy() {
             <p>Declawed uses the following third-party services:</p>
             <ul className="list-disc list-inside space-y-1.5 pl-2">
               <li><span className="text-zinc-200">Supabase</span> — authentication, database hosting, and user profile storage (supabase.com)</li>
-              <li><span className="text-zinc-200">Anthropic</span> — AI analysis of uploaded document text via the Claude API; inputs are not stored or used for training (anthropic.com)</li>
+              <li><span className="text-zinc-200">AI processing provider</span> — third-party API used to analyze uploaded document text; inputs are not stored or used for training per API terms</li>
               <li><span className="text-zinc-200">Cloudflare Pages</span> — web hosting and CDN (cloudflare.com)</li>
               <li><span className="text-zinc-200">Stripe</span> — payment processing (stripe.com)</li>
               <li><span className="text-zinc-200">Google OAuth</span> — optional sign-in via Google account; the OAuth callback is routed through declawed.app</li>
@@ -121,7 +121,7 @@ export default function PrivacyPolicy() {
               <li>Object to or restrict certain processing</li>
               <li>Data portability (receive a copy of your data)</li>
             </ul>
-            <p>To exercise any of these rights, email us at <span className="text-blue-400">privacy@declawed.app</span>.</p>
+            <p>To exercise any of these rights, email <span className="text-blue-400">privacy@declawed.app</span>. We will respond as resources permit; responses are not guaranteed within any specific timeframe.</p>
           </Section>
 
           <Section number="8" title="Security">

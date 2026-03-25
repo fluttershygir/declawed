@@ -29,6 +29,7 @@ import PricingSection from './components/PricingSection';
 import SuccessToast from './components/SuccessToast';
 import Navbar from './components/Navbar';
 import HowItWorks from './components/HowItWorks';
+import ExampleReport from './components/ExampleReport';
 import TrustBar from './components/TrustBar';
 import Testimonials from './components/Testimonials';
 import FAQ from './components/FAQ';
@@ -242,7 +243,7 @@ function MainApp() {
       <Landing usage={usage} />
 
       {/* ── Upload tool — immediately after hero ── */}
-      <section id="upload" className="w-full border-t border-white/[0.06] bg-[#07070d]" style={{ paddingTop: '64px', paddingBottom: '64px' }}>
+      <section id="upload" className="w-full border-t border-white/[0.06] bg-[#07070d]" style={{ paddingTop: '40px', paddingBottom: '56px' }}>
         <div className="w-full max-w-5xl mx-auto px-4">
           {/* Mobile tab switcher — only visible after first upload */}
           {(summary || loading || error) && (
@@ -270,6 +271,7 @@ function MainApp() {
         </div>
       </section>
 
+      {!summary && !loading && !error && <ExampleReport />}
       <TrustBar />
       <Testimonials />
 

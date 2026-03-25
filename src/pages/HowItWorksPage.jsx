@@ -21,8 +21,8 @@ const STEPS = [
   {
     number: '02',
     icon: Cpu,
-    title: 'Claude reads every clause',
-    body: "Your lease text is sent to our backend, which calls Anthropic's Claude — a frontier large language model. Claude receives a detailed system prompt written from a tenant-advocate perspective, instructing it to read the entire document and surface what landlords hope tenants miss: hidden fees, waived rights, lopsided termination clauses, and more.",
+    title: 'Declawed AI reads every clause',
+    body: "Your lease text is sent to our backend, which passes it to Declawed AI — a frontier large language model with a 200,000-token context window. Declawed AI receives a detailed system prompt written from a tenant-advocate perspective, instructing it to read the entire document and surface what landlords hope tenants miss: hidden fees, waived rights, lopsided termination clauses, and more.",
     color: 'text-blue-400',
     border: 'border-blue-500/30',
     bg: 'bg-blue-500/[0.07]',
@@ -31,7 +31,7 @@ const STEPS = [
     number: '03',
     icon: CheckCircle,
     title: 'You get a structured breakdown',
-    body: 'Claude returns a structured JSON object — not a wall of text. We parse it into labelled sections: a lease score, a plain-English verdict, red flags with severity ratings, key dates, your tenant rights as expressed in this lease, unusual clauses, and concrete action steps. Everything is rendered clearly, with no jargon.',
+    body: 'Declawed AI returns a structured analysis object — not a wall of text. We parse it into labelled sections: a lease score, a plain-English verdict, red flags with severity ratings, key dates, your tenant rights as expressed in this lease, unusual clauses, and concrete action steps. Everything is rendered clearly, with no jargon.',
     color: 'text-emerald-400',
     border: 'border-emerald-500/30',
     bg: 'bg-emerald-500/[0.07]',
@@ -113,7 +113,7 @@ export default function HowItWorksPage() {
     document.title = 'How It Works — Declawed AI Lease Analysis Methodology';
     let meta = document.querySelector('meta[name="description"]');
     if (!meta) { meta = document.createElement('meta'); meta.name = 'description'; document.head.appendChild(meta); }
-    meta.content = 'Learn how Declawed parses your lease, what Claude AI looks for, how the lease score is calculated, and what every section of your analysis report means.';
+    meta.content = 'Learn how Declawed parses your lease, what Declawed AI looks for, how the lease score is calculated, and what every section of your analysis report means.';
   }, []);
 
   return (
@@ -187,13 +187,13 @@ export default function HowItWorksPage() {
             <motion.div {...fade()}>
               <SectionLabel>The AI</SectionLabel>
               <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mb-4">
-                Powered by Claude
+                Powered by Declawed AI
               </h2>
               <p className="text-zinc-400 leading-relaxed mb-4">
-                Declawed uses <span className="text-white font-medium">Anthropic&rsquo;s Claude</span> — one of the most capable large language models available, with a 200,000-token context window large enough to read even the longest lease without truncation.
+                Declawed AI is built on a frontier large language model with a 200,000-token context window — large enough to read even the longest commercial lease without truncation.
               </p>
               <p className="text-zinc-400 leading-relaxed mb-4">
-                We wrote a detailed system prompt that instructs Claude to act as a tenant advocate: read the full document, apply knowledge of common tenant protections, and flag anything that deviates from fair or standard lease terms.
+                We wrote a detailed system prompt that configures Declawed AI to act as a tenant advocate: read the full document, apply knowledge of common tenant protections, and flag anything that deviates from fair or standard lease terms.
               </p>
               <p className="text-zinc-400 leading-relaxed">
                 Pro and Unlimited plans use a more capable model tier with deeper reasoning — better at catching subtle or compound issues that simpler analyses miss.
@@ -205,7 +205,7 @@ export default function HowItWorksPage() {
                 { label: 'Context window', value: 'Up to 200,000 tokens — handles even 50-page commercial leases' },
                 { label: 'Output format', value: 'Structured JSON parsed into labelled sections, not free-form text' },
                 { label: 'Prompt stance', value: 'Tenant-advocate by default; Landlord Mode available on Unlimited plan' },
-                { label: 'Model provider', value: "Anthropic (claude.ai) — your data is not used to train Anthropic's models" },
+                { label: 'Data policy', value: 'Your document text is processed solely to generate your analysis and is not stored or used for AI training' },
               ].map(({ label, value }) => (
                 <div key={label} className="rounded-xl border border-white/[0.07] bg-white/[0.03] px-5 py-4">
                   <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-zinc-500 mb-1">{label}</p>
@@ -252,7 +252,7 @@ export default function HowItWorksPage() {
                 How the 1–10 score is calculated
               </h2>
               <p className="text-zinc-400 leading-relaxed mb-4">
-                Claude assigns a holistic score from 1 to 10 based on the overall balance of the lease — weighing the number and severity of red flags, the presence of standard tenant protections, and how far each clause deviates from typical fair-market terms.
+                Declawed AI assigns a holistic score from 1 to 10 based on the overall balance of the lease — weighing the number and severity of red flags, the presence of standard tenant protections, and how far each clause deviates from typical fair-market terms.
               </p>
               <p className="text-zinc-400 leading-relaxed">
                 The score is a signal, not a verdict. A 6/10 lease might have one serious issue worth negotiating; a 8/10 lease might still have a clause that matters specifically to your situation. Always read the red flags section.
@@ -298,8 +298,7 @@ export default function HowItWorksPage() {
             </div>
 
             <motion.p {...fade(0.2)} className="text-[12.5px] text-zinc-600 max-w-2xl">
-              For full details see our <a href="/privacy" className="text-zinc-400 hover:text-white underline underline-offset-2 transition-colors">Privacy Policy</a>. Declawed is built on Supabase (PostgreSQL) and Cloudflare Pages. Lease text sent to Claude is subject to{' '}
-              <span className="text-zinc-500">Anthropic&rsquo;s data processing terms</span> — Anthropic does not use API inputs to train its models.
+              For full details see our <a href="/privacy" className="text-zinc-400 hover:text-white underline underline-offset-2 transition-colors">Privacy Policy</a>. Declawed is built on Supabase (PostgreSQL) and Cloudflare Pages. Lease text is sent to our AI processing infrastructure, which processes it solely to generate your analysis. Per our provider's API terms, your data is not stored or used to train AI models.
             </motion.p>
           </div>
         </section>
@@ -316,7 +315,7 @@ export default function HowItWorksPage() {
               {[
                 { heading: 'Not a lawyer', body: 'Declawed is an AI analysis tool, not legal counsel. It cannot give you advice specific to your jurisdiction, your personal circumstances, or recent case law. If a clause looks seriously problematic, consult a licensed tenant attorney — many offer free initial consultations.' },
                 { heading: 'Not exhaustive', body: 'AI can miss context, misread ambiguous language, or overlook jurisdiction-specific nuances. Use the analysis as a starting point for your own review, not a substitute for reading your lease yourself.' },
-                { heading: 'Not real-time legal data', body: "Claude's knowledge has a training cutoff. Tenant protection laws change — particularly rent control ordinances, eviction moratoriums, and security deposit rules. Always verify current law in your state or city." },
+                { heading: 'Not real-time legal data', body: "Declawed AI's training data has a knowledge cutoff. Tenant protection laws change — particularly rent control ordinances, eviction moratoriums, and security deposit rules. Always verify current law in your state or city." },
               ].map(({ heading, body }) => (
                 <div key={heading}>
                   <p className="text-sm font-semibold text-amber-300 mb-1">{heading}</p>

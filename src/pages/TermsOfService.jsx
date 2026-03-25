@@ -78,7 +78,7 @@ export default function TermsOfService() {
 
           <Section number="2" title="Description of Service">
             <p>
-              Declawed is an AI-powered tool that analyzes residential lease and rental agreements to help tenants and landlords understand key terms, identify red flags, and navigate their rights. The Service uses Anthropic's Claude AI to generate structured analysis.
+              Declawed is an AI-powered tool that analyzes residential lease and rental agreements to help tenants and landlords understand key terms, identify red flags, and navigate their rights. The Service uses Declawed AI to generate structured analysis.
             </p>
             <p>
               The Service is intended primarily for US and Canadian residential leases, though it can process leases from other jurisdictions. Analysis accuracy may vary for non-standard document types or highly jurisdiction-specific language.
@@ -118,7 +118,7 @@ export default function TermsOfService() {
 
           <Section number="6" title="Subscription and Payment">
             <p>
-              Declawed offers a free tier (1 analysis) and paid plans: One Lease ($3.99 one-time), Pro ($12/mo, 10 analyses), and Unlimited ($29/mo, unlimited analyses). Paid plans are billed via Stripe at the pricing displayed at time of purchase.
+              Declawed offers a free tier (1 analysis) and paid plans: One Lease ($3.99 one-time, 3 analyses), Pro ($12/mo, 10 analyses/month), and Unlimited ($29/mo, unlimited analyses). Plan limits reset monthly for subscription plans. Paid plans are billed via Stripe at the pricing displayed at time of purchase.
             </p>
             <p>
               Subscription plans are as described at the time of purchase. We reserve the right to change pricing with reasonable notice. Price changes will not affect already-purchased one-time plans.
@@ -130,7 +130,7 @@ export default function TermsOfService() {
 
           <Section number="7" title="Refunds">
             <p>
-              Due to the nature of digital services, all sales are generally final. However, we offer a 7-day money-back guarantee on all paid plans. If you experience a technical failure or are unsatisfied within 7 days of purchase, contact us at <span className="text-blue-400">support@declawed.app</span> and we will review your case. You can also request a refund directly from your dashboard.
+              Due to the nature of digital services, all sales are final. We may, at our sole discretion, issue a refund within 7 days of purchase if you experience a verified technical failure that prevented you from using the Service. Refunds for the One Lease plan will not be issued once any of the included analyses have been used. To request a refund, use the refund option in your account dashboard. We do not guarantee refund approvals and reserve the right to decline requests that do not meet these criteria.
             </p>
           </Section>
 
@@ -150,6 +150,9 @@ export default function TermsOfService() {
             <p>
               We are not responsible for any decisions you make based on the Service's output.
             </p>
+            <p>
+              AI-generated analysis is probabilistic and may be inaccurate, incomplete, or outdated. We make no representations about the accuracy, reliability, or suitability of any analysis for any particular lease or jurisdiction.
+            </p>
           </Section>
 
           <Section number="10" title="Limitation of Liability">
@@ -158,6 +161,9 @@ export default function TermsOfService() {
             </p>
             <p>
               Our total liability to you for any claim arising from the Service shall not exceed the amount you paid us in the 12 months preceding the claim, or $10, whichever is greater.
+            </p>
+            <p>
+              To the maximum extent permitted by applicable law, you waive any right to participate in a class action lawsuit or class-wide arbitration against Declawed. Any claims must be brought individually.
             </p>
           </Section>
 
@@ -175,7 +181,7 @@ export default function TermsOfService() {
 
           <Section number="13" title="Contact">
             <p>
-              Questions about these Terms can be directed to <span className="text-blue-400">support@declawed.app</span>.
+              Questions about these Terms can be directed to <span className="text-blue-400">legal@declawed.app</span>. We aim to respond to legal inquiries as resources permit. By using the Service, you agree to attempt informal resolution of any dispute by contacting us before initiating legal proceedings.
             </p>
           </Section>
 

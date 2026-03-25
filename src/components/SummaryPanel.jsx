@@ -358,17 +358,21 @@ function AnonTeaser({ data, onSignUp, scorePercentile }) {
         <div className="w-full rounded-2xl border border-white/[0.08] bg-[#0e0e16]/95 backdrop-blur-md p-5 shadow-2xl">
           <div className="flex items-center gap-2 mb-1">
             <Lock className="w-4 h-4 text-blue-400 shrink-0" />
-            <p className="text-white font-semibold text-sm">See your full analysis</p>
+            <p className="text-white font-semibold text-sm">
+              {data?.redFlags?.length > 0
+                ? `${data.redFlags.length} red flag${data.redFlags.length !== 1 ? 's' : ''} found — don't lose this`
+                : 'See your full analysis'}
+            </p>
           </div>
           <p className="text-zinc-500 text-[12px] mb-4 leading-relaxed">
-            Create a free account to unlock all red flags, key dates, and your action plan.
+            This analysis disappears when you close this tab. Sign up free to save it, unlock all sections, and get your action plan.
           </p>
           <div className="flex gap-2">
             <button
               onClick={() => onSignUp?.('signup')}
               className="flex-1 py-2.5 rounded-xl bg-blue-600 text-white text-[13px] font-bold hover:bg-blue-500 active:scale-95 transition-all"
             >
-              Sign up free
+              Save my report
             </button>
             <button
               onClick={() => onSignUp?.('signin')}
