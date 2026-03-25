@@ -61,6 +61,7 @@ export default function UploadPanel({ onUpload, loading, usage, onUpgrade, landl
   const [dragActive, setDragActive] = useState(false);
   const [parseError, setParseError] = useState('');
   const [isImage, setIsImage] = useState(false);
+  const [parsing, setParsing] = useState(false);
   const [tooltipVisible, setTooltipVisible] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
 
@@ -95,16 +96,18 @@ export default function UploadPanel({ onUpload, loading, usage, onUpgrade, landl
       return;
     }
     setFileName(file.name);
+    setParsing(true);
     let text = '';
     if (isText) {
       text = await file.text();
     } else if (isDocx) {
       try { text = await extractTextFromDocx(file); }
-      catch { setParseError('Could not read this Word document. Ensure it is a valid .docx file.'); return; }
+      catch { setParsing(false); setParseError('Could not read this Word document. Ensure it is a valid .docx file.'); return; }
     } else {
       try { text = await extractTextFromPdf(file); }
-      catch { setParseError('Could not read this PDF. Try a text-based (not scanned) PDF.'); return; }
+      catch { setParsing(false); setParseError('Could not read this PDF. Try a text-based (not scanned) PDF.'); return; }
     }
+    setParsing(false);
     if (!text.trim() || text.trim().length < 50) {
       setParseError('Could not extract text. Ensure the file is not a scanned image.');
       return;
@@ -201,14 +204,16 @@ export default function UploadPanel({ onUpload, loading, usage, onUpgrade, landl
         onDrop={handleDrop}
         onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
         onDragLeave={() => setDragActive(false)}
-        onClick={() => canUpload && !loading && inputRef.current?.click()}
+        onClick={() => canUpload && !loading && !parsing && inputRef.current?.click()}
         className={`
           relative flex flex-col items-center justify-center rounded-xl py-8 px-5 cursor-pointer transition-all duration-200 overflow-hidden
           ${dragActive
             ? 'border-2 border-blue-400 bg-blue-500/10 shadow-lg shadow-blue-500/10'
-            : canUpload && !loading
-              ? 'border-2 border-white/[0.07] bg-white/[0.02] hover:border-blue-500/40 hover:bg-blue-500/[0.04] hover:shadow-md hover:shadow-blue-500/10'
-              : 'border-2 border-white/[0.05] bg-transparent opacity-50 cursor-not-allowed'
+            : parsing || loading
+              ? 'border-2 border-white/[0.06] bg-transparent cursor-default'
+              : canUpload
+                ? 'border-2 border-white/[0.07] bg-white/[0.02] hover:border-blue-500/40 hover:bg-blue-500/[0.04] hover:shadow-md hover:shadow-blue-500/10'
+                : 'border-2 border-white/[0.05] bg-transparent opacity-50 cursor-not-allowed'
           }
         `}
       >
@@ -226,6 +231,14 @@ export default function UploadPanel({ onUpload, loading, usage, onUpgrade, landl
               {isImage ? 'Scanning image…' : 'Analyzing lease…'}
             </p>
             <p className="text-[11px] text-zinc-600 mt-1">Usually 10–30 seconds</p>
+          </>
+        ) : parsing ? (
+          <>
+            <div className="w-14 h-14 rounded-2xl bg-zinc-800 border border-white/[0.08] flex items-center justify-center mb-3">
+              <Loader2 className="w-7 h-7 text-zinc-400 animate-spin" />
+            </div>
+            <p className="text-sm font-semibold text-zinc-300">Reading document…</p>
+            <p className="text-[11px] text-zinc-600 mt-1">Extracting text from your file</p>
           </>
         ) : fileName ? (
           <>
@@ -255,7 +268,7 @@ export default function UploadPanel({ onUpload, loading, usage, onUpgrade, landl
       </div>
 
       {/* Mobile tap-to-upload button */}
-      {canUpload && !loading && (
+      {canUpload && !loading && !parsing && (
         <button
           onClick={() => inputRef.current?.click()}
           className="mt-3 w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-[0.98] transition-all text-sm font-bold text-white flex items-center justify-center gap-2 shadow-lg shadow-blue-600/25"

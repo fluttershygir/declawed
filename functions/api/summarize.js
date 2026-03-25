@@ -348,24 +348,31 @@ async function handleRequest(request, env) {
       },
       body: JSON.stringify({ user_id: userId }),
     });
-    // Insert into analyses history
-    await fetch(`${env.SUPABASE_URL}/rest/v1/analyses`, {
-      method: 'POST',
-      headers: {
-        apikey: env.SUPABASE_SERVICE_ROLE_KEY,
-        Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
-        'Content-Type': 'application/json',
-        Prefer: 'return=minimal',
-      },
-      body: JSON.stringify({
-        user_id: userId,
-        filename: filename || null,
-        verdict: analysis.verdict,
-        result: analysis,
-        // Store original text for re-analysis (null for image uploads)
-        source_text: isImageRequest ? null : (text ? text.slice(0, 40000) : null),
-      }),
-    });
+    // Insert into analyses history and capture share_token
+    let shareToken = null;
+    try {
+      const insertRes = await fetch(`${env.SUPABASE_URL}/rest/v1/analyses`, {
+        method: 'POST',
+        headers: {
+          apikey: env.SUPABASE_SERVICE_ROLE_KEY,
+          Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=representation',
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          filename: filename || null,
+          verdict: analysis.verdict,
+          result: analysis,
+          // Store original text for re-analysis (null for image uploads)
+          source_text: isImageRequest ? null : (text ? text.slice(0, 40000) : null),
+        }),
+      });
+      if (insertRes.ok) {
+        const inserted = await insertRes.json();
+        shareToken = inserted?.[0]?.share_token || null;
+      }
+    } catch { /* non-critical — analysis still returned */ }
   } else {
     // Anonymous — set a signed cookie so users can't clear it and reuse the free tier.
     const cookieSecret = env.COOKIE_SECRET || '';
@@ -394,7 +401,7 @@ async function handleRequest(request, env) {
     } catch { /* ignore — non-critical */ }
   }
 
-  return new Response(JSON.stringify({ summary: analysis, modelTier, landlordMode: useLandlordMode, scorePercentile }), { status: 200, headers: responseHeaders });
+  return new Response(JSON.stringify({ summary: analysis, modelTier, landlordMode: useLandlordMode, scorePercentile, shareToken: shareToken || null }), { status: 200, headers: responseHeaders });
 }
 
 export async function onRequestOptions() {

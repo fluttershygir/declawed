@@ -51,6 +51,7 @@ import TenantRights from './pages/TenantRights';
 import Analyze from './pages/Analyze';
 import HowItWorksPage from './pages/HowItWorksPage';
 import AuthCallback from './pages/AuthCallback';
+import WelcomeModal from './components/WelcomeModal';
 import './index.css';
 
 const PAID_PLANS = new Set(['one', 'pro', 'unlimited']);
@@ -99,6 +100,7 @@ function MainApp() {
   const [authTab, setAuthTab] = useState('signin');
   const [retryPayload, setRetryPayload] = useState(null);
   const [shareToken, setShareToken] = useState(null);
+  const [welcomeOpen, setWelcomeOpen] = useState(false);
 
   const fetchUsage = async () => {
     try {
@@ -121,6 +123,16 @@ function MainApp() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
+
+  // Show welcome modal for new users (analyses_used === 0, not yet welcomed this session)
+  useEffect(() => {
+    if (!user || !profile) return;
+    if (sessionStorage.getItem('dcl_welcomed')) return;
+    if ((profile.analyses_used ?? 0) === 0) {
+      sessionStorage.setItem('dcl_welcomed', '1');
+      setWelcomeOpen(true);
+    }
+  }, [user, profile]);
 
   // Capture ?ref=UUID from URL on load and store in localStorage for signup attribution
   useEffect(() => {
@@ -318,6 +330,7 @@ function MainApp() {
 
       <PaywallModal open={paywallOpen} onClose={() => setPaywallOpen(false)} />
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} defaultTab={authTab} />
+      <WelcomeModal open={welcomeOpen} onClose={() => setWelcomeOpen(false)} />
       <AnimatePresence>
         {successToast && (
           <SuccessToast
