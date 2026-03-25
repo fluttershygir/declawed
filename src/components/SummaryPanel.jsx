@@ -71,16 +71,15 @@ function AnalysisProgress() {
 
 // ─── Design system primitives ─────────────────────────────────────────────────
 
-function SeverityPip({ severity }) {
+function SeverityBadge({ severity }) {
   const cfg = {
-    HIGH:   { dot: 'bg-rose-500',   text: 'text-rose-400/70',  label: 'High'   },
-    MEDIUM: { dot: 'bg-amber-400',  text: 'text-amber-400/60', label: 'Med'    },
-    LOW:    { dot: 'bg-zinc-600',   text: 'text-zinc-500',     label: 'Low'    },
-  }[severity] ?? { dot: 'bg-zinc-600', text: 'text-zinc-500', label: 'Low' };
+    HIGH:   { bg: 'bg-rose-500/10',  text: 'text-rose-400',  label: 'High' },
+    MEDIUM: { bg: 'bg-amber-500/10', text: 'text-amber-400', label: 'Med'  },
+    LOW:    { bg: 'bg-zinc-500/10',  text: 'text-zinc-500',  label: 'Low'  },
+  }[severity] ?? { bg: 'bg-zinc-500/10', text: 'text-zinc-500', label: 'Low' };
   return (
-    <span className="inline-flex items-center gap-1 shrink-0">
-      <span className={`w-[5px] h-[5px] rounded-full ${cfg.dot}`} />
-      <span className={`text-[9.5px] font-bold uppercase tracking-[0.08em] ${cfg.text}`}>{cfg.label}</span>
+    <span className={`inline-block text-[9px] font-semibold uppercase tracking-[0.06em] px-1.5 py-[3px] rounded ${cfg.bg} ${cfg.text} shrink-0 leading-none`}>
+      {cfg.label}
     </span>
   );
 }
@@ -173,26 +172,21 @@ function StructuredSummary({ data, landlordMode, scorePercentile }) {
             color="text-zinc-500"
             iconColor="text-rose-500/70"
           />
-          <ul className="space-y-1.5">
+          <div className="rounded-xl border border-white/[0.06] overflow-hidden">
             {sortedFlags.map((flag, i) => {
               const text     = typeof flag === 'string' ? flag : flag.text;
               const severity = typeof flag === 'string' ? 'MEDIUM' : (flag.severity ?? 'MEDIUM');
-              const bar      = severity === 'HIGH'
-                ? 'border-l-rose-500/70'
-                : severity === 'MEDIUM'
-                  ? 'border-l-amber-400/60'
-                  : 'border-l-zinc-600/60';
               return (
-                <li
+                <div
                   key={i}
-                  className={`flex items-start gap-3 border-l-2 ${bar} pl-3.5 pr-3 py-2.5 rounded-r-lg`}
+                  className={`flex items-start gap-3 px-4 py-3 ${i > 0 ? 'border-t border-white/[0.04]' : ''}`}
                 >
                   <span className="flex-1 text-[13px] text-zinc-300 leading-relaxed">{text}</span>
-                  <SeverityPip severity={severity} />
-                </li>
+                  <SeverityBadge severity={severity} />
+                </div>
               );
             })}
-          </ul>
+          </div>
         </section>
       )}
 
@@ -328,19 +322,18 @@ function AnonTeaser({ data, onSignUp, scorePercentile }) {
         {previewFlags.length > 0 && (
           <section className="space-y-3">
             <SectionRule icon={AlertCircle} label="Red Flags" color="text-zinc-500" iconColor="text-rose-500/70" />
-            <ul className="space-y-1.5">
+            <div className="rounded-xl border border-white/[0.06] overflow-hidden">
               {previewFlags.map((flag, i) => {
                 const text     = typeof flag === 'string' ? flag : flag.text;
                 const severity = typeof flag === 'string' ? 'MEDIUM' : (flag.severity ?? 'MEDIUM');
-                const bar      = severity === 'HIGH' ? 'border-l-rose-500/70' : severity === 'MEDIUM' ? 'border-l-amber-400/60' : 'border-l-zinc-600/60';
                 return (
-                  <li key={i} className={`flex items-start gap-3 border-l-2 ${bar} pl-3.5 pr-3 py-2.5 rounded-r-lg`}>
+                  <div key={i} className={`flex items-start gap-3 px-4 py-3 ${i > 0 ? 'border-t border-white/[0.04]' : ''}`}>
                     <span className="flex-1 text-[13px] text-zinc-300 leading-relaxed">{text}</span>
-                    <SeverityPip severity={severity} />
-                  </li>
+                    <SeverityBadge severity={severity} />
+                  </div>
                 );
               })}
-            </ul>
+            </div>
           </section>
         )}
 

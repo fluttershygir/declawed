@@ -2,7 +2,7 @@
 // Receives Stripe webhook events. Verifies signature using crypto.subtle (no SDK).
 // env: STRIPE_WEBHOOK_SECRET, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
 
-const PLAN_LIMITS = { one: 1, pro: 10, unlimited: 9999 };
+const PLAN_LIMITS = { one: 3, pro: 10, unlimited: 9999 };
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {

@@ -149,14 +149,14 @@ async function checkIpRateLimit(ip, kv) {
 export async function onRequestPost(context) {
   const { request, env } = context;
   try {
-    return await handleRequest(request, env);
+    return await handleRequest(request, env, context);
   } catch (e) {
     console.error('[summarize] Unhandled error:', e?.message ?? e);
     return json({ error: `Server error: ${e?.message ?? 'Unknown error'}` }, 500);
   }
 }
 
-async function handleRequest(request, env) {
+async function handleRequest(request, env, context) {
   if (!env.ANTHROPIC_API_KEY) return json({ error: 'API not configured. Add ANTHROPIC_API_KEY to Cloudflare Pages environment variables.' }, 500);
   if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) return json({ error: 'DB not configured. Add SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY to Cloudflare Pages environment variables.' }, 500);
 
@@ -337,6 +337,8 @@ async function handleRequest(request, env) {
     'Access-Control-Allow-Origin': '*',
   });
 
+  let shareToken = null;
+
   if (userId) {
     // Atomically increment analyses_used via RPC (avoids PostgREST string expression pitfall)
     await fetch(`${env.SUPABASE_URL}/rest/v1/rpc/increment_analyses_used`, {
@@ -349,7 +351,6 @@ async function handleRequest(request, env) {
       body: JSON.stringify({ user_id: userId }),
     });
     // Insert into analyses history and capture share_token
-    let shareToken = null;
     try {
       const insertRes = await fetch(`${env.SUPABASE_URL}/rest/v1/analyses`, {
         method: 'POST',
@@ -401,7 +402,112 @@ async function handleRequest(request, env) {
     } catch { /* ignore — non-critical */ }
   }
 
+  // Schedule a 24-hour follow-up email for logged-in users (fire-and-forget)
+  if (userId && env.RESEND_API_KEY) {
+    context.waitUntil(scheduleFollowUpEmail({ userId, analysis, shareToken, env }));
+  }
+
   return new Response(JSON.stringify({ summary: analysis, modelTier, landlordMode: useLandlordMode, scorePercentile, shareToken: shareToken || null }), { status: 200, headers: responseHeaders });
+}
+
+async function scheduleFollowUpEmail({ userId, analysis, shareToken, env }) {
+  try {
+    // Fetch the user's email via Supabase Auth admin API
+    const userRes = await fetch(`${env.SUPABASE_URL}/auth/v1/admin/users/${userId}`, {
+      headers: {
+        apikey: env.SUPABASE_SERVICE_ROLE_KEY,
+        Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+      },
+    });
+    if (!userRes.ok) return;
+    const userObj = await userRes.json();
+    const email = userObj?.email;
+    if (!email) return;
+
+    const score = analysis?.score ?? null;
+    const redFlags = analysis?.redFlags || [];
+    const highFlags = redFlags.filter(f => (typeof f === 'string' ? 'MEDIUM' : (f.severity ?? 'MEDIUM')) === 'HIGH');
+    const topFlags = (highFlags.length > 0 ? highFlags : redFlags).slice(0, 3);
+    const shareUrl = shareToken ? `https://declawed.app/shared/${shareToken}` : 'https://declawed.app';
+    const scoreLabel = score !== null
+      ? (score <= 4 ? 'heavily favors your landlord' : score <= 7 ? 'somewhat unfavorable for you' : 'tenant-friendly')
+      : null;
+
+    const flagListHtml = topFlags.length > 0
+      ? topFlags.map(f => {
+          const text = typeof f === 'string' ? f : f.text;
+          return `<tr><td style="padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.05);font-size:14px;color:#a1a1aa;line-height:1.5;">${text}</td></tr>`;
+        }).join('')
+      : '';
+
+    const scheduledAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    const fromEmail = env.RESEND_FROM_EMAIL || 'noreply@declawed.app';
+
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${env.RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: `Declawed <${fromEmail}>`,
+        to: email,
+        subject: score !== null
+          ? `Your lease scored ${score}/10 — did you follow up with your landlord?`
+          : `Your lease analysis is ready — did you follow up?`,
+        scheduled_at: scheduledAt,
+        html: `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1.0" /></head>
+<body style="margin:0;padding:0;background-color:#0a0a0f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0a0a0f;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="100%" style="max-width:560px;background-color:#111118;border:1px solid rgba(255,255,255,0.08);border-radius:16px;overflow:hidden;">
+        <tr>
+          <td style="padding:24px 32px 20px;border-bottom:1px solid rgba(255,255,255,0.06);">
+            <span style="font-size:18px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;">Declawed</span>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:32px 32px 24px;">
+            <h1 style="margin:0 0 12px;font-size:20px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;">
+              ${score !== null ? `Your lease scored ${score}/10.` : 'Your lease analysis is ready.'}<br />
+              Did you talk to your landlord?
+            </h1>
+            ${scoreLabel ? `<p style="margin:0 0 20px;font-size:14px;color:#a1a1aa;line-height:1.6;">This lease ${scoreLabel}. Here are the most important issues we flagged — if you haven't raised them yet, now is the time.</p>` : '<p style="margin:0 0 20px;font-size:14px;color:#a1a1aa;line-height:1.6;">Here are the most important issues we flagged in your lease.</p>'}
+            ${flagListHtml ? `
+            <table cellpadding="0" cellspacing="0" style="width:100%;margin-bottom:24px;border:1px solid rgba(255,255,255,0.07);border-radius:12px;overflow:hidden;">
+              ${flagListHtml}
+            </table>` : ''}
+            <table cellpadding="0" cellspacing="0"><tr>
+              <td style="background-color:#3b82f6;border-radius:10px;">
+                <a href="${shareUrl}"
+                   style="display:inline-block;padding:13px 26px;font-size:14px;font-weight:700;color:#000000;text-decoration:none;letter-spacing:-0.1px;">
+                  Review your full report &rarr;
+                </a>
+              </td>
+            </tr></table>
+            <p style="margin:20px 0 0;font-size:13px;color:#52525b;line-height:1.6;">
+              Most landlords will negotiate if you ask in writing. Use your action steps as a checklist.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:16px 32px;border-top:1px solid rgba(255,255,255,0.06);">
+            <p style="margin:0;font-size:12px;color:#3f3f46;text-align:center;">
+              Declawed &middot; AI-powered lease analysis &middot;
+              <a href="https://declawed.app" style="color:#3b82f6;text-decoration:none;">declawed.app</a>
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`,
+      }),
+    });
+  } catch { /* non-critical */ }
 }
 
 export async function onRequestOptions() {

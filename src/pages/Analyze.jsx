@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import UploadPanel from '../components/UploadPanel';
@@ -100,6 +100,11 @@ export default function AnalyzePage() {
   };
 
   const hasResult = loading || summary || error;
+
+  // Redirect to home if there's no pending result to restore and no active analysis
+  if (!hasResult && !sessionStorage.getItem(PENDING_KEY)) {
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-[#07070d] text-slate-100 flex flex-col">

@@ -4,16 +4,16 @@ import { FileText, X, AlertCircle, Calendar, ShieldCheck, AlertTriangle, FileChe
 import { supabase } from '../lib/supabase';
 
 const SEVERITY_STYLES = {
-  HIGH:   { bg: 'bg-rose-500/15',  text: 'text-rose-400',  border: 'border-rose-500/30'  },
-  MEDIUM: { bg: 'bg-amber-500/12', text: 'text-amber-400', border: 'border-amber-500/30' },
-  LOW:    { bg: 'bg-zinc-500/15',  text: 'text-zinc-400',  border: 'border-zinc-600/40'  },
+  HIGH:   { bg: 'bg-rose-500/10',  text: 'text-rose-400'  },
+  MEDIUM: { bg: 'bg-amber-500/10', text: 'text-amber-400' },
+  LOW:    { bg: 'bg-zinc-500/10',  text: 'text-zinc-500'  },
 };
 
 export function SeverityBadge({ severity }) {
   const s = SEVERITY_STYLES[severity] ?? SEVERITY_STYLES.LOW;
   return (
-    <span className={`inline-block text-[9px] font-bold uppercase tracking-[0.14em] px-1.5 py-0.5 rounded border ${s.bg} ${s.text} ${s.border} shrink-0 leading-none`}>
-      {severity ?? 'LOW'}
+    <span className={`inline-block text-[9px] font-semibold uppercase tracking-[0.06em] px-1.5 py-[3px] rounded ${s.bg} ${s.text} shrink-0 leading-none`}>
+      {severity === 'MEDIUM' ? 'Med' : (severity ?? 'Low')}
     </span>
   );
 }
@@ -211,22 +211,25 @@ export default function AnalysisModal({ analysis, onClose, onNoteUpdate, onReana
             {/* Red Flags */}
             {data.redFlags?.length > 0 && (
               <section>
-                <h3 className="flex items-center gap-1.5 text-rose-400 font-semibold mb-3">
-                  <AlertCircle className="w-4 h-4" /> Red Flags
+                <h3 className="flex items-center gap-1.5 text-rose-400/80 text-[11px] font-bold uppercase tracking-[0.12em] mb-2.5">
+                  <AlertCircle className="w-3.5 h-3.5" /> Red Flags
                 </h3>
-                <ul className="space-y-3">
-                  {data.redFlags.map((flag, i) => {
+                <div className="rounded-xl border border-white/[0.06] overflow-hidden">
+                  {[...data.redFlags].sort((a, b) => {
+                    const o = { HIGH: 0, MEDIUM: 1, LOW: 2 };
+                    return (o[typeof a === 'string' ? 'MEDIUM' : (a.severity ?? 'MEDIUM')] ?? 1) -
+                           (o[typeof b === 'string' ? 'MEDIUM' : (b.severity ?? 'MEDIUM')] ?? 1);
+                  }).map((flag, i) => {
                     const text = typeof flag === 'string' ? flag : flag.text;
                     const severity = typeof flag === 'string' ? 'MEDIUM' : (flag.severity ?? 'MEDIUM');
                     return (
-                      <li key={i} className="flex gap-2.5 text-slate-300 leading-relaxed">
-                        <span className="text-rose-500 mt-0.5 shrink-0">•</span>
-                        <span className="flex-1">{text}</span>
+                      <div key={i} className={`flex items-start gap-3 px-4 py-3 text-[13px] ${i > 0 ? 'border-t border-white/[0.04]' : ''}`}>
+                        <span className="flex-1 text-zinc-300 leading-relaxed">{text}</span>
                         <SeverityBadge severity={severity} />
-                      </li>
+                      </div>
                     );
                   })}
-                </ul>
+                </div>
               </section>
             )}
 
