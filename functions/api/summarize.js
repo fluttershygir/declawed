@@ -125,11 +125,14 @@ async function getUserFromJwt(jwt, supabaseUrl, serviceRoleKey) {
   }
 }
 
+// Uses streaming to avoid Cloudflare's ~30s subrequest timeout.
+// Anthropic sends the first token within 1-3s (satisfying CF), and we
+// accumulate the full text before returning a response-like object.
 async function callAnthropic(apiKey, model, maxTokens, systemPrompt, messageContent) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 55000); // 55s hard timeout
+  const timer = setTimeout(() => controller.abort(), 55000);
   try {
-    return await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       signal: controller.signal,
       headers: {
@@ -140,10 +143,48 @@ async function callAnthropic(apiKey, model, maxTokens, systemPrompt, messageCont
       body: JSON.stringify({
         model,
         max_tokens: maxTokens,
+        stream: true,
         system: systemPrompt,
         messages: [{ role: 'user', content: messageContent }],
       }),
     });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      return { ok: false, status: res.status, text: async () => errText, json: async () => ({}) };
+    }
+
+    // Read SSE stream and accumulate all text_delta chunks into a single string.
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let fullText = '';
+    let buf = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const lines = buf.split('\n');
+      buf = lines.pop() ?? '';
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const chunk = line.slice(6).trim();
+        if (chunk === '[DONE]') continue;
+        try {
+          const evt = JSON.parse(chunk);
+          if (evt.type === 'content_block_delta' && evt.delta?.type === 'text_delta') {
+            fullText += evt.delta.text;
+          }
+        } catch { /* ignore malformed SSE lines */ }
+      }
+    }
+
+    return {
+      ok: true,
+      status: 200,
+      text: async () => fullText,
+      json: async () => ({ content: [{ type: 'text', text: fullText }] }),
+    };
   } finally {
     clearTimeout(timer);
   }
