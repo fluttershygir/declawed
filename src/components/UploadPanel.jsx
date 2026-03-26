@@ -4,6 +4,16 @@ import { Upload, FileText, Loader2, AlertCircle, Lock, Zap, Image as ImageIcon, 
 import ShareToUnlockModal from './ShareToUnlockModal';
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
+// pdfjs-dist v5 uses Promise.withResolvers() which requires Safari 17.4+.
+// Polyfill it so older iOS Safari (and any other missing environment) works.
+if (typeof Promise.withResolvers === 'undefined') {
+  Promise.withResolvers = function () {
+    let resolve, reject;
+    const promise = new Promise((res, rej) => { resolve = res; reject = rej; });
+    return { promise, resolve, reject };
+  };
+}
+
 const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 const IMAGE_EXTS = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
 

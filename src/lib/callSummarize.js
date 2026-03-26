@@ -8,7 +8,21 @@ import { supabase } from './supabase';
 export async function callSummarize(payload) {
   const { text, imageBase64, imageMediaType, filename } = payload || {};
 
-  const { data: { session } } = await supabase.auth.getSession();
+  // getSession() can stall if Supabase needs to refresh the token and the
+  // network request hangs. Race it against a 10-second timeout so it can
+  // never block the analysis indefinitely. On timeout we fall through as
+  // anonymous (no auth header), which is the safest degradation.
+  let session = null;
+  try {
+    const sessionResult = await Promise.race([
+      supabase.auth.getSession(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('auth timeout')), 10000)),
+    ]);
+    session = sessionResult?.data?.session ?? null;
+  } catch {
+    session = null;
+  }
+
   const headers = { 'Content-Type': 'application/json' };
   if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`;
 
@@ -17,12 +31,10 @@ export async function callSummarize(payload) {
     : { text, filename, landlordMode: payload?.landlordMode };
 
   const controller = new AbortController();
-  // Keep the timeout alive through the entire response — both headers AND body.
-  // Previously the timeout was cleared in a finally block after fetch() resolved
-  // (i.e. after headers arrived), leaving res.json() unprotected. If the server
-  // sent headers but never finished the body, res.json() would hang forever and
-  // setLoading(false) would never be called.
-  const timeoutId = setTimeout(() => controller.abort(), 90000); // 90s covers full round-trip
+  // 65 s covers full round-trip (headers + body). The backend's own Anthropic
+  // timeout is 55 s, so this gives 10 s of slack while still failing fast enough
+  // that users don't wait forever when something goes wrong.
+  const timeoutId = setTimeout(() => controller.abort(), 65000);
 
   try {
     const res = await fetch('/api/summarize', {

@@ -135,7 +135,18 @@ async function getUserFromJwt(jwt, supabaseUrl, serviceRoleKey) {
 // accumulate the full text before returning a response-like object.
 async function callAnthropic(apiKey, model, maxTokens, systemPrompt, messageContent) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 55000);
+  let reader = null;
+  let timedOut = false;
+
+  // When the timer fires we BOTH abort the fetch signal AND explicitly cancel
+  // the stream reader. Aborting the signal alone is not guaranteed to unblock
+  // a pending reader.read() in all Cloudflare Workers builds.
+  const timer = setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+    if (reader) reader.cancel('timeout').catch(() => {});
+  }, 55000);
+
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -160,7 +171,7 @@ async function callAnthropic(apiKey, model, maxTokens, systemPrompt, messageCont
     }
 
     // Read SSE stream and accumulate all text_delta chunks into a single string.
-    const reader = res.body.getReader();
+    reader = res.body.getReader();
     const decoder = new TextDecoder();
     let fullText = '';
     let buf = '';
@@ -184,6 +195,12 @@ async function callAnthropic(apiKey, model, maxTokens, systemPrompt, messageCont
       }
     }
 
+    // If reader.cancel() drained the stream cleanly but we actually timed out,
+    // surface the timeout as an AbortError so the caller returns a 504.
+    if (timedOut) {
+      throw Object.assign(new Error('aborted'), { name: 'AbortError' });
+    }
+
     return {
       ok: true,
       status: 200,
@@ -192,6 +209,7 @@ async function callAnthropic(apiKey, model, maxTokens, systemPrompt, messageCont
     };
   } finally {
     clearTimeout(timer);
+    if (reader) { try { reader.releaseLock(); } catch { /* already released */ } }
   }
 }
 
