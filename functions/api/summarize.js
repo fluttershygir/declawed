@@ -111,17 +111,22 @@ function fetchWithTimeout(url, options, ms = 8000) {
 }
 
 async function getUserFromJwt(jwt, supabaseUrl, serviceRoleKey) {
+  const ctrl = new AbortController();
+  const id = setTimeout(() => ctrl.abort(), 8000);
   try {
-    const res = await fetchWithTimeout(`${supabaseUrl}/auth/v1/user`, {
+    const res = await fetch(`${supabaseUrl}/auth/v1/user`, {
       headers: {
         Authorization: `Bearer ${jwt}`,
         apikey: serviceRoleKey,
       },
-    }, 8000);
+      signal: ctrl.signal,
+    });
     if (!res.ok) return null;
-    return res.json();
+    return await res.json(); // protected by same signal
   } catch {
     return null; // auth timeout → treat as anonymous
+  } finally {
+    clearTimeout(id);
   }
 }
 
@@ -246,14 +251,21 @@ async function handleRequest(request, env, context) {
     if (userData?.id) {
       userId = userData.id;
 
-      // Fetch profile for plan + usage
-      const profileRes = await fetchWithTimeout(
-        `${env.SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}&select=plan,analyses_used,analyses_limit`,
-        { headers: { apikey: env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}` } },
-        8000
-      );
-      const profiles = await profileRes.json();
-      const profile = profiles?.[0];
+      // Fetch profile for plan + usage — AbortController covers both fetch AND json()
+      const pCtrl = new AbortController();
+      const pTimer = setTimeout(() => pCtrl.abort(), 8000);
+      let profile = null;
+      try {
+        const profileRes = await fetch(
+          `${env.SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}&select=plan,analyses_used,analyses_limit`,
+          { headers: { apikey: env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}` }, signal: pCtrl.signal }
+        );
+        if (profileRes.ok) {
+          const profiles = await profileRes.json(); // protected by pCtrl.signal
+          profile = profiles?.[0];
+        }
+      } catch { /* treat as no profile on timeout */ }
+      finally { clearTimeout(pTimer); }
 
       if (profile) {
         userPlan = profile.plan || 'free';
@@ -405,17 +417,22 @@ async function handleRequest(request, env, context) {
     responseHeaders.append('Set-Cookie', `dcl_free_used=${cookieSig}; Path=/; HttpOnly; SameSite=Strict; Max-Age=31536000; Secure`);
   }
 
-  // Compute score percentile with a tight 3-second timeout so it never blocks the response.
+  // Compute score percentile — AbortController covers BOTH the fetch and the json() body
+  // read, so a slow Supabase response can never block the final response to the client.
   let scorePercentile = null;
   if (typeof analysis.score === 'number' && env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) {
+    const pctCtrl = new AbortController();
+    const pctTimer = setTimeout(() => pctCtrl.abort(), 3000);
     try {
-      const scoresRes = await fetchWithTimeout(
-        `${env.SUPABASE_URL}/rest/v1/analyses?select=s:result->>score&limit=10000`,
-        { headers: { apikey: env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}` } },
-        3000
+      const scoresRes = await fetch(
+        `${env.SUPABASE_URL}/rest/v1/analyses?select=s:result->>score&limit=2000`,
+        {
+          headers: { apikey: env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}` },
+          signal: pctCtrl.signal,
+        }
       );
       if (scoresRes.ok) {
-        const rows = await scoresRes.json();
+        const rows = await scoresRes.json(); // also protected by pctCtrl.signal
         const total = rows.length;
         if (total > 1) {
           const lower = rows.filter(r => Number(r.s) < analysis.score).length;
@@ -423,6 +440,7 @@ async function handleRequest(request, env, context) {
         }
       }
     } catch { /* ignore — non-critical */ }
+    finally { clearTimeout(pctTimer); }
   }
 
   // --- Background: DB writes + follow-up email (non-blocking via waitUntil) ---

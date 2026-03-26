@@ -41,21 +41,31 @@ async function extractTextFromDocx(file) {
 
 async function extractTextFromPdf(file) {
   const pdfjsLib = await import('pdfjs-dist');
-  // Use the locally-bundled worker (served from same origin via Vite ?url import).
-  // This is far more reliable on mobile than a CDN URL, which can fail due to
-  // network blocks, CORS restrictions, or iOS Safari module-worker quirks.
-  pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
+  // Use a Uint8Array — more broadly compatible than a raw ArrayBuffer across
+  // browser/OS combinations (notably older iOS WebKit builds).
   const arrayBuffer = await file.arrayBuffer();
+  const data = new Uint8Array(arrayBuffer);
+
+  // iOS Safari cannot load `.mjs` files as classic Workers (they require
+  // `{ type: 'module' }` which pdfjs-dist doesn't use when given a plain URL).
+  // Skip straight to fake-worker (main-thread) mode on iOS to avoid the silent
+  // hang that results from the failed Worker creation.
+  const isIOS = /iP(ad|hone|od)/i.test(navigator.userAgent);
+  pdfjsLib.GlobalWorkerOptions.workerSrc = isIOS ? '' : pdfWorkerUrl;
 
   let pdf;
   try {
-    pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    pdf = await pdfjsLib.getDocument({ data }).promise;
   } catch {
-    // Worker failed (e.g. strict CSP on some enterprise devices) — retry
-    // in fake-worker mode so parsing still runs in the main thread.
+    // Secondary fallback: force fake-worker with extra compatibility flags
+    // that disable chunked/streaming fetching (not needed for local ArrayBuffers).
     pdfjsLib.GlobalWorkerOptions.workerSrc = '';
-    pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    pdf = await pdfjsLib.getDocument({
+      data,
+      disableRange: true,
+      disableStream: true,
+    }).promise;
   }
 
   const pages = [];
