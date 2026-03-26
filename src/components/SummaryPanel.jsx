@@ -416,6 +416,7 @@ export default function SummaryPanel({ summary, loading, error, modelTier, score
   const [pdfLoading, setPdfLoading] = useState(false);
   const [emailModalOpen, setEmailModalOpen] = useState(false);
   const [shareState, setShareState] = useState('idle'); // idle | copying | copied | shared | error
+  const [imgShareState, setImgShareState] = useState('idle'); // idle | loading | done
 
   const parsedSummary = (() => {
     if (!summary) return null;
@@ -472,6 +473,26 @@ export default function SummaryPanel({ summary, loading, error, modelTier, score
       generatePDF({ data: parsedSummary, filename, analysisDate: new Date() });
     } finally {
       setPdfLoading(false);
+    }
+  };
+
+  const handleShareScoreCard = async () => {
+    if (imgShareState === 'loading') return;
+    setImgShareState('loading');
+    try {
+      const { generateShareImage, shareOrDownloadImage } = await import('../lib/generateShareImage');
+      const canvas = generateShareImage({ data: parsedSummary });
+      const score = typeof parsedSummary?.score === 'number' ? Math.max(1, Math.min(10, parsedSummary.score)) : null;
+      const shareUrl = shareToken ? `${window.location.origin}/shared/${shareToken}` : null;
+      const result = await shareOrDownloadImage(canvas, { score, shareUrl });
+      if (result !== 'cancelled') {
+        setImgShareState('done');
+        setTimeout(() => setImgShareState('idle'), 2500);
+      } else {
+        setImgShareState('idle');
+      }
+    } catch {
+      setImgShareState('idle');
     }
   };
 
@@ -689,6 +710,39 @@ export default function SummaryPanel({ summary, loading, error, modelTier, score
                     </a>
                   </div>
                 </div>
+
+                {/* ── Share score card ─────────────────────────────────────── */}
+                {(() => {
+                  const score = typeof parsedSummary?.score === 'number' ? Math.max(1, Math.min(10, parsedSummary.score)) : null;
+                  const { color: sc, border: sb } = scoreStyle(score);
+                  return (
+                    <button
+                      onClick={handleShareScoreCard}
+                      disabled={imgShareState === 'loading'}
+                      className="mt-3 w-full rounded-xl border border-white/[0.07] bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/[0.12] active:scale-[0.99] transition-all p-3 flex items-center gap-3 group disabled:opacity-60"
+                    >
+                      {/* Mini score badge — preview of the card */}
+                      <div className={`w-9 h-9 rounded-full border-2 ${sb} flex items-center justify-center shrink-0`}>
+                        {score !== null
+                          ? <span className={`text-sm font-black ${sc}`}>{score}</span>
+                          : <span className="text-xs text-zinc-600">?</span>}
+                      </div>
+                      <div className="flex-1 min-w-0 text-left">
+                        <p className="text-xs font-semibold text-zinc-300 group-hover:text-white transition leading-tight">Share your score</p>
+                        <p className="text-[10.5px] text-zinc-600 leading-tight mt-0.5">Post to Instagram, TikTok, or save the image</p>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        {imgShareState === 'loading' ? (
+                          <div className="w-3.5 h-3.5 border border-zinc-600 border-t-zinc-400 rounded-full animate-spin" />
+                        ) : imgShareState === 'done' ? (
+                          <CheckCircle2 className="w-3.5 h-3.5 text-blue-400" />
+                        ) : (
+                          <span className="text-[11px] font-semibold text-zinc-500 group-hover:text-zinc-300 transition">Share →</span>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })()}
 
                 {/* Attribution */}
                 <p className="mt-3.5 text-[10.5px] text-zinc-700 flex items-center gap-1.5 pb-0.5">
