@@ -5,14 +5,6 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import AppShell from '../components/AppShell';
 
-const StripeBadge = () => (
-  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#635BFF]/10 border border-[#635BFF]/20 w-fit">
-    <svg width="10" height="14" viewBox="0 0 10 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <path d="M4.667 5.833C2.5 5.25 1.833 4.583 1.833 3.583c0-1.166 1.084-1.916 2.834-1.916 1.5 0 2.416.583 2.833 1.5l1.75-.75C8.667 1.083 7.25 0 4.667 0 2.25 0 .333 1.333.333 3.583c0 2.5 2.084 3.084 4.084 3.667 2.166.583 3 1.333 3 2.5 0 1.25-1.084 2.083-2.917 2.083-1.583 0-2.667-.666-3.25-1.916L-.167 10.5C.583 12.167 2.25 13.5 4.5 13.5c2.75 0 4.667-1.417 4.667-3.75C9.167 7.167 6.917 6.417 4.667 5.833Z" fill="#635BFF"/>
-    </svg>
-    <span className="text-[12px] font-semibold tracking-tight text-[#635BFF]">stripe</span>
-  </div>
-);
 
 const PLAN_INFO = {
   free: {
@@ -40,7 +32,8 @@ const PLAN_INFO = {
     features: [
       '1 full analysis',
       'Advanced Declawed AI',
-      'PDF report download',
+      'PDF, Word & PNG export',
+      'Email report',
       '7-day money-back guarantee',
     ],
     isPaid: true,
@@ -339,15 +332,9 @@ export default function Billing() {
             transition={{ delay: 0.1 }}
             className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6 mb-5"
           >
-            {/* Stripe branding notice */}
-            <div className="flex items-center gap-3 mb-5">
-              <StripeBadge />
-              <p className="text-xs text-zinc-500">Your plan is managed through Stripe</p>
-            </div>
-
             <h2 className="text-sm font-semibold text-white mb-1">Manage your subscription</h2>
             <p className="text-sm text-zinc-500 leading-relaxed mb-5">
-              Update your payment method, download invoices, or cancel your subscription through the secure Stripe billing portal.
+              Update your payment method, download invoices, or cancel your subscription through the secure billing portal.
             </p>
 
             {portalError && (

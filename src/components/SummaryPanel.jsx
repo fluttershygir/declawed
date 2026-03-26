@@ -299,7 +299,7 @@ function StructuredSummary({ data, landlordMode, scorePercentile }) {
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const PAID_PLANS  = new Set(['one', 'pro', 'unlimited']);
-const EMAIL_PLANS = new Set(['pro', 'unlimited']);
+const EMAIL_PLANS = new Set(['one', 'pro', 'unlimited']);
 
 // ─── Anonymous teaser ─────────────────────────────────────────────────────────
 

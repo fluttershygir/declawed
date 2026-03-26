@@ -4,7 +4,7 @@ import { X, Mail, Send, CheckCircle2, AlertCircle, Lock } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 
-const EMAIL_PLANS = new Set(['pro', 'unlimited']);
+const EMAIL_PLANS = new Set(['one', 'pro', 'unlimited']);
 
 export default function EmailReportModal({ open, onClose, analysisData, filename, usage }) {
   const { user } = useAuth();
@@ -110,8 +110,8 @@ export default function EmailReportModal({ open, onClose, analysisData, filename
                     <Lock className="w-5 h-5 text-zinc-500" />
                   </div>
                   <div>
-                    <p className="text-slate-200 font-semibold text-sm">Pro & Unlimited only</p>
-                    <p className="text-zinc-500 text-xs mt-1 leading-relaxed">Email reports are available on Pro and Unlimited plans. Upgrade to send your full analysis directly to your inbox.</p>
+                    <p className="text-slate-200 font-semibold text-sm">Paid plan required</p>
+                    <p className="text-zinc-500 text-xs mt-1 leading-relaxed">Email reports are available on all paid plans. Upgrade to unlock email export and send your full analysis directly to your inbox.</p>
                   </div>
                   <button
                     onClick={onClose}

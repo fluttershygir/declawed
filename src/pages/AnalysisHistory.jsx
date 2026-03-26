@@ -163,7 +163,7 @@ function ComparePanel({ a, b, onClose }) {
 }
 
 export default function AnalysisHistory() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [analyses, setAnalyses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedAnalysis, setSelectedAnalysis] = useState(null);
@@ -494,7 +494,9 @@ export default function AnalysisHistory() {
           onClose={() => setSelectedAnalysis(null)}
           onNoteUpdate={handleNoteUpdate}
           onReanalyzeComplete={handleReanalyzeComplete}
+          onUpgrade={() => { window.location.href = '/billing'; }}
           userName={fullDisplayName}
+          plan={profile?.plan || 'free'}
         />
       )}
 

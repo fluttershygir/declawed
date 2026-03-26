@@ -171,7 +171,7 @@ export default function PaywallModal({ open, onClose }) {
                   <div className="flex items-center gap-2">
                     <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-zinc-500">One Time</span>
                   </div>
-                  <p className="text-[11px] text-zinc-400 mt-0.5">3 analyses, no subscription</p>
+                  <p className="text-[11px] text-zinc-400 mt-0.5">3 analyses · unlocks PDF, Word, PNG &amp; email export</p>
                 </div>
                 <div className="shrink-0 text-right">
                   {loading === 'one' ? (

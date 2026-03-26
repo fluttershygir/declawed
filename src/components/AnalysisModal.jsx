@@ -1,8 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, X, AlertCircle, Calendar, ShieldCheck, AlertTriangle, FileCheck, ListChecks, FileImage, Loader2, Download, Pencil, Share2, RotateCcw, Copy, Check, Info } from 'lucide-react';
+import { FileText, X, AlertCircle, Calendar, ShieldCheck, AlertTriangle, FileCheck, ListChecks, FileImage, Loader2, Download, Pencil, Share2, RotateCcw, Copy, Check, Info, Mail, Lock } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { copyToClipboard } from '../lib/clipboard';
+import EmailReportModal from './EmailReportModal';
+
+const EXPORT_PLANS = new Set(['one', 'pro', 'unlimited']);
 
 const SEVERITY_STYLES = {
   HIGH:   { bg: 'bg-rose-500/10',  text: 'text-rose-400'  },
@@ -19,10 +22,12 @@ export function SeverityBadge({ severity }) {
   );
 }
 
-export default function AnalysisModal({ analysis, onClose, onNoteUpdate, onReanalyzeComplete, onUpgrade, userName }) {
+export default function AnalysisModal({ analysis, onClose, onNoteUpdate, onReanalyzeComplete, onUpgrade, userName, plan }) {
   const data = analysis?.result || {};
   const cardRef = useRef(null);
+  const canExport = EXPORT_PLANS.has(plan);
   const [downloading, setDownloading] = useState('');
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
   const [note, setNote] = useState(analysis?.note ?? '');
   const [editingNote, setEditingNote] = useState(false);
   const [noteSaving, setNoteSaving] = useState(false);
@@ -47,6 +52,7 @@ export default function AnalysisModal({ analysis, onClose, onNoteUpdate, onReana
   }, []);
 
   async function handleDownload(type) {
+    if (!canExport) { onUpgrade?.(); return; }
     if (downloading) return;
     setDownloading(type);
     try {
@@ -59,18 +65,9 @@ export default function AnalysisModal({ analysis, onClose, onNoteUpdate, onReana
         const { generateDOCX } = await import('../lib/generateDOCX');
         generateDOCX({ data, filename, analysisDate: new Date(analysis.created_at) });
       } else if (type === 'img') {
-        const { default: html2canvas } = await import('html2canvas');
-        const canvas = await html2canvas(cardRef.current, {
-          backgroundColor: '#0d0d14',
-          scale: 2,
-          useCORS: true,
-          logging: false,
-        });
-        const dataUrl = canvas.toDataURL('image/png');
-        const a = document.createElement('a');
-        a.href = dataUrl;
-        a.download = baseFilename + '.png';
-        a.click();
+        const { generateShareImage, downloadShareImage } = await import('../lib/generateShareImage');
+        const canvas = generateShareImage({ data });
+        downloadShareImage(canvas, baseFilename + '.png');
       }
     } catch (e) {
       console.error('Download failed:', e);
@@ -418,21 +415,37 @@ export default function AnalysisModal({ analysis, onClose, onNoteUpdate, onReana
           {/* Export bar */}
           <div className="px-4 py-3 sm:px-5 border-t border-white/[0.06] bg-white/[0.015] flex flex-wrap items-center gap-2">
             <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 shrink-0">Export</span>
+            {!canExport && (
+              <button onClick={onUpgrade} className="text-[10px] text-blue-500 hover:text-blue-400 transition ml-1">
+                upgrade to unlock →
+              </button>
+            )}
             <div className="flex gap-1.5 ml-auto">
               {[
-                { type: 'pdf', label: 'PDF',  Icon: FileText  },
-                { type: 'doc', label: 'Word', Icon: Download  },
-                { type: 'img', label: 'PNG',  Icon: FileImage },
+                { type: 'pdf',   label: 'PDF',   Icon: FileText  },
+                { type: 'doc',   label: 'Word',  Icon: Download  },
+                { type: 'img',   label: 'PNG',   Icon: FileImage },
+                { type: 'email', label: 'Email', Icon: Mail      },
               ].map(({ type, label, Icon }) => (
                 <button
                   key={type}
-                  onClick={() => handleDownload(type)}
-                  disabled={!!downloading}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/[0.05] hover:bg-white/[0.09] border border-white/[0.07] text-zinc-400 hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() => {
+                    if (!canExport) { onUpgrade?.(); return; }
+                    if (type === 'email') { setEmailModalOpen(true); return; }
+                    handleDownload(type);
+                  }}
+                  disabled={canExport && !!downloading && downloading !== type}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition ${
+                    canExport
+                      ? 'bg-white/[0.05] hover:bg-white/[0.09] border-white/[0.07] text-zinc-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed'
+                      : 'bg-transparent border-white/[0.04] text-zinc-600 hover:border-white/[0.08] hover:text-zinc-400'
+                  }`}
                 >
                   {downloading === type
                     ? <Loader2 className="w-3 h-3 animate-spin" />
-                    : <Icon className="w-3 h-3" />}
+                    : canExport
+                      ? <Icon className="w-3 h-3" />
+                      : <Lock className="w-3 h-3" />}
                   {label}
                 </button>
               ))}
@@ -440,6 +453,14 @@ export default function AnalysisModal({ analysis, onClose, onNoteUpdate, onReana
           </div>
         </motion.div>
       </motion.div>
+
+      <EmailReportModal
+        open={emailModalOpen}
+        onClose={() => setEmailModalOpen(false)}
+        analysisData={data}
+        filename={analysis?.filename}
+        usage={{ plan }}
+      />
     </AnimatePresence>
   );
 }
