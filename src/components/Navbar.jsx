@@ -63,20 +63,20 @@ export default function Navbar() {
         </nav>
 
           {/* Right side — flex-1 + justify-end mirrors the logo side */}
-          <div className="flex-1 flex items-center justify-end gap-3">
+          <div className="flex-1 flex items-center justify-end gap-1.5 sm:gap-3">
             {user ? (
               <UserDropdown size="sm" />
             ) : (
               <>
                 <button
                   onClick={() => openAuth('signin')}
-                  className="text-[13px] font-medium text-zinc-400 hover:text-white transition-colors"
+                  className="text-[11px] sm:text-[13px] font-medium text-zinc-400 hover:text-white transition-colors whitespace-nowrap"
                 >
                   Sign in
                 </button>
                 <a
                   href="/#upload"
-                  className="px-4 py-2 rounded-lg bg-blue-600 text-[13px] font-semibold text-white hover:bg-blue-500 active:scale-95 transition-all"
+                  className="px-2.5 py-1 sm:px-4 sm:py-2 rounded-lg bg-blue-600 text-[11px] sm:text-[13px] font-semibold text-white hover:bg-blue-500 active:scale-95 transition-all whitespace-nowrap"
                 >
                   Try free →
                 </a>

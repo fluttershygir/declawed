@@ -32,9 +32,9 @@ const TIERS = [
     iconColor: 'text-blue-300',
     price: '$12',
     period: '/mo',
-    desc: '10 lease analyses per month. Perfect for small landlords.',
+    desc: '15 lease analyses per month. Perfect for small landlords.',
     features: [
-      '10 analyses / month',
+      '15 analyses / month',
       'Advanced Declawed AI',
       'PDF report download',
       'Email report to yourself',

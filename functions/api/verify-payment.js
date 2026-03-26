@@ -3,7 +3,7 @@
 // Retrieves the checkout session from Stripe, verifies payment, and upgrades the user's plan.
 // env: STRIPE_SECRET_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
 
-const PLAN_LIMITS = { one: 3, pro: 10, unlimited: 9999 };
+const PLAN_LIMITS = { one: 3, pro: 15, unlimited: 9999 };
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {

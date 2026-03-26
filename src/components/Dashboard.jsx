@@ -16,7 +16,7 @@ const PLAN_LABELS = {
 const PLAN_FEATURES = {
   free:      ['1 free analysis', 'Standard Declawed AI', 'Red flags & key dates'],
   one:       ['1 full analysis', 'Advanced Declawed AI', 'PDF report download', '7-day money-back guarantee'],
-  pro:       ['10 analyses / month', 'Advanced Declawed AI', 'PDF report download', 'Email report to yourself', 'Full analysis history', 'Priority processing'],
+  pro:       ['15 analyses / month', 'Advanced Declawed AI', 'PDF report download', 'Email report to yourself', 'Full analysis history', 'Priority processing'],
   unlimited: ['Unlimited analyses', 'Advanced Declawed AI', 'Everything in Pro', 'Landlord Mode', 'Priority support'],
 };
 

@@ -14,7 +14,7 @@ const TIERS = [
     price: '$12',
     period: '/mo',
     note: 'Perfect for tenants & small landlords',
-    perks: ['10 analyses per month', 'All red flags & key dates', 'Image scanning', 'Advanced Declawed AI', 'PDF report & email export', '7-day money-back guarantee'],
+    perks: ['15 analyses per month', 'All red flags & key dates', 'Image scanning', 'Advanced Declawed AI', 'PDF report & email export', '7-day money-back guarantee'],
     icon: Zap,
     iconColor: 'text-blue-300',
     borderClass: 'border-blue-400/50',

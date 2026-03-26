@@ -118,7 +118,7 @@ export default function TermsOfService() {
 
           <Section number="6" title="Subscription and Payment">
             <p>
-              Declawed offers a free tier (1 analysis) and paid plans: One Lease ($3.99 one-time, 3 analyses), Pro ($12/mo, 10 analyses/month), and Unlimited ($29/mo, unlimited analyses). Plan limits reset monthly for subscription plans. Paid plans are billed via Stripe at the pricing displayed at time of purchase.
+              Declawed offers a free tier (1 analysis) and paid plans: One Lease ($3.99 one-time, 3 analyses), Pro ($12/mo, 15 analyses/month), and Unlimited ($29/mo, unlimited analyses). Plan limits reset monthly for subscription plans. Paid plans are billed via Stripe at the pricing displayed at time of purchase.
             </p>
             <p>
               Subscription plans are as described at the time of purchase. We reserve the right to change pricing with reasonable notice. Price changes will not affect already-purchased one-time plans.

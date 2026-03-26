@@ -53,7 +53,7 @@ const PLAN_INFO = {
     border: 'border-blue-600/60',
     bg: 'bg-blue-500/[0.04]',
     features: [
-      '10 analyses / month',
+      '15 analyses / month',
       'Advanced Declawed AI',
       'PDF report download',
       'Email report to yourself',
