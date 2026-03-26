@@ -1,62 +1,82 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Loader2 } from 'lucide-react';
 
 export default function AuthCallback() {
-  const navigate = useNavigate();
   const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
-    let cancelled = false;
+    let finished = false;
 
+    // Single exit point — prevents double-redirects and clears the safety timer.
+    const timers = [];
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      timers.forEach(clearTimeout);
+      window.location.replace('/');
+    };
+
+    // Absolute safety valve: never hang more than 10 seconds under any circumstance.
+    timers.push(setTimeout(finish, 10000));
+
+    // ── Listener path ───────────────────────────────────────────────────────
+    // Supabase JS v2 with detectSessionInUrl:true auto-exchanges the PKCE code
+    // on initialisation and fires SIGNED_IN. Catch it here so we redirect even
+    // if the manual exchange below is redundant or races.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) finish();
+    });
+
+    // ── Active exchange path ────────────────────────────────────────────────
     async function handleCallback() {
-      // Check for OAuth error from Google
       const params = new URLSearchParams(window.location.search);
       const oauthError = params.get('error');
+
       if (oauthError) {
         setErrorMsg(params.get('error_description') || 'Sign-in was cancelled or failed.');
-        setTimeout(() => { if (!cancelled) navigate('/'); }, 3000);
+        timers.push(setTimeout(finish, 3000));
         return;
       }
+
+      // If the library already auto-exchanged the code, session is set; redirect now.
+      const { data: { session: existing } } = await supabase.auth.getSession();
+      if (existing) { finish(); return; }
 
       const code = params.get('code');
+      if (!code) { finish(); return; }
 
-      if (code) {
-        // PKCE flow — exchange code for session
+      try {
         const { error } = await supabase.auth.exchangeCodeForSession(code);
-        if (!cancelled) {
-          if (error) {
-            console.error('[AuthCallback] exchangeCodeForSession error:', error.message);
-            setErrorMsg('Sign-in failed. Please try again.');
-            setTimeout(() => { window.location.replace('/'); }, 3000);
-          } else {
-            // Hard reload so AuthContext re-initialises and picks up the new session
-            // from localStorage rather than relying on in-flight React state updates.
-            window.location.replace('/');
-          }
-        }
-        return;
-      }
-
-      // Implicit flow fallback — Supabase sets session from URL hash automatically
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!cancelled) {
-        if (session) {
-          window.location.replace('/');
+        if (finished) return;
+        if (error) {
+          // Could be a double-exchange (library already consumed the code).
+          // Re-check session before showing an error to the user.
+          const { data: { session: retrySession } } = await supabase.auth.getSession();
+          if (retrySession) { finish(); return; }
+          setErrorMsg('Sign-in failed. Please try again.');
+          timers.push(setTimeout(finish, 3000));
         } else {
-          setTimeout(async () => {
-            if (!cancelled) {
-              window.location.replace('/');
-            }
-          }, 800);
+          finish();
         }
+      } catch {
+        if (finished) return;
+        // Threw — still check whether a session was silently set.
+        const { data: { session: catchSession } } = await supabase.auth.getSession();
+        if (catchSession) { finish(); return; }
+        setErrorMsg('Sign-in failed. Please try again.');
+        timers.push(setTimeout(finish, 3000));
       }
     }
 
     handleCallback();
-    return () => { cancelled = true; };
-  }, [navigate]);
+
+    return () => {
+      finished = true;
+      timers.forEach(clearTimeout);
+      subscription.unsubscribe();
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center">
