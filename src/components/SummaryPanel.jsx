@@ -392,7 +392,7 @@ function AnonTeaser({ data, onSignUp, scorePercentile }) {
 export default function SummaryPanel({ summary, loading, error, modelTier, scorePercentile, usage, filename, onUpgrade, landlordMode, user, onSignUp, onRetry, shareToken }) {
   const [pdfLoading, setPdfLoading] = useState(false);
   const [emailModalOpen, setEmailModalOpen] = useState(false);
-  const [shareState, setShareState] = useState('idle'); // idle | generating | done | downloaded
+  const [shareState, setShareState] = useState('idle'); // idle | copying | copied
 
   const parsedSummary = (() => {
     if (!summary) return null;
@@ -404,15 +404,12 @@ export default function SummaryPanel({ summary, loading, error, modelTier, score
   const summaryParseError = parsedSummary?._parseError === true;
 
   const handleShare = async () => {
-    if (shareState === 'generating') return;
-    setShareState('generating');
+    if (shareState === 'copying' || !shareToken) return;
+    setShareState('copying');
     try {
-      const { generateShareImage, shareOrDownloadImage } = await import('../lib/generateShareImage');
-      const canvas = generateShareImage({ data: parsedSummary });
-      const shareUrl = shareToken ? `${window.location.origin}/shared/${shareToken}` : window.location.origin;
-      const result = await shareOrDownloadImage(canvas, { score: parsedSummary?.score, shareUrl });
-      if (result === 'cancelled') { setShareState('idle'); return; }
-      setShareState(result === 'downloaded' ? 'downloaded' : 'done');
+      const shareUrl = `${window.location.origin}/shared/${shareToken}`;
+      await navigator.clipboard.writeText(shareUrl);
+      setShareState('copied');
       setTimeout(() => setShareState('idle'), 2500);
     } catch {
       setShareState('idle');
@@ -560,21 +557,21 @@ export default function SummaryPanel({ summary, loading, error, modelTier, score
                   <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-zinc-700 mb-2.5">What to do next</p>
                   <div className="grid grid-cols-4 gap-1.5">
 
-                    {/* Share */}
+                    {/* Copy link */}
                     <button
                       onClick={handleShare}
-                      disabled={shareState === 'generating'}
+                      disabled={shareState === 'copying' || !shareToken}
                       className="group flex flex-col items-center gap-1.5 rounded-lg px-2 py-2.5 border border-blue-500/20 bg-blue-500/[0.05] hover:border-blue-500/40 hover:bg-blue-500/[0.09] transition-all disabled:opacity-50"
                     >
-                      {shareState === 'generating' ? (
+                      {shareState === 'copying' ? (
                         <div className="w-3.5 h-3.5 border border-blue-400/40 border-t-blue-400 rounded-full animate-spin" />
-                      ) : (shareState === 'done' || shareState === 'downloaded') ? (
+                      ) : shareState === 'copied' ? (
                         <CheckCircle2 className="w-3.5 h-3.5 text-blue-400" />
                       ) : (
                         <Share2 className="w-3.5 h-3.5 text-blue-400/80" />
                       )}
                       <span className="text-[9.5px] font-semibold text-blue-400/70 group-hover:text-blue-300 text-center leading-tight transition">
-                        {shareState === 'generating' ? '…' : shareState === 'downloaded' ? 'Saved!' : shareState === 'done' ? 'Shared!' : 'Share'}
+                        {shareState === 'copying' ? '…' : shareState === 'copied' ? 'Copied!' : 'Share'}
                       </span>
                     </button>
 
