@@ -371,7 +371,8 @@ async function handleRequest(request, env, context) {
       },
       body: JSON.stringify({ user_id: userId }),
     });
-    // Insert into analyses history and capture share_token
+    // Insert into analyses history — generate share_token here since the column has no DB default
+    const generatedToken = crypto.randomUUID().replace(/-/g, '');
     try {
       const insertRes = await fetch(`${env.SUPABASE_URL}/rest/v1/analyses`, {
         method: 'POST',
@@ -386,13 +387,13 @@ async function handleRequest(request, env, context) {
           filename: filename || null,
           verdict: analysis.verdict,
           result: analysis,
+          share_token: generatedToken,
           // Store original text for re-analysis (null for image uploads)
           source_text: isImageRequest ? null : (text ? text.slice(0, 40000) : null),
         }),
       });
       if (insertRes.ok) {
-        const inserted = await insertRes.json();
-        shareToken = inserted?.[0]?.share_token || null;
+        shareToken = generatedToken;
       }
     } catch { /* non-critical — analysis still returned */ }
   } else {
