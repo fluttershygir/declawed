@@ -339,17 +339,11 @@ async function handleRequest(request, env, context) {
     analysis.unusualClauses = Array.isArray(analysis.unusualClauses) ? analysis.unusualClauses : [];
     analysis.actionSteps = Array.isArray(analysis.actionSteps) ? analysis.actionSteps : [];
   } catch {
-    // Last-resort fallback: show a parse-error verdict
-    analysis = {
-      score: null,
-      verdict: '',
-      redFlags: [],
-      keyDates: [],
-      tenantRights: [],
-      unusualClauses: [],
-      actionSteps: [],
-      _parseError: true,
-    };
+    // Claude returned something we couldn't parse. Return a retryable error so the
+    // attempt is NOT counted against the user's limit. They can retry immediately.
+    return json({
+      error: 'The AI returned an unexpected response — this is a temporary issue on our end. Your analysis credit was not used. Please retry.',
+    }, 500);
   }
 
   // --- Record usage ---

@@ -525,19 +525,25 @@ export default function SummaryPanel({ summary, loading, error, modelTier, score
 
           {/* Error */}
           {!loading && error && (
-            <div className="flex flex-col items-center justify-center h-full text-center px-4 py-10 gap-4">
-              <div className="flex items-center gap-2 text-rose-400/80">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <p className="text-sm text-zinc-400">{error}</p>
+            <div className="flex flex-col items-center justify-center h-full text-center px-5 py-10 gap-4">
+              <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center shrink-0">
+                <AlertCircle className="w-5 h-5 text-rose-400/80" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-zinc-200">Analysis failed</p>
+                <p className="text-[12px] text-zinc-500 leading-relaxed max-w-[260px] mx-auto">{error}</p>
               </div>
               {onRetry && (
-                <button
-                  onClick={onRetry}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-[13px] font-medium text-zinc-400 hover:text-white hover:bg-white/[0.07] transition active:scale-95"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  Retry analysis
-                </button>
+                <div className="flex flex-col items-center gap-2">
+                  <button
+                    onClick={onRetry}
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-500/10 border border-blue-500/25 text-[13px] font-semibold text-blue-400 hover:bg-blue-500/20 hover:text-blue-300 transition-all active:scale-95"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    Try again
+                  </button>
+                  <p className="text-[11px] text-zinc-700">Your analysis credit was not used</p>
+                </div>
               )}
             </div>
           )}
@@ -578,14 +584,30 @@ export default function SummaryPanel({ summary, loading, error, modelTier, score
             </div>
           )}
 
-          {/* Parse error */}
+          {/* Parse error (safety net — backend now returns 500 for this case) */}
           {!loading && !error && summaryParseError && (
-            <div className="flex flex-col items-center justify-center h-full text-center px-6 py-10 space-y-3">
-              <AlertCircle className="w-7 h-7 text-rose-400/70" />
-              <p className="text-sm font-semibold text-zinc-300">Couldn&rsquo;t display the analysis</p>
-              <p className="text-xs text-zinc-600 leading-relaxed">
-                The AI returned an unexpected format. Try uploading again or use a different file format.
-              </p>
+            <div className="flex flex-col items-center justify-center h-full text-center px-5 py-10 gap-4">
+              <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center shrink-0">
+                <AlertCircle className="w-5 h-5 text-rose-400/80" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-zinc-200">Analysis failed</p>
+                <p className="text-[12px] text-zinc-500 leading-relaxed max-w-[260px] mx-auto">
+                  The AI returned an unexpected response. This is a temporary issue — your credit was not used.
+                </p>
+              </div>
+              {onRetry && (
+                <div className="flex flex-col items-center gap-2">
+                  <button
+                    onClick={onRetry}
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-500/10 border border-blue-500/25 text-[13px] font-semibold text-blue-400 hover:bg-blue-500/20 hover:text-blue-300 transition-all active:scale-95"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    Try again
+                  </button>
+                  <p className="text-[11px] text-zinc-700">Your analysis credit was not used</p>
+                </div>
+              )}
             </div>
           )}
 
