@@ -127,7 +127,7 @@ async function getUserFromJwt(jwt, supabaseUrl, serviceRoleKey) {
 
 async function callAnthropic(apiKey, model, maxTokens, systemPrompt, messageContent) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 25000); // 25s hard timeout
+  const timer = setTimeout(() => controller.abort(), 55000); // 55s hard timeout
   try {
     return await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -168,8 +168,11 @@ export async function onRequestPost(context) {
   try {
     return await handleRequest(request, env, context);
   } catch (e) {
+    if (e?.name === 'AbortError' || e?.message?.includes('aborted')) {
+      return json({ error: 'Analysis timed out — please try again. Very long documents may take a moment.' }, 504);
+    }
     console.error('[summarize] Unhandled error:', e?.message ?? e);
-    return json({ error: `Server error: ${e?.message ?? 'Unknown error'}` }, 500);
+    return json({ error: 'Something went wrong. Please try again.' }, 500);
   }
 }
 
