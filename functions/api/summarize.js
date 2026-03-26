@@ -387,52 +387,17 @@ async function handleRequest(request, env, context) {
     }, 500);
   }
 
-  // --- Record usage ---
+  // --- Prepare response headers ---
   const responseHeaders = new Headers({
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
   });
 
-  let shareToken = null;
+  // Generate share token upfront (before background work)
+  const shareToken = userId ? crypto.randomUUID().replace(/-/g, '') : null;
 
-  if (userId) {
-    // Atomically increment analyses_used via RPC (avoids PostgREST string expression pitfall)
-    await fetch(`${env.SUPABASE_URL}/rest/v1/rpc/increment_analyses_used`, {
-      method: 'POST',
-      headers: {
-        apikey: env.SUPABASE_SERVICE_ROLE_KEY,
-        Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ user_id: userId }),
-    });
-    // Insert into analyses history — generate share_token here since the column has no DB default
-    const generatedToken = crypto.randomUUID().replace(/-/g, '');
-    try {
-      const insertRes = await fetch(`${env.SUPABASE_URL}/rest/v1/analyses`, {
-        method: 'POST',
-        headers: {
-          apikey: env.SUPABASE_SERVICE_ROLE_KEY,
-          Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
-          'Content-Type': 'application/json',
-          Prefer: 'return=representation',
-        },
-        body: JSON.stringify({
-          user_id: userId,
-          filename: filename || null,
-          verdict: analysis.verdict,
-          result: analysis,
-          share_token: generatedToken,
-          // Store original text for re-analysis (null for image uploads)
-          source_text: isImageRequest ? null : (text ? text.slice(0, 40000) : null),
-        }),
-      });
-      if (insertRes.ok) {
-        shareToken = generatedToken;
-      }
-    } catch { /* non-critical — analysis still returned */ }
-  } else {
-    // Anonymous — set a signed cookie so users can't clear it and reuse the free tier.
+  // Anonymous — set signed cookie immediately in response headers
+  if (!userId) {
     const cookieSecret = env.COOKIE_SECRET || '';
     const cookieSig = cookieSecret
       ? await signCookieValue(cookieSecret, 'dcl_free_used')
@@ -440,13 +405,14 @@ async function handleRequest(request, env, context) {
     responseHeaders.append('Set-Cookie', `dcl_free_used=${cookieSig}; Path=/; HttpOnly; SameSite=Strict; Max-Age=31536000; Secure`);
   }
 
-  // Compute score percentile — how does this lease compare to all analyzed leases?
+  // Compute score percentile with a tight 3-second timeout so it never blocks the response.
   let scorePercentile = null;
   if (typeof analysis.score === 'number' && env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) {
     try {
-      const scoresRes = await fetch(
+      const scoresRes = await fetchWithTimeout(
         `${env.SUPABASE_URL}/rest/v1/analyses?select=s:result->>score&limit=10000`,
-        { headers: { apikey: env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}` } }
+        { headers: { apikey: env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}` } },
+        3000
       );
       if (scoresRes.ok) {
         const rows = await scoresRes.json();
@@ -459,9 +425,48 @@ async function handleRequest(request, env, context) {
     } catch { /* ignore — non-critical */ }
   }
 
-  // Schedule a 24-hour follow-up email for logged-in users (fire-and-forget)
-  if (userId && env.RESEND_API_KEY) {
-    context.waitUntil(scheduleFollowUpEmail({ userId, analysis, shareToken, env }));
+  // --- Background: DB writes + follow-up email (non-blocking via waitUntil) ---
+  // These run after the response is already sent, so they never delay the user.
+  if (userId && shareToken) {
+    context.waitUntil(
+      (async () => {
+        try {
+          // Atomically increment analyses_used via RPC
+          await fetch(`${env.SUPABASE_URL}/rest/v1/rpc/increment_analyses_used`, {
+            method: 'POST',
+            headers: {
+              apikey: env.SUPABASE_SERVICE_ROLE_KEY,
+              Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ user_id: userId }),
+          });
+          // Insert analysis into history
+          await fetch(`${env.SUPABASE_URL}/rest/v1/analyses`, {
+            method: 'POST',
+            headers: {
+              apikey: env.SUPABASE_SERVICE_ROLE_KEY,
+              Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+              'Content-Type': 'application/json',
+              Prefer: 'return=minimal',
+            },
+            body: JSON.stringify({
+              user_id: userId,
+              filename: filename || null,
+              verdict: analysis.verdict,
+              result: analysis,
+              share_token: shareToken,
+              source_text: isImageRequest ? null : (text ? text.slice(0, 40000) : null),
+            }),
+          });
+        } catch { /* non-critical — analysis already returned to user */ }
+
+        // Schedule 24-hour follow-up email
+        if (env.RESEND_API_KEY) {
+          await scheduleFollowUpEmail({ userId, analysis, shareToken, env }).catch(() => {});
+        }
+      })()
+    );
   }
 
   return new Response(JSON.stringify({ summary: analysis, modelTier, landlordMode: useLandlordMode, scorePercentile, shareToken: shareToken || null }), { status: 200, headers: responseHeaders });
