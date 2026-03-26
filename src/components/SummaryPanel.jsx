@@ -14,6 +14,24 @@ const ANALYSIS_STEPS = [
   { label: 'Generating your report…', icon: '✨' },
 ];
 
+// Container staggers children in on mount only.
+const progressContainer = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.09, delayChildren: 0.04 } },
+};
+
+// Dynamic variant: custom = { pending: bool }
+// Using variants (not inline `animate`) ensures Framer Motion always animates
+// from the *current* value — never snaps back to `initial` on re-render.
+const progressItem = {
+  hidden: { opacity: 0, x: -8 },
+  visible: ({ pending }) => ({
+    opacity: pending ? 0.28 : 1,
+    x: 0,
+    transition: { duration: 0.38, ease: [0.25, 0.1, 0.25, 1] },
+  }),
+};
+
 function AnalysisProgress() {
   const [stepIdx, setStepIdx] = useState(0);
   useEffect(() => {
@@ -32,7 +50,12 @@ function AnalysisProgress() {
       <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-600 mb-5 text-center">
         Declawed AI is reading your lease
       </p>
-      <div className="space-y-2">
+      <motion.div
+        className="space-y-2"
+        variants={progressContainer}
+        initial="hidden"
+        animate="visible"
+      >
         {ANALYSIS_STEPS.map((step, i) => {
           const done    = i < stepIdx;
           const active  = i === stepIdx;
@@ -40,10 +63,9 @@ function AnalysisProgress() {
           return (
             <motion.div
               key={step.label}
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: pending ? 0.25 : 1, x: 0 }}
-              transition={{ duration: 0.3, delay: i * 0.05 }}
-              className={`flex items-center gap-3 rounded-lg px-3.5 py-2.5 border transition-all duration-500 ${
+              custom={{ pending }}
+              variants={progressItem}
+              className={`flex items-center gap-3 rounded-lg px-3.5 py-2.5 border transition-colors duration-500 ${
                 active  ? 'border-blue-500/30 bg-blue-500/[0.05]' :
                 done    ? 'border-white/[0.04] bg-white/[0.02]'   :
                           'border-transparent bg-transparent'
@@ -64,7 +86,7 @@ function AnalysisProgress() {
             </motion.div>
           );
         })}
-      </div>
+      </motion.div>
       <p className="text-[11px] text-zinc-700 text-center mt-5">Usually 10–30 seconds</p>
     </div>
   );
