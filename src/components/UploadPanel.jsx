@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Upload, FileText, Loader2, AlertCircle, Lock, Zap, Image as ImageIcon, Building2, Gift, ShieldCheck, EyeOff, CloudUpload } from 'lucide-react';
 import ShareToUnlockModal from './ShareToUnlockModal';
+import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
 const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 const IMAGE_EXTS = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
@@ -40,13 +41,23 @@ async function extractTextFromDocx(file) {
 
 async function extractTextFromPdf(file) {
   const pdfjsLib = await import('pdfjs-dist');
-  // Use CDN worker — avoids rolldown-vite/Cloudflare Pages bundling issues
-  // where new URL(..., import.meta.url) resolves to a missing path and the
-  // worker silently never loads, causing getDocument().promise to hang forever.
-  pdfjsLib.GlobalWorkerOptions.workerSrc =
-    `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+  // Use the locally-bundled worker (served from same origin via Vite ?url import).
+  // This is far more reliable on mobile than a CDN URL, which can fail due to
+  // network blocks, CORS restrictions, or iOS Safari module-worker quirks.
+  pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
+
   const arrayBuffer = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+  let pdf;
+  try {
+    pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  } catch {
+    // Worker failed (e.g. strict CSP on some enterprise devices) — retry
+    // in fake-worker mode so parsing still runs in the main thread.
+    pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+    pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  }
+
   const pages = [];
   for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i);
@@ -106,11 +117,11 @@ export default function UploadPanel({ onUpload, loading, usage, onUpgrade, landl
       catch { setParsing(false); setParseError('Could not read this Word document. Ensure it is a valid .docx file.'); return; }
     } else {
       try { text = await extractTextFromPdf(file); }
-      catch { setParsing(false); setParseError('Could not read this PDF. Try a text-based (not scanned) PDF.'); return; }
+      catch (e) { setParsing(false); setParseError('Could not read this PDF. Make sure it isn\'t password-protected, and try again. If the issue persists, export it from your PDF viewer and re-upload.'); return; }
     }
     setParsing(false);
     if (!text.trim() || text.trim().length < 50) {
-      setParseError('Could not extract text. Ensure the file is not a scanned image.');
+      setParseError('No readable text found. This appears to be a scanned image PDF — try uploading it as an image instead, or use a text-based PDF.');
       return;
     }
     onUpload({ text, filename: file.name, landlordMode: !!landlordMode });
