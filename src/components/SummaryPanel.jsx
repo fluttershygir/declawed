@@ -393,7 +393,7 @@ function AnonTeaser({ data, onSignUp, scorePercentile }) {
 export default function SummaryPanel({ summary, loading, error, modelTier, scorePercentile, usage, filename, onUpgrade, landlordMode, user, onSignUp, onRetry, shareToken }) {
   const [pdfLoading, setPdfLoading] = useState(false);
   const [emailModalOpen, setEmailModalOpen] = useState(false);
-  const [shareState, setShareState] = useState('idle'); // idle | copying | copied
+  const [shareState, setShareState] = useState('idle'); // idle | copying | copied | error
 
   const parsedSummary = (() => {
     if (!summary) return null;
@@ -405,16 +405,21 @@ export default function SummaryPanel({ summary, loading, error, modelTier, score
   const summaryParseError = parsedSummary?._parseError === true;
 
   const handleShare = async () => {
-    if (shareState === 'copying' || !shareToken) return;
-    setShareState('copying');
-    try {
-      const shareUrl = `${window.location.origin}/shared/${shareToken}`;
-      await copyToClipboard(shareUrl);
-      setShareState('copied');
+    if (shareState === 'copying') return;
+    if (!shareToken) {
+      setShareState('error');
       setTimeout(() => setShareState('idle'), 2500);
-    } catch {
-      setShareState('idle');
+      return;
     }
+    setShareState('copying');
+    const shareUrl = `${window.location.origin}/shared/${shareToken}`;
+    const ok = await copyToClipboard(shareUrl);
+    if (ok) {
+      setShareState('copied');
+    } else {
+      setShareState('error');
+    }
+    setTimeout(() => setShareState('idle'), 2500);
   };
 
   const handleDownloadPDF = async () => {
@@ -561,18 +566,20 @@ export default function SummaryPanel({ summary, loading, error, modelTier, score
                     {/* Copy link */}
                     <button
                       onClick={handleShare}
-                      disabled={shareState === 'copying' || !shareToken}
+                      disabled={shareState === 'copying'}
                       className="group flex flex-col items-center gap-1.5 rounded-lg px-2 py-2.5 border border-blue-500/20 bg-blue-500/[0.05] hover:border-blue-500/40 hover:bg-blue-500/[0.09] transition-all disabled:opacity-50"
                     >
                       {shareState === 'copying' ? (
                         <div className="w-3.5 h-3.5 border border-blue-400/40 border-t-blue-400 rounded-full animate-spin" />
                       ) : shareState === 'copied' ? (
                         <CheckCircle2 className="w-3.5 h-3.5 text-blue-400" />
+                      ) : shareState === 'error' ? (
+                        <AlertCircle className="w-3.5 h-3.5 text-rose-400" />
                       ) : (
                         <Share2 className="w-3.5 h-3.5 text-blue-400/80" />
                       )}
-                      <span className="text-[9.5px] font-semibold text-blue-400/70 group-hover:text-blue-300 text-center leading-tight transition">
-                        {shareState === 'copying' ? '…' : shareState === 'copied' ? 'Copied!' : 'Share'}
+                      <span className={`text-[9.5px] font-semibold text-center leading-tight transition ${shareState === 'error' ? 'text-rose-400' : 'text-blue-400/70 group-hover:text-blue-300'}`}>
+                        {shareState === 'copying' ? '…' : shareState === 'copied' ? 'Copied!' : shareState === 'error' ? 'No link' : 'Share'}
                       </span>
                     </button>
 
