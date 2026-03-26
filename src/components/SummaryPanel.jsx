@@ -393,7 +393,7 @@ function AnonTeaser({ data, onSignUp, scorePercentile }) {
 export default function SummaryPanel({ summary, loading, error, modelTier, scorePercentile, usage, filename, onUpgrade, landlordMode, user, onSignUp, onRetry, shareToken }) {
   const [pdfLoading, setPdfLoading] = useState(false);
   const [emailModalOpen, setEmailModalOpen] = useState(false);
-  const [shareState, setShareState] = useState('idle'); // idle | copying | copied | error
+  const [shareState, setShareState] = useState('idle'); // idle | copying | copied | shared | error
 
   const parsedSummary = (() => {
     if (!summary) return null;
@@ -412,14 +412,32 @@ export default function SummaryPanel({ summary, loading, error, modelTier, score
       return;
     }
     setShareState('copying');
+    const shareUrl = `${window.location.origin}/shared/${shareToken}`;
+    let cancelled = false;
     try {
-      const shareUrl = `${window.location.origin}/shared/${shareToken}`;
-      const ok = await copyToClipboard(shareUrl);
-      setShareState(ok ? 'copied' : 'error');
-    } catch {
+      if (navigator.share) {
+        // Native share sheet (mobile) — opens iMessage, Instagram DMs, etc.
+        await navigator.share({
+          title: 'Lease Analysis — Declawed',
+          text: 'Check out this AI lease analysis',
+          url: shareUrl,
+        });
+        setShareState('shared');
+      } else {
+        // Desktop fallback — copy link to clipboard
+        const ok = await copyToClipboard(shareUrl);
+        setShareState(ok ? 'copied' : 'error');
+      }
+    } catch (err) {
+      if (err?.name === 'AbortError') {
+        // User dismissed the share sheet — not an error
+        cancelled = true;
+        setShareState('idle');
+        return;
+      }
       setShareState('error');
     } finally {
-      setTimeout(() => setShareState('idle'), 2500);
+      if (!cancelled) setTimeout(() => setShareState('idle'), 2500);
     }
   };
 
@@ -564,7 +582,7 @@ export default function SummaryPanel({ summary, loading, error, modelTier, score
                   <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-zinc-700 mb-2.5">What to do next</p>
                   <div className="grid grid-cols-4 gap-1.5">
 
-                    {/* Copy link */}
+                    {/* Share / Copy link */}
                     <button
                       onClick={handleShare}
                       disabled={shareState === 'copying'}
@@ -572,7 +590,7 @@ export default function SummaryPanel({ summary, loading, error, modelTier, score
                     >
                       {shareState === 'copying' ? (
                         <div className="w-3.5 h-3.5 border border-blue-400/40 border-t-blue-400 rounded-full animate-spin" />
-                      ) : shareState === 'copied' ? (
+                      ) : shareState === 'copied' || shareState === 'shared' ? (
                         <CheckCircle2 className="w-3.5 h-3.5 text-blue-400" />
                       ) : shareState === 'error' ? (
                         <AlertCircle className="w-3.5 h-3.5 text-rose-400" />
@@ -580,7 +598,11 @@ export default function SummaryPanel({ summary, loading, error, modelTier, score
                         <Share2 className="w-3.5 h-3.5 text-blue-400/80" />
                       )}
                       <span className={`text-[9.5px] font-semibold text-center leading-tight transition ${shareState === 'error' ? 'text-rose-400' : 'text-blue-400/70 group-hover:text-blue-300'}`}>
-                        {shareState === 'copying' ? '…' : shareState === 'copied' ? 'Copied!' : shareState === 'error' ? 'No link' : 'Share'}
+                        {shareState === 'copying' ? '…'
+                          : shareState === 'copied' ? 'Copied!'
+                          : shareState === 'shared' ? 'Shared!'
+                          : shareState === 'error' ? 'No link'
+                          : 'Share'}
                       </span>
                     </button>
 
