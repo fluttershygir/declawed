@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileText, Zap, ChevronRight, X, AlertCircle, Calendar, ShieldCheck, AlertTriangle, FileCheck, Upload, ArrowLeft, ListChecks, RefreshCw, FileImage, Loader2, Download, Pencil, Share2, RotateCcw, Copy, Check, Users, ShieldAlert } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { copyToClipboard } from '../lib/clipboard';
 import { useAuth } from '../context/AuthContext';
 import AppShell from './AppShell';
 
@@ -140,7 +141,7 @@ export default function Dashboard({ onClose, onUpgrade }) {
         if (token) setAnalyses((prev) => prev.map((item) => item.id === id ? { ...item, share_token: token } : item));
       }
       if (token) {
-        await navigator.clipboard.writeText(`https://declawed.app/shared/${token}`);
+        await copyToClipboard(`https://declawed.app/shared/${token}`);
         setToast('Share link copied to clipboard!');
         setTimeout(() => setToast(null), 3000);
       }
@@ -153,7 +154,7 @@ export default function Dashboard({ onClose, onUpgrade }) {
   }
 
   function handleCopyRef() {
-    navigator.clipboard.writeText(`https://declawed.app/?ref=${user.id}`);
+    copyToClipboard(`https://declawed.app/?ref=${user.id}`);
     setRefCopied(true);
     setTimeout(() => setRefCopied(false), 2500);
   }

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileText, AlertCircle, Calendar, Pencil, Share2, ChevronRight, Loader2, Search, Upload, Columns2, X, CheckSquare, Square } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { copyToClipboard } from '../lib/clipboard';
 import { useAuth } from '../context/AuthContext';
 import AppShell from '../components/AppShell';
 import AnalysisModal, { SeverityBadge } from '../components/AnalysisModal';
@@ -223,7 +224,7 @@ export default function AnalysisHistory() {
         if (token) setAnalyses((prev) => prev.map((item) => item.id === id ? { ...item, share_token: token } : item));
       }
       if (token) {
-        await navigator.clipboard.writeText(`https://declawed.app/shared/${token}`);
+        await copyToClipboard(`https://declawed.app/shared/${token}`);
         setToast('Share link copied to clipboard!');
         setTimeout(() => setToast(null), 3000);
       }

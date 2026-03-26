@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileText, X, AlertCircle, Calendar, ShieldCheck, AlertTriangle, FileCheck, ListChecks, FileImage, Loader2, Download, Pencil, Share2, RotateCcw, Copy, Check, Info } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { copyToClipboard } from '../lib/clipboard';
 
 const SEVERITY_STYLES = {
   HIGH:   { bg: 'bg-rose-500/10',  text: 'text-rose-400'  },
@@ -111,7 +112,7 @@ export default function AnalysisModal({ analysis, onClose, onNoteUpdate, onReana
         if (token) setShareToken(token);
       }
       if (token) {
-        await navigator.clipboard.writeText(`https://declawed.app/shared/${token}`);
+        await copyToClipboard(`https://declawed.app/shared/${token}`);
         setShareCopied(true);
         setTimeout(() => setShareCopied(false), 2500);
       }

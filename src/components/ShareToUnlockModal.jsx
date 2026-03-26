@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { copyToClipboard } from '../lib/clipboard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Copy, Check, Gift, Zap, MessageCircle, Mail } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -67,7 +68,7 @@ export default function ShareToUnlockModal({ open, onClose, onUpgrade }) {
 
   async function handleCopy() {
     try {
-      await navigator.clipboard.writeText(refLink);
+      await copyToClipboard(refLink);
       setCopied(true);
       setShowConfetti(true);
       setTimeout(() => setCopied(false), 2500);

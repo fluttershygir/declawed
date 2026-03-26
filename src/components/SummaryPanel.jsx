@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { copyToClipboard } from '../lib/clipboard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileCheck, AlertCircle, Calendar, ShieldCheck, AlertTriangle, ListChecks, Download, Lock, Mail, Building2, RotateCcw, ExternalLink, CheckCircle2, Share2 } from 'lucide-react';
 import EmailReportModal from './EmailReportModal';
@@ -408,7 +409,7 @@ export default function SummaryPanel({ summary, loading, error, modelTier, score
     setShareState('copying');
     try {
       const shareUrl = `${window.location.origin}/shared/${shareToken}`;
-      await navigator.clipboard.writeText(shareUrl);
+      await copyToClipboard(shareUrl);
       setShareState('copied');
       setTimeout(() => setShareState('idle'), 2500);
     } catch {
