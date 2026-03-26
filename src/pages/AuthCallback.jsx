@@ -29,26 +29,25 @@ export default function AuthCallback() {
           if (error) {
             console.error('[AuthCallback] exchangeCodeForSession error:', error.message);
             setErrorMsg('Sign-in failed. Please try again.');
-            setTimeout(() => navigate('/'), 3000);
+            setTimeout(() => { window.location.replace('/'); }, 3000);
           } else {
-            navigate('/');
+            // Hard reload so AuthContext re-initialises and picks up the new session
+            // from localStorage rather than relying on in-flight React state updates.
+            window.location.replace('/');
           }
         }
         return;
       }
 
       // Implicit flow fallback — Supabase sets session from URL hash automatically
-      // Wait briefly for the client to process it
       const { data: { session } } = await supabase.auth.getSession();
       if (!cancelled) {
         if (session) {
-          navigate('/');
+          window.location.replace('/');
         } else {
-          // Give Supabase one more tick to process the hash
           setTimeout(async () => {
-            const { data: { session: retrySession } } = await supabase.auth.getSession();
             if (!cancelled) {
-              navigate('/');
+              window.location.replace('/');
             }
           }, 800);
         }

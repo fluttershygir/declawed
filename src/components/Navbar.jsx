@@ -41,17 +41,19 @@ export default function Navbar() {
       transition={{ duration: 0.35 }}
       className="sticky top-0 z-50 w-full border-b border-white/[0.06] bg-black/85 backdrop-blur-xl"
     >
-      <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
-        {/* Wordmark */}
-        <a href="/" className="flex items-center gap-2.5">
-          <LogoMark />
-          <span className="text-[15px] font-bold tracking-tight text-white">Declawed</span>
-          <span className="hidden sm:inline text-[9px] font-bold uppercase tracking-[0.15em] text-blue-300 border border-blue-500/40 bg-blue-500/10 px-1.5 py-0.5 rounded-full leading-none">
-            Beta
-          </span>
-        </a>
+      <div className="max-w-6xl mx-auto px-5 h-16 flex items-center">
+        {/* Wordmark — flex-1 so it balances the right side and keeps nav centred */}
+        <div className="flex-1">
+          <a href="/" className="inline-flex items-center gap-2.5">
+            <LogoMark />
+            <span className="text-[15px] font-bold tracking-tight text-white">Declawed</span>
+            <span className="hidden sm:inline text-[9px] font-bold uppercase tracking-[0.15em] text-blue-300 border border-blue-500/40 bg-blue-500/10 px-1.5 py-0.5 rounded-full leading-none">
+              Beta
+            </span>
+          </a>
+        </div>
 
-        {/* Desktop nav */}
+        {/* Desktop nav — sits exactly in the centre */}
         <nav className="hidden md:flex items-center gap-7">
           {NAV_LINKS.map(({ label, href }) => (
             <a key={label} href={href} className="text-[13px] font-medium text-zinc-400 hover:text-white transition-colors">
@@ -60,8 +62,8 @@ export default function Navbar() {
           ))}
         </nav>
 
-          {/* Right side */}
-          <div className="flex items-center gap-3">
+          {/* Right side — flex-1 + justify-end mirrors the logo side */}
+          <div className="flex-1 flex items-center justify-end gap-3">
             {user ? (
               <UserDropdown size="sm" />
             ) : (

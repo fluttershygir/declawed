@@ -16,11 +16,25 @@ export async function callSummarize(payload) {
     ? { imageBase64, imageMediaType, filename, landlordMode: payload?.landlordMode }
     : { text, filename, landlordMode: payload?.landlordMode };
 
-  const res = await fetch('/api/summarize', {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(bodyPayload),
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 90000); // 90s timeout
+
+  let res;
+  try {
+    res = await fetch('/api/summarize', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(bodyPayload),
+      signal: controller.signal,
+    });
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      throw new Error('Analysis timed out. Please try again — large documents can take longer.');
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   const contentType = res.headers.get('content-type') || '';
   if (!contentType.includes('application/json')) {
