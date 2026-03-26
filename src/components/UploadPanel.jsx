@@ -40,10 +40,11 @@ async function extractTextFromDocx(file) {
 
 async function extractTextFromPdf(file) {
   const pdfjsLib = await import('pdfjs-dist');
-  pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-    'pdfjs-dist/build/pdf.worker.mjs',
-    import.meta.url
-  ).toString();
+  // Use CDN worker — avoids rolldown-vite/Cloudflare Pages bundling issues
+  // where new URL(..., import.meta.url) resolves to a missing path and the
+  // worker silently never loads, causing getDocument().promise to hang forever.
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
   const pages = [];

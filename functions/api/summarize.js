@@ -104,15 +104,25 @@ async function verifyCookieValue(secret, value, signature) {
   return diff === 0;
 }
 
+function fetchWithTimeout(url, options, ms = 8000) {
+  const ctrl = new AbortController();
+  const id = setTimeout(() => ctrl.abort(), ms);
+  return fetch(url, { ...options, signal: ctrl.signal }).finally(() => clearTimeout(id));
+}
+
 async function getUserFromJwt(jwt, supabaseUrl, serviceRoleKey) {
-  const res = await fetch(`${supabaseUrl}/auth/v1/user`, {
-    headers: {
-      Authorization: `Bearer ${jwt}`,
-      apikey: serviceRoleKey,
-    },
-  });
-  if (!res.ok) return null;
-  return res.json();
+  try {
+    const res = await fetchWithTimeout(`${supabaseUrl}/auth/v1/user`, {
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+        apikey: serviceRoleKey,
+      },
+    }, 8000);
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null; // auth timeout → treat as anonymous
+  }
 }
 
 async function callAnthropic(apiKey, model, maxTokens, systemPrompt, messageContent) {
@@ -193,9 +203,10 @@ async function handleRequest(request, env, context) {
       userId = userData.id;
 
       // Fetch profile for plan + usage
-      const profileRes = await fetch(
+      const profileRes = await fetchWithTimeout(
         `${env.SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}&select=plan,analyses_used,analyses_limit`,
-        { headers: { apikey: env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}` } }
+        { headers: { apikey: env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}` } },
+        8000
       );
       const profiles = await profileRes.json();
       const profile = profiles?.[0];
