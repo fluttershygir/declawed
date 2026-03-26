@@ -17,7 +17,7 @@ export async function callSummarize(payload) {
     : { text, filename, landlordMode: payload?.landlordMode };
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 90000); // 90s timeout
+  const timeoutId = setTimeout(() => controller.abort(), 35000); // 35s timeout
 
   let res;
   try {

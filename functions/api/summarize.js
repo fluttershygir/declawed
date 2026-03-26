@@ -116,20 +116,27 @@ async function getUserFromJwt(jwt, supabaseUrl, serviceRoleKey) {
 }
 
 async function callAnthropic(apiKey, model, maxTokens, systemPrompt, messageContent) {
-  return fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model,
-      max_tokens: maxTokens,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: messageContent }],
-    }),
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 25000); // 25s hard timeout
+  try {
+    return await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: maxTokens,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: messageContent }],
+      }),
+    });
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 async function checkIpRateLimit(ip, kv) {

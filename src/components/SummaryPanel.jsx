@@ -412,14 +412,15 @@ export default function SummaryPanel({ summary, loading, error, modelTier, score
       return;
     }
     setShareState('copying');
-    const shareUrl = `${window.location.origin}/shared/${shareToken}`;
-    const ok = await copyToClipboard(shareUrl);
-    if (ok) {
-      setShareState('copied');
-    } else {
+    try {
+      const shareUrl = `${window.location.origin}/shared/${shareToken}`;
+      const ok = await copyToClipboard(shareUrl);
+      setShareState(ok ? 'copied' : 'error');
+    } catch {
       setShareState('error');
+    } finally {
+      setTimeout(() => setShareState('idle'), 2500);
     }
-    setTimeout(() => setShareState('idle'), 2500);
   };
 
   const handleDownloadPDF = async () => {
