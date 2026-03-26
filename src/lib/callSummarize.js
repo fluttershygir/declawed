@@ -17,16 +17,52 @@ export async function callSummarize(payload) {
     : { text, filename, landlordMode: payload?.landlordMode };
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 90000); // 90s timeout
+  // Keep the timeout alive through the entire response — both headers AND body.
+  // Previously the timeout was cleared in a finally block after fetch() resolved
+  // (i.e. after headers arrived), leaving res.json() unprotected. If the server
+  // sent headers but never finished the body, res.json() would hang forever and
+  // setLoading(false) would never be called.
+  const timeoutId = setTimeout(() => controller.abort(), 90000); // 90s covers full round-trip
 
-  let res;
   try {
-    res = await fetch('/api/summarize', {
+    const res = await fetch('/api/summarize', {
       method: 'POST',
       headers,
       body: JSON.stringify(bodyPayload),
       signal: controller.signal,
     });
+
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const raw = await res.text();
+      console.error('[summarize] Non-JSON response:', raw.slice(0, 500));
+      throw new Error(`CF error (HTTP ${res.status}): ${raw.replace(/<[^>]+>/g, '').trim().slice(0, 200)}`);
+    }
+
+    const data = await res.json();
+
+    if (res.status === 402) {
+      const err = new Error(data.error || 'Upgrade required.');
+      err.paywall = true;
+      throw err;
+    }
+
+    if (!res.ok || data.error) throw new Error(data.error || 'Something went wrong.');
+
+    const raw = data.summary;
+    const summary = (() => {
+      if (!raw) return null;
+      if (typeof raw === 'object') return raw;
+      try { return JSON.parse(raw); } catch { return { _parseError: true }; }
+    })();
+
+    return {
+      summary,
+      modelTier: data.modelTier || null,
+      landlordMode: !!data.landlordMode,
+      scorePercentile: typeof data.scorePercentile === 'number' ? data.scorePercentile : null,
+      shareToken: data.shareToken || null,
+    };
   } catch (err) {
     if (err.name === 'AbortError') {
       throw new Error('Analysis timed out. Please try again — large documents can take longer.');
@@ -35,36 +71,4 @@ export async function callSummarize(payload) {
   } finally {
     clearTimeout(timeoutId);
   }
-
-  const contentType = res.headers.get('content-type') || '';
-  if (!contentType.includes('application/json')) {
-    const raw = await res.text();
-    console.error('[summarize] Non-JSON response:', raw.slice(0, 500));
-    throw new Error(`CF error (HTTP ${res.status}): ${raw.replace(/<[^>]+>/g, '').trim().slice(0, 200)}`);
-  }
-
-  const data = await res.json();
-
-  if (res.status === 402) {
-    const err = new Error(data.error || 'Upgrade required.');
-    err.paywall = true;
-    throw err;
-  }
-
-  if (!res.ok || data.error) throw new Error(data.error || 'Something went wrong.');
-
-  const raw = data.summary;
-  const summary = (() => {
-    if (!raw) return null;
-    if (typeof raw === 'object') return raw;
-    try { return JSON.parse(raw); } catch { return { _parseError: true }; }
-  })();
-
-  return {
-    summary,
-    modelTier: data.modelTier || null,
-    landlordMode: !!data.landlordMode,
-    scorePercentile: typeof data.scorePercentile === 'number' ? data.scorePercentile : null,
-    shareToken: data.shareToken || null,
-  };
 }

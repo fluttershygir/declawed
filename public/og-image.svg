@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 628" width="1200" height="628">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="628" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0c0c16"/>
+      <stop offset="100%" stop-color="#0a0a0f"/>
+    </linearGradient>
+    <linearGradient id="topBar" x1="0" y1="0" x2="1200" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <linearGradient id="scoreGrad" x1="0" y1="0" x2="0" y2="100" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#22c55e"/>
+      <stop offset="100%" stop-color="#16a34a"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="628" fill="url(#bg)"/>
+
+  <!-- Subtle grid pattern -->
+  <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.02)" stroke-width="1"/>
+  </pattern>
+  <rect width="1200" height="628" fill="url(#grid)"/>
+
+  <!-- Top accent bar -->
+  <rect x="0" y="0" width="1200" height="4" fill="url(#topBar)"/>
+
+  <!-- Blue glow behind logo area -->
+  <ellipse cx="180" cy="120" rx="120" ry="80" fill="#3b82f6" opacity="0.06"/>
+
+  <!-- Logo mark (padlock) -->
+  <rect x="68" y="68" width="56" height="56" rx="14" fill="#3b82f6" opacity="0.15"/>
+  <rect x="68" y="68" width="56" height="56" rx="14" fill="none" stroke="#3b82f6" stroke-width="1.5" opacity="0.4"/>
+  <!-- padlock shackle -->
+  <path d="M84 93V87a12 12 0 0 1 24 0v6" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- padlock body -->
+  <rect x="78" y="93" width="36" height="24" rx="6" fill="white" opacity="0.9"/>
+  <circle cx="96" cy="105" r="3.5" fill="#3b82f6"/>
+
+  <!-- Wordmark -->
+  <text x="140" y="104" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="28" font-weight="700" fill="white" letter-spacing="-0.5">Declawed</text>
+
+  <!-- Main headline -->
+  <text x="72" y="240" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="64" font-weight="800" fill="white" letter-spacing="-2">Know what you&apos;re</text>
+  <text x="72" y="320" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="64" font-weight="800" fill="white" letter-spacing="-2">signing.</text>
+
+  <!-- Subheading -->
+  <text x="72" y="378" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="26" font-weight="400" fill="#94a3b8" letter-spacing="-0.3">AI lease analysis in 30 seconds — free to try, no account required.</text>
+
+  <!-- Feature pill: Red flags -->
+  <rect x="72" y="432" width="196" height="44" rx="10" fill="rgba(239,68,68,0.12)" stroke="rgba(239,68,68,0.3)" stroke-width="1"/>
+  <circle cx="100" cy="454" r="5" fill="#ef4444"/>
+  <text x="115" y="460" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" font-weight="600" fill="#fca5a5" letter-spacing="-0.2">Red flag detection</text>
+
+  <!-- Feature pill: Score -->
+  <rect x="284" y="432" width="160" height="44" rx="10" fill="rgba(59,130,246,0.12)" stroke="rgba(59,130,246,0.3)" stroke-width="1"/>
+  <text x="316" y="460" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" font-weight="600" fill="#93c5fd" letter-spacing="-0.2">Lease score 1–10</text>
+  <circle cx="302" cy="454" r="5" fill="#3b82f6"/>
+
+  <!-- Feature pill: Key dates -->
+  <rect x="460" y="432" width="148" height="44" rx="10" fill="rgba(168,85,247,0.12)" stroke="rgba(168,85,247,0.3)" stroke-width="1"/>
+  <circle cx="488" cy="454" r="5" fill="#a855f7"/>
+  <text x="503" y="460" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" font-weight="600" fill="#d8b4fe" letter-spacing="-0.2">Key dates</text>
+
+  <!-- Feature pill: Action steps -->
+  <rect x="624" y="432" width="156" height="44" rx="10" fill="rgba(34,197,94,0.12)" stroke="rgba(34,197,94,0.3)" stroke-width="1"/>
+  <circle cx="652" cy="454" r="5" fill="#22c55e"/>
+  <text x="667" y="460" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" font-weight="600" fill="#86efac" letter-spacing="-0.2">Action steps</text>
+
+  <!-- Right side: mock score card -->
+  <rect x="820" y="140" width="300" height="380" rx="18" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+
+  <!-- Score card header -->
+  <rect x="820" y="140" width="300" height="52" rx="18" fill="rgba(255,255,255,0.04)"/>
+  <rect x="820" y="158" width="300" height="34" fill="rgba(255,255,255,0.04)"/>
+  <text x="848" y="174" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#71717a" letter-spacing="0.1">ANALYSIS REPORT</text>
+
+  <!-- Score circle -->
+  <circle cx="970" cy="265" r="52" fill="rgba(34,197,94,0.08)" stroke="rgba(34,197,94,0.25)" stroke-width="2"/>
+  <text x="970" y="257" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="36" font-weight="800" fill="#22c55e" text-anchor="middle" letter-spacing="-1">7.4</text>
+  <text x="970" y="278" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="500" fill="#22c55e" text-anchor="middle" opacity="0.7">/ 10</text>
+
+  <!-- Mock red flags -->
+  <rect x="844" y="332" width="252" height="32" rx="6" fill="rgba(239,68,68,0.08)" stroke="rgba(239,68,68,0.2)" stroke-width="1"/>
+  <rect x="856" y="344" width="8" height="8" rx="2" fill="#ef4444"/>
+  <rect x="874" y="347" width="120" height="5" rx="2" fill="rgba(255,255,255,0.12)"/>
+  <rect x="1004" y="347" width="40" height="5" rx="2" fill="rgba(239,68,68,0.3)"/>
+
+  <rect x="844" y="372" width="252" height="32" rx="6" fill="rgba(245,158,11,0.06)" stroke="rgba(245,158,11,0.15)" stroke-width="1"/>
+  <rect x="856" y="384" width="8" height="8" rx="2" fill="#f59e0b"/>
+  <rect x="874" y="387" width="100" height="5" rx="2" fill="rgba(255,255,255,0.10)"/>
+  <rect x="984" y="387" width="50" height="5" rx="2" fill="rgba(245,158,11,0.25)"/>
+
+  <rect x="844" y="412" width="252" height="32" rx="6" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <rect x="856" y="424" width="8" height="8" rx="2" fill="#71717a"/>
+  <rect x="874" y="427" width="90" height="5" rx="2" fill="rgba(255,255,255,0.08)"/>
+  <rect x="974" y="427" width="60" height="5" rx="2" fill="rgba(255,255,255,0.06)"/>
+
+  <!-- Bottom URL bar -->
+  <rect x="0" y="584" width="1200" height="44" fill="rgba(255,255,255,0.02)"/>
+  <rect x="0" y="584" width="1200" height="1" fill="rgba(255,255,255,0.05)"/>
+  <text x="72" y="612" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" font-weight="500" fill="#52525b" letter-spacing="-0.2">declawed.app</text>
+  <text x="1128" y="612" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" font-weight="500" fill="#3b82f6" text-anchor="end">Try it free →</text>
+</svg>
