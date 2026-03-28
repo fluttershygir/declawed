@@ -85,8 +85,12 @@ async function extractTextFromPdf(file) {
   const pages = [];
   for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-    pages.push(content.items.map(item => item.str || '').join(' '));
+    const content = await page.getTextContent({ disableNormalization: true });
+    const strings = [];
+    for (const item of content.items) {
+      if (item.str) strings.push(item.str);
+    }
+    pages.push(strings.join(' '));
   }
   return pages.join('\n');
 }
