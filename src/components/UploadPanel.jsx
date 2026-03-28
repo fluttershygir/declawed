@@ -71,10 +71,8 @@ async function readFileAsUint8Array(file) {
 
 async function extractTextFromPdf(file) {
   const pdfjsLib = await import('pdfjs-dist');
-  // pdfjs v5 rejects empty workerSrc — use a blob URL pointing to an empty worker
-  // so it runs on the main thread without throwing
-  const fakeWorker = new Blob([''], { type: 'text/javascript' });
-  pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(fakeWorker);
+  // Use a data URI as workerSrc — accepted by pdfjs v5 without launching a real worker
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'data:text/javascript,';
   const data = await readFileAsUint8Array(file);
   const pdf = await pdfjsLib.getDocument({
     data,
