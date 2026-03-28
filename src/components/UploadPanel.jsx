@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Upload, FileText, Loader2, AlertCircle, Lock, Zap, Image as ImageIcon, Building2, Gift, ShieldCheck, EyeOff, CloudUpload } from 'lucide-react';
 import ShareToUnlockModal from './ShareToUnlockModal';
-import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.js?url';
 
 // pdfjs-dist v5 uses Promise.withResolvers() which requires Safari 17.4+.
 // Polyfill it so older iOS Safari (and any other missing environment) works.
@@ -85,12 +85,8 @@ async function extractTextFromPdf(file) {
   const pages = [];
   for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i);
-    const content = await page.getTextContent({ disableNormalization: true });
-    const strings = [];
-    for (const item of content.items) {
-      if (item.str) strings.push(item.str);
-    }
-    pages.push(strings.join(' '));
+    const content = await page.getTextContent();
+    pages.push(content.items.map(item => item.str).join(' '));
   }
   return pages.join('\n');
 }
