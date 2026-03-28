@@ -71,19 +71,19 @@ async function readFileAsUint8Array(file) {
 
 async function extractTextFromPdf(file) {
   const pdfjsLib = await import('pdfjs-dist');
-  // Disable worker entirely - run on main thread
-  pdfjsLib.GlobalWorkerOptions.workerSrc = '';
-  pdfjsLib.GlobalWorkerOptions.workerPort = null;
+  // pdfjs v5 rejects empty workerSrc — use a blob URL pointing to an empty worker
+  // so it runs on the main thread without throwing
+  const fakeWorker = new Blob([''], { type: 'text/javascript' });
+  pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(fakeWorker);
   const data = await readFileAsUint8Array(file);
-  const loadingTask = pdfjsLib.getDocument({
+  const pdf = await pdfjsLib.getDocument({
     data,
     useWorkerFetch: false,
     isEvalSupported: false,
     disableRange: true,
     disableStream: true,
     disableAutoFetch: true,
-  });
-  const pdf = await loadingTask.promise;
+  }).promise;
   const pages = [];
   for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i);
