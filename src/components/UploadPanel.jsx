@@ -2,7 +2,6 @@ import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Upload, FileText, Loader2, AlertCircle, Lock, Zap, Image as ImageIcon, Building2, Gift, ShieldCheck, EyeOff, CloudUpload } from 'lucide-react';
 import ShareToUnlockModal from './ShareToUnlockModal';
-import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
 // pdfjs-dist v5 uses Promise.withResolvers() which requires Safari 17.4+.
 // Polyfill it so older iOS Safari (and any other missing environment) works.
@@ -71,49 +70,16 @@ async function readFileAsUint8Array(file) {
 }
 
 async function extractTextFromPdf(file) {
-  const pdfjsLib = await import('pdfjs-dist');
-
+  const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '';
   const data = await readFileAsUint8Array(file);
-
-  // Detect iOS/iPadOS — iPads on iPadOS 13+ report as "Macintosh" so the old
-  // /iPad/ check misses them.  All iOS browsers use WebKit under the hood
-  // (Safari, Chrome, Firefox) and none can load .mjs Workers properly.
-  const isIOS =
-    /iP(ad|hone|od)/i.test(navigator.userAgent) ||
-    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ||
-    /CriOS|FxiOS|EdgiOS/.test(navigator.userAgent);
-
-  // On iOS/iPadOS, skip Web Worker entirely — use main-thread (fake-worker).
-  pdfjsLib.GlobalWorkerOptions.workerSrc = isIOS ? '' : pdfWorkerUrl;
-
-  const baseOpts = { data, useWorkerFetch: false };
-
-  let pdf;
-  try {
-    pdf = await pdfjsLib.getDocument(baseOpts).promise;
-  } catch {
-    // Secondary fallback: force fake-worker with extra compatibility flags.
-    pdfjsLib.GlobalWorkerOptions.workerSrc = '';
-    try {
-      pdf = await pdfjsLib.getDocument({
-        ...baseOpts,
-        disableRange: true,
-        disableStream: true,
-        isEvalSupported: false,
-      }).promise;
-    } catch {
-      // Final fallback: re-read file fresh in case the buffer was neutered.
-      const freshData = await readFileAsUint8Array(file);
-      pdf = await pdfjsLib.getDocument({
-        data: freshData,
-        useWorkerFetch: false,
-        disableRange: true,
-        disableStream: true,
-        isEvalSupported: false,
-      }).promise;
-    }
-  }
-
+  const pdf = await pdfjsLib.getDocument({
+    data,
+    useWorkerFetch: false,
+    isEvalSupported: false,
+    disableRange: true,
+    disableStream: true,
+  }).promise;
   const pages = [];
   for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i);
