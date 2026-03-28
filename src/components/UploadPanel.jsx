@@ -71,21 +71,24 @@ async function readFileAsUint8Array(file) {
 
 async function extractTextFromPdf(file) {
   const pdfjsLib = await import('pdfjs-dist');
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+  // Disable worker entirely - run on main thread
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+  pdfjsLib.GlobalWorkerOptions.workerPort = null;
   const data = await readFileAsUint8Array(file);
-  const pdf = await pdfjsLib.getDocument({
+  const loadingTask = pdfjsLib.getDocument({
     data,
     useWorkerFetch: false,
     isEvalSupported: false,
     disableRange: true,
     disableStream: true,
-  }).promise;
+    disableAutoFetch: true,
+  });
+  const pdf = await loadingTask.promise;
   const pages = [];
   for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-    const items = Array.from(content.items || []);
-    pages.push(items.map(item => item.str || '').join(' '));
+    const content = await page.getTextContent({ includeMarkedContent: false });
+    pages.push(content.items.map(item => item.str || '').join(' '));
   }
   return pages.join('\n');
 }
