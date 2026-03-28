@@ -14,6 +14,11 @@ if (typeof Promise.withResolvers === 'undefined') {
   };
 }
 
+// pdfjs-dist v5 may use structuredClone internally; polyfill for iOS <15.4.
+if (typeof globalThis.structuredClone === 'undefined') {
+  globalThis.structuredClone = (obj) => JSON.parse(JSON.stringify(obj));
+}
+
 const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 const IMAGE_EXTS = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
 
@@ -49,33 +54,64 @@ async function extractTextFromDocx(file) {
   return result.value;
 }
 
+async function readFileAsUint8Array(file) {
+  // file.arrayBuffer() can fail on some iOS WebKit versions; fall back to
+  // the older FileReader API which has wider support.
+  try {
+    const ab = await file.arrayBuffer();
+    return new Uint8Array(ab);
+  } catch {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(new Uint8Array(reader.result));
+      reader.onerror = reject;
+      reader.readAsArrayBuffer(file);
+    });
+  }
+}
+
 async function extractTextFromPdf(file) {
   const pdfjsLib = await import('pdfjs-dist');
 
-  // Use a Uint8Array — more broadly compatible than a raw ArrayBuffer across
-  // browser/OS combinations (notably older iOS WebKit builds).
-  const arrayBuffer = await file.arrayBuffer();
-  const data = new Uint8Array(arrayBuffer);
+  const data = await readFileAsUint8Array(file);
 
-  // iOS Safari cannot load `.mjs` files as classic Workers (they require
-  // `{ type: 'module' }` which pdfjs-dist doesn't use when given a plain URL).
-  // Skip straight to fake-worker (main-thread) mode on iOS to avoid the silent
-  // hang that results from the failed Worker creation.
-  const isIOS = /iP(ad|hone|od)/i.test(navigator.userAgent);
+  // Detect iOS/iPadOS — iPads on iPadOS 13+ report as "Macintosh" so the old
+  // /iPad/ check misses them.  All iOS browsers use WebKit under the hood
+  // (Safari, Chrome, Firefox) and none can load .mjs Workers properly.
+  const isIOS =
+    /iP(ad|hone|od)/i.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ||
+    /CriOS|FxiOS|EdgiOS/.test(navigator.userAgent);
+
+  // On iOS/iPadOS, skip Web Worker entirely — use main-thread (fake-worker).
   pdfjsLib.GlobalWorkerOptions.workerSrc = isIOS ? '' : pdfWorkerUrl;
+
+  const baseOpts = { data, useWorkerFetch: false };
 
   let pdf;
   try {
-    pdf = await pdfjsLib.getDocument({ data }).promise;
+    pdf = await pdfjsLib.getDocument(baseOpts).promise;
   } catch {
-    // Secondary fallback: force fake-worker with extra compatibility flags
-    // that disable chunked/streaming fetching (not needed for local ArrayBuffers).
+    // Secondary fallback: force fake-worker with extra compatibility flags.
     pdfjsLib.GlobalWorkerOptions.workerSrc = '';
-    pdf = await pdfjsLib.getDocument({
-      data,
-      disableRange: true,
-      disableStream: true,
-    }).promise;
+    try {
+      pdf = await pdfjsLib.getDocument({
+        ...baseOpts,
+        disableRange: true,
+        disableStream: true,
+        isEvalSupported: false,
+      }).promise;
+    } catch {
+      // Final fallback: re-read file fresh in case the buffer was neutered.
+      const freshData = await readFileAsUint8Array(file);
+      pdf = await pdfjsLib.getDocument({
+        data: freshData,
+        useWorkerFetch: false,
+        disableRange: true,
+        disableStream: true,
+        isEvalSupported: false,
+      }).promise;
+    }
   }
 
   const pages = [];
