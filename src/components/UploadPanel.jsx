@@ -139,7 +139,7 @@ export default function UploadPanel({ onUpload, loading, usage, onUpgrade, landl
       catch { setParsing(false); setParseError('Could not read this Word document. Ensure it is a valid .docx file.'); return; }
     } else {
       try { text = await extractTextFromPdf(file); }
-      catch (e) { setParsing(false); setParseError('Could not read this PDF. Make sure it isn\'t password-protected, and try again. If the issue persists, export it from your PDF viewer and re-upload.'); return; }
+      catch (e) { console.error('[PDF parse error]', e); setParsing(false); setParseError('Could not read this PDF. Make sure it isn\'t password-protected, and try again. If the issue persists, export it from your PDF viewer and re-upload.'); return; }
     }
     setParsing(false);
     if (!text.trim() || text.trim().length < 50) {
