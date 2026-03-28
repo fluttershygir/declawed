@@ -71,7 +71,7 @@ async function readFileAsUint8Array(file) {
 
 async function extractTextFromPdf(file) {
   const pdfjsLib = await import('pdfjs-dist');
-  pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
   const data = await readFileAsUint8Array(file);
   const pdf = await pdfjsLib.getDocument({
     data,
@@ -79,12 +79,20 @@ async function extractTextFromPdf(file) {
     isEvalSupported: false,
     disableRange: true,
     disableStream: true,
+    disableAutoFetch: true,
   }).promise;
   const pages = [];
   for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-    pages.push(content.items.map(item => item.str).join(' '));
+    try {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent({ includeMarkedContent: false });
+      const strs = Array.isArray(content.items)
+        ? content.items.map(item => (item && item.str) ? item.str : '').join(' ')
+        : '';
+      pages.push(strs);
+    } catch (pageErr) {
+      pages.push('');
+    }
   }
   return pages.join('\n');
 }
