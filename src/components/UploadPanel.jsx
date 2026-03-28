@@ -71,8 +71,7 @@ async function readFileAsUint8Array(file) {
 
 async function extractTextFromPdf(file) {
   const pdfjsLib = await import('pdfjs-dist');
-  // Use a data URI as workerSrc — accepted by pdfjs v5 without launching a real worker
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'data:text/javascript,';
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '';
   const data = await readFileAsUint8Array(file);
   const pdf = await pdfjsLib.getDocument({
     data,
@@ -80,13 +79,12 @@ async function extractTextFromPdf(file) {
     isEvalSupported: false,
     disableRange: true,
     disableStream: true,
-    disableAutoFetch: true,
   }).promise;
   const pages = [];
   for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i);
-    const content = await page.getTextContent({ includeMarkedContent: false });
-    pages.push(content.items.map(item => item.str || '').join(' '));
+    const content = await page.getTextContent();
+    pages.push(content.items.map(item => item.str).join(' '));
   }
   return pages.join('\n');
 }
