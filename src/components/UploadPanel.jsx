@@ -85,12 +85,13 @@ async function extractTextFromPdf(file) {
   for (let i = 1; i <= pdf.numPages; i++) {
     try {
       const page = await pdf.getPage(i);
-      const content = await page.getTextContent({ includeMarkedContent: false });
+      const content = await page.getTextContent();
       const strs = Array.isArray(content.items)
         ? content.items.map(item => (item && item.str) ? item.str : '').join(' ')
         : '';
       pages.push(strs);
     } catch (pageErr) {
+      console.error('[PDF page error]', i, pageErr);
       pages.push('');
     }
   }
