@@ -70,8 +70,8 @@ async function readFileAsUint8Array(file) {
 }
 
 async function extractTextFromPdf(file) {
-  const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
-  pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+  const pdfjsLib = await import('pdfjs-dist');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
   const data = await readFileAsUint8Array(file);
   const pdf = await pdfjsLib.getDocument({
     data,
